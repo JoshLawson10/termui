@@ -1,4 +1,5 @@
 from typing import Sequence, Literal
+from functools import singledispatch
 
 
 class Div:
@@ -71,37 +72,46 @@ class Div:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def add_content(
-        self, content: Sequence[Sequence[str]] | Sequence[str] | str
-    ) -> None:
+    @singledispatch
+    def add_content(self, content: str) -> None:
         """Add content to the div.
 
         Parameters
         ----------
-        content: Sequence[Sequence[str]] | Sequence[str] | str
-            The content to add to the div. It can be a single string, a list of strings,
-            or a list of lists of strings.
+        content: str
+            The content to add to the div.
         """
         if not self.content:
             self.content = []
+        self.content.append([content])
 
-        if isinstance(content, str):
-            self.content.append([content])
-        elif isinstance(content, list):
-            if all(isinstance(item, str) for item in content):
-                self.content.append([str(item) for item in content])
-            elif all(
-                isinstance(item, (list, tuple))
-                and all(isinstance(subitem, str) for subitem in item)
-                for item in content
-            ):
-                self.content.extend([list(item) for item in content])
-            else:
-                raise ValueError(
-                    "Invalid content type - must be list[str] or list[list[str]]"
-                )
-        else:
-            raise ValueError("Content must be str, list[str], or list[list[str]]")
+    @add_content.register(list[str])
+    def _(self, content: list[str]) -> None:
+        """Add a list of strings as content to the div.
+
+        Parameters
+        ----------
+        content: list[str]
+            A list of strings to add as content to the div.
+        """
+        if not self.content:
+            self.content = []
+        for line in content:
+            self.content.append(list(line))
+
+    @add_content.register(list[list[str]])
+    def _(self, content: list[list[str]]) -> None:
+        """Add a 2D list of strings as content to the div.
+
+        Parameters
+        ----------
+        content: list[list[str]]
+            A 2D list of strings to add as content to the div.
+        """
+        if not self.content:
+            self.content = []
+        for line in content:
+            self.content.append(list(line))
 
     def render(self, width: int, height: int) -> list[list[str]]:
         """Render the div as a 2D list of strings.
