@@ -1,5 +1,6 @@
 import os
 from .div import Div
+from ._utils import clear_terminal
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -90,6 +91,6 @@ class Screen(ABC):
                     if div_content[i][j] != " ":
                         screen[start_y + i][start_x + j] = div_content[i][j]
 
-        os.system("cls" if os.name == "nt" else "clear")
+        clear_terminal()
         for row in screen:
             print("".join(row))
