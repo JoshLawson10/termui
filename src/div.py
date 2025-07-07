@@ -78,44 +78,46 @@ class Div:
     def __repr__(self) -> str:
         return self.__str__()
 
-    @singledispatch
-    def add_content(self, content: str) -> None:
-        """Add content to the div.
+    def set_content(
+        self,
+        content: str | list[str] | list[list[str]],
+    ) -> None:
+        """Set the content of the Div.
 
         Parameters
         ----------
-        content: str
-            The content to add to the div.
+        content : str | list[str] | list[list[str]]
+            The content to set. It can be a single string, a list of strings, or
+            a list of lists of strings. Each string will be treated as a line,
+            and each list will be treated as a line containing multiple items.
         """
-        if not self.content:
-            self.content = []
-        self.content.append(list(content))
+        result: list[list[str]] = []
 
-    @add_content.register(list)
-    def _(self, content: list) -> None:
-        """Add content to the div.
-
-        Parameters
-        ----------
-        content: list
-            The content to add to the div. Can be a list of strings or a list of lists of strings.
-        """
-        if not content:
+        if isinstance(content, str):
+            result.append(list(content))
+            self.content = result
             return
 
-        if all(isinstance(x, str) for x in content):
-            if not self.content:
-                self.content = []
-            for line in content:
-                self.content.append(list(line))
-        elif all(
-            isinstance(x, list) and all(isinstance(y, str) for y in x) for x in content
-        ):
-            if not self.content:
-                self.content = []
-            self.content.extend([list(line) for line in content])
-        else:
-            raise TypeError("Content must be list[str] or list[list[str]]")
+        for line in content:
+            formatted_line: list[str] = []
+
+            if isinstance(line, str):
+                if len(line) == 0:
+                    formatted_line.append("")
+                else:
+                    formatted_line = list(line)
+            else:
+                if len(line) == 0:
+                    formatted_line.append("")
+                else:
+                    for item in line:
+                        if len(item) == 0:
+                            formatted_line.append("")
+                        else:
+                            formatted_line.extend(list(item))
+
+            result.append(formatted_line)
+        self.content = result
 
     def render(self, width: int, height: int) -> list[list[str]]:
         """Render the div as a 2D list of strings.
@@ -192,7 +194,7 @@ class Div:
             if content_start_row + i >= content_height + 1:
                 break
             for j, char in enumerate(line):
-                if content_start_col + j >= content_width or char == " ":
+                if content_start_col + j >= content_width:
                     break
                 rendered[content_start_row + i][content_start_col + j] = char
 
