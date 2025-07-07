@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class KeyBind:
+class Keybind:
     key: str
     action: str = ""
     description: str = ""
