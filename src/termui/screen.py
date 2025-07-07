@@ -1,6 +1,6 @@
 import os
 from .div import Div
-from ._utils import clear_terminal
+from ._utils import clear_terminal, get_terminal_size
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -10,8 +10,9 @@ class Screen(ABC):
 
     def __init__(self) -> None:
         self.name: str = ""
-        self.width: int = os.get_terminal_size().columns
-        self.height: int = os.get_terminal_size().lines
+        self.width: int
+        self.height: int
+        self.width, self.height = get_terminal_size()
         self.cols: int = 4
         self.rows: int = 12
         self.cell_width: int = self.width // self.cols
