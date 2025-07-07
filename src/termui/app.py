@@ -44,9 +44,8 @@ class App(ABC):
         for screen in self.screens.values():
             screen.setup()
 
-        if self.current_screen:
+        while True:
+            self.update()
+            if self.current_screen is None:
+                raise RuntimeError("No current screen set.")
             self.current_screen.render()
-        else:
-            raise RuntimeError(
-                "No current screen set. Please call show_screen() first."
-            )

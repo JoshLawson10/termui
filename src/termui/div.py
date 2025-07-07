@@ -1,5 +1,4 @@
-from typing import List, Literal
-from functools import singledispatch
+from typing import Literal
 
 
 class Div:
