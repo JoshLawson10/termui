@@ -1,6 +1,6 @@
 import os
 from .div import Div
-from ._utils import clear_terminal, get_terminal_size
+from .utils import clear_terminal, get_terminal_size
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -25,6 +25,11 @@ class Screen(ABC):
     def __repr__(self) -> str:
         return self.__str__()
 
+    def _update_cell_dimensions(self) -> None:
+        """Update the cell dimensions based on the current screen size."""
+        self.cell_width = self.width // self.cols
+        self.cell_height = self.height // self.rows
+
     def add(self, div: Div) -> None:
         """Add a Div to the screen."""
         if not isinstance(div, Div):
@@ -36,7 +41,7 @@ class Screen(ABC):
         if div in self.divs:
             self.divs.remove(div)
 
-    def initialize_screen(self, **kwargs: Any) -> None:
+    def screen_metadata(self, **kwargs: Any) -> None:
         """Initialize the screen.
 
         Parameters:
@@ -47,8 +52,9 @@ class Screen(ABC):
             rows (int): The number of rows in the screen. Defaults to 12.
         """
         self.name = kwargs.get("name", "Default Screen")
-        self.width = kwargs.get("width", os.get_terminal_size().columns)
-        self.height = kwargs.get("height", os.get_terminal_size().lines)
+        max_width, max_height = get_terminal_size()
+        self.width = kwargs.get("width", max_width)
+        self.height = kwargs.get("height", max_height)
         self.cols = kwargs.get("cols", 4)
         self.rows = kwargs.get("rows", 12)
 
@@ -64,16 +70,18 @@ class Screen(ABC):
 
     def render(self) -> None:
         """Render the screen with all Divs."""
+        self._update_cell_dimensions()
+
         screen: list[list[str]] = [
             [" " for _ in range(self.width)] for _ in range(self.height)
         ]
 
         for div in self.divs:
-            cell_span_width: int = div.end_col - div.start_col
-            cell_span_height: int = div.end_row - div.start_row
+            cell_span_width: int = div.end_col - div.start_col + 1
+            cell_span_height: int = div.end_row - div.start_row + 1
 
             div_width: int = (cell_span_width) * self.cell_width
-            div_height: int = (cell_span_height + 1) * self.cell_height
+            div_height: int = (cell_span_height) * self.cell_height
 
             div_content: list[list[str]] = div.render(
                 width=div_width,

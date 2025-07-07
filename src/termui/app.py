@@ -11,7 +11,9 @@ class App(ABC):
         """Register a new screen."""
         if not isinstance(screen, Screen):
             raise TypeError("Expected a Screen instance.")
+        screen.setup()
         self.screens[screen.name] = screen
+        print(f"Registered screen: {screen.name}")
 
     @abstractmethod
     def setup(self) -> None:
@@ -41,11 +43,7 @@ class App(ABC):
     def run(self) -> None:
         """Run the application."""
         self.setup()
-        for screen in self.screens.values():
-            screen.setup()
-
-        while True:
-            self.update()
-            if self.current_screen is None:
-                raise RuntimeError("No current screen set.")
-            self.current_screen.render()
+        self.update()
+        if self.current_screen is None:
+            raise RuntimeError("No current screen set.")
+        self.current_screen.render()
