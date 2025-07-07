@@ -1,6 +1,5 @@
-from _utils import clear_terminal
-from app import App
-from screen import Screen
-from div import Div
+from .app import App
+from .screen import Screen
+from .div import Div
 
-__all__ = ["clear_terminal", "App", "Screen", "Div"]
+__all__ = ["App", "Screen", "Div"]
