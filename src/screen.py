@@ -67,10 +67,10 @@ class Screen(ABC):
         ]
 
         for div in self.divs:
-            cell_span_width: int = div.end_col - div.start_col + 1
-            cell_span_height: int = div.end_row - div.start_row + 1
+            cell_span_width: int = div.end_col - div.start_col
+            cell_span_height: int = div.end_row - div.start_row
 
-            div_width: int = (cell_span_width - 1) * self.cell_width
+            div_width: int = (cell_span_width) * self.cell_width
             div_height: int = (cell_span_height + 1) * self.cell_height
 
             div_content: list[list[str]] = div.render(
@@ -93,4 +93,3 @@ class Screen(ABC):
         os.system("cls" if os.name == "nt" else "clear")
         for row in screen:
             print("".join(row))
-        print(f"Terminal Height: {self.height}, Cell Height: {self.cell_height}")

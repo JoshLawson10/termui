@@ -1,4 +1,4 @@
-from typing import Sequence, Literal
+from typing import List, Literal
 from functools import singledispatch
 
 
@@ -9,13 +9,13 @@ class Div:
     ----------
     name (str)
         The name of the div.
-    column (int)
+    start_col (int)
         The starting column of the div (1-indexed).
-    column_end (int)
+    end_col (int)
         The ending column of the div (1-indexed, default is 1).
-    row (int)
+    start_row (int)
         The starting row of the div (1-indexed).
-    row_end (int)
+    end_row (int)
         The ending row of the div (1-indexed, default is 1).
     border (bool)
         Whether the div has a border (default is False).
@@ -23,8 +23,11 @@ class Div:
         Whether the div has rounded corners (default is False).
     title (str)
         The title of the div (default is an empty string).
-    title_align (Literal["left", "center", "right"])
+    align_title (Literal["left", "center", "right"])
         The alignment of the title within the div (default is "left").
+        Valid values are "left", "center", and "right".
+    align_content (Literal["left", "center", "right"])
+        The alignment of the content within the div (default is "left").
         Valid values are "left", "center", and "right".
     padding (tuple[int, int, int, int])
         Padding around the content of the div in the order (top, right, bottom, left) (default is (0, 0, 0, 0)).
@@ -40,7 +43,8 @@ class Div:
         border: bool = False,
         rounded_corners: bool = False,
         title: str = "",
-        title_align: Literal["left", "center", "right"] = "left",
+        align_title: Literal["left", "center", "right"] = "left",
+        align_content: Literal["left", "center", "right"] = "left",
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
         self.name: str = name
@@ -51,7 +55,8 @@ class Div:
         self.border: bool = border
         self.rounded_corners: bool = rounded_corners
         self.title: str = title
-        self.title_align: Literal["left", "center", "right"] = title_align
+        self.align_title: Literal["left", "center", "right"] = align_title
+        self.align_content: Literal["left", "center", "right"] = align_content
         self.padding: tuple[int, int, int, int] = padding
         self.content: list[list[str]] = []
 
@@ -65,7 +70,8 @@ class Div:
             f"border={self.border}, "
             f"rounded_corners={self.rounded_corners}, "
             f"title={self.title}, "
-            f"title_align={self.title_align}, "
+            f"align_title={self.align_title}, "
+            f"align_content={self.align_content}, "
             f"padding={self.padding})"
         )
 
@@ -83,35 +89,33 @@ class Div:
         """
         if not self.content:
             self.content = []
-        self.content.append([content])
+        self.content.append(list(content))
 
-    @add_content.register(list[str])
-    def _(self, content: list[str]) -> None:
-        """Add a list of strings as content to the div.
-
-        Parameters
-        ----------
-        content: list[str]
-            A list of strings to add as content to the div.
-        """
-        if not self.content:
-            self.content = []
-        for line in content:
-            self.content.append(list(line))
-
-    @add_content.register(list[list[str]])
-    def _(self, content: list[list[str]]) -> None:
-        """Add a 2D list of strings as content to the div.
+    @add_content.register(list)
+    def _(self, content: list) -> None:
+        """Add content to the div.
 
         Parameters
         ----------
-        content: list[list[str]]
-            A 2D list of strings to add as content to the div.
+        content: list
+            The content to add to the div. Can be a list of strings or a list of lists of strings.
         """
-        if not self.content:
-            self.content = []
-        for line in content:
-            self.content.append(list(line))
+        if not content:
+            return
+
+        if all(isinstance(x, str) for x in content):
+            if not self.content:
+                self.content = []
+            for line in content:
+                self.content.append(list(line))
+        elif all(
+            isinstance(x, list) and all(isinstance(y, str) for y in x) for x in content
+        ):
+            if not self.content:
+                self.content = []
+            self.content.extend([list(line) for line in content])
+        else:
+            raise TypeError("Content must be list[str] or list[list[str]]")
 
     def render(self, width: int, height: int) -> list[list[str]]:
         """Render the div as a 2D list of strings.
@@ -163,7 +167,7 @@ class Div:
         if self.title:
             title: str = f" {self.title} "
             if len(title) <= width - 2:
-                match self.title_align:
+                match self.align_title:
                     case "left":
                         start_pos: int = 1
                     case "center":
@@ -176,7 +180,7 @@ class Div:
                 top_border[start_pos:end_pos] = list(title)
         rendered.append(top_border)
 
-        for _ in range(height - 2):
+        for i in range(height - 2):
             row: list[str] = [v] + [" "] * (width - 2) + [v]
             rendered.append(row)
 
@@ -185,10 +189,10 @@ class Div:
         content_start_row: int = 1 + ptop
         content_start_col: int = 1 + pleft
         for i, line in enumerate(content_lines):
-            if content_start_row + i >= len(rendered) - 1:
+            if content_start_row + i >= content_height + 1:
                 break
             for j, char in enumerate(line):
-                if content_start_col + j >= len(rendered[0]) - 1:
+                if content_start_col + j >= content_width or char == " ":
                     break
                 rendered[content_start_row + i][content_start_col + j] = char
 

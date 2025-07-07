@@ -20,6 +20,13 @@ class App(ABC):
         This method is intended to be overridden by the inheriting class."""
         pass
 
+    @abstractmethod
+    def update(self) -> None:
+        """Update the application state.
+
+        This method is intended to be overridden by the inheriting class."""
+        pass
+
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
         if screen_name in self.screens:
