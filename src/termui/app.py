@@ -1,4 +1,5 @@
 from .screen import Screen
+from .input_handler import InputHandler
 from abc import ABC, abstractmethod
 
 
@@ -6,6 +7,7 @@ class App(ABC):
     def __init__(self) -> None:
         self.screens: dict[str, Screen] = {}
         self.current_screen: Screen | None = None
+        self.input_handler = InputHandler()
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen."""
@@ -44,4 +46,13 @@ class App(ABC):
     def run(self) -> None:
         """Run the application."""
         self.setup()
-        self.update()
+
+        while True:
+            try:
+                while True:
+                    self.input_handler.process_input()
+                    self.update()
+                    if self.input_handler._should_exit:
+                        break
+            except KeyboardInterrupt:
+                pass

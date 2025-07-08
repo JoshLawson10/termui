@@ -13,3 +13,8 @@ class Keybind:
         keys: list[str] = self.key.split("+")
         action: str = self.action if self.action else "default_action"
         return keys, action
+
+    def matches(self, pressed_keys: set[str]) -> bool:
+        """Check if the pressed keys match this keybind."""
+        required_keys, _ = self.parse_keybind()
+        return set(required_keys) == pressed_keys
