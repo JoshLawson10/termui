@@ -1,5 +1,6 @@
 from .screen import Screen
 from .input_handler import InputHandler
+from .keybind import Keybind
 from abc import ABC, abstractmethod
 
 
@@ -8,6 +9,17 @@ class App(ABC):
         self.screens: dict[str, Screen] = {}
         self.current_screen: Screen | None = None
         self.input_handler = InputHandler()
+
+    def _register_keybinds(self) -> None:
+        for attr_name in dir(self):
+            attr = getattr(self, attr_name)
+            if callable(attr) and hasattr(attr, "_keybind"):
+                key, description, visible = attr._keybind
+                bound_func = attr.__get__(self)
+                kb = Keybind(
+                    key=key, action=bound_func, description=description, visible=visible
+                )
+                self.input_handler.register_keybind(kb)
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen."""
@@ -46,6 +58,7 @@ class App(ABC):
     def run(self) -> None:
         """Run the application."""
         self.setup()
+        self._register_keybinds()
 
         while True:
             try:

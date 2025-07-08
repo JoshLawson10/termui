@@ -37,7 +37,7 @@ class InputHandler:
             "\x1b[23~": "f11",
             "\x1b[24~": "f12",
         }
-        self._special_keys = {
+        self._special_keys: Dict[str, str] = {
             "\x7f": "backspace",
             "\x1b": "escape",
             "\t": "tab",

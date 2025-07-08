@@ -18,3 +18,31 @@ class Keybind:
         """Check if the pressed keys match this keybind."""
         required_keys, _ = self.parse_keybind()
         return set(required_keys) == pressed_keys
+
+
+def keybind(
+    key: str,
+    description: str = "",
+    visible: bool = True,
+):
+    """Decorator to create a keybind for a method.
+
+    Parameters
+    ----------
+    key : str
+        The key or combination of keys that trigger the action.
+    description : str, optional
+        A description of the keybind, by default "".
+    visible : bool, optional
+        Whether the keybind should be visible in the UI, by default True.
+    """
+
+    def decorator(func: Callable) -> Callable:
+        func._keybind = Keybind(
+            key=key,
+            description=description,
+            visible=visible,
+        )
+        return func
+
+    return decorator
