@@ -25,9 +25,12 @@ class Div:
     align_title (Literal["left", "center", "right"])
         The alignment of the title within the div (default is "left").
         Valid values are "left", "center", and "right".
-    align_content (Literal["left", "center", "right"])
+    horizontal_align (Literal["left", "center", "right"])
         The alignment of the content within the div (default is "left").
         Valid values are "left", "center", and "right".
+    vertical_align (Literal["top", "center", "bottom"])
+        The vertical alignment of the content within the div (default is "top").
+        Valid values are "top", "center", and "bottom".
     padding (tuple[int, int, int, int])
         Padding around the content of the div in the order (top, right, bottom, left) (default is (0, 0, 0, 0)).
     """
@@ -43,7 +46,8 @@ class Div:
         rounded_corners: bool = False,
         title: str = "",
         align_title: Literal["left", "center", "right"] = "left",
-        align_content: Literal["left", "center", "right"] = "left",
+        horizontal_align: Literal["left", "center", "right"] = "left",
+        vertical_align: Literal["top", "center", "bottom"] = "top",
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
         self.name: str = name
@@ -55,7 +59,8 @@ class Div:
         self.rounded_corners: bool = rounded_corners
         self.title: str = title
         self.align_title: Literal["left", "center", "right"] = align_title
-        self.align_content: Literal["left", "center", "right"] = align_content
+        self.horizontal_align: Literal["left", "center", "right"] = horizontal_align
+        self.vertical_align: Literal["top", "center", "bottom"] = vertical_align
         self.padding: tuple[int, int, int, int] = padding
         self.content: list[list[str]] = []
 
@@ -69,8 +74,8 @@ class Div:
             f"border={self.border}, "
             f"rounded_corners={self.rounded_corners}, "
             f"title={self.title}, "
-            f"align_title={self.align_title}, "
-            f"align_content={self.align_content}, "
+            f"horizontal_align={self.horizontal_align}, "
+            f"vertical_align={self.vertical_align}, "
             f"padding={self.padding})"
         )
 
@@ -118,6 +123,25 @@ class Div:
             result.append(formatted_line)
         self.content = result
 
+    def _align_content(
+        self,
+        content: list[str],
+        width: int,
+        align: Literal["left", "center", "right"],
+    ) -> list[str]:
+        aligned: list[str] = []
+        for line in content:
+            match align:
+                case "left":
+                    aligned.append(line.ljust(width))
+                case "center":
+                    aligned.append(line.center(width))
+                case "right":
+                    aligned.append(line.rjust(width))
+                case _:
+                    raise ValueError("Invalid alignment specified.")
+        return aligned
+
     def render(self, width: int, height: int) -> list[list[str]]:
         """Render the div as a 2D list of strings.
 
@@ -133,68 +157,86 @@ class Div:
         list[list[str]]
             A 2D list of strings representing the rendered Div.
         """
-        rendered: list[list[str]] = []
-
+        rendered: list[list[str]] = [[" " for _ in range(width)] for _ in range(height)]
         ptop, pright, pbottom, pleft = self.padding
-        content_width: int = max(0, width - pleft - pright - (2 if self.border else 0))
-        content_height: int = max(
+
+        max_content_width: int = max(
+            0, width - pleft - pright - (2 if self.border else 0)
+        )
+        max_content_height: int = max(
             0, height - ptop - pbottom - (2 if self.border else 0)
         )
 
-        content_lines: list[list[str]] = []
-        for _ in range(content_height):
-            content_lines.append([" "] * content_width)
+        content_lines: list[str] = ["".join(line) for line in self.content if line]
+        aligned_content: list[str] = self._align_content(
+            content_lines, max_content_width, self.horizontal_align
+        )
 
-        for i, line in enumerate(self.content):
-            if i >= content_height:
-                break
-            for j, char in enumerate(line):
-                if j >= content_width:
-                    break
-                content_lines[i][j] = char
+        final_content: list[list[str]] = []
+        for i in range(max_content_height):
+            if i < len(aligned_content):
+                final_content.append(list(aligned_content[i][:max_content_width]))
+            else:
+                final_content.append([" "] * max_content_width)
+
+        if self.vertical_align == "top":
+            start_pos_y: int = ptop
+        elif self.vertical_align == "center":
+            start_pos_y: int = height // 2 + ptop
+        elif self.vertical_align == "bottom":
+            start_pos_y: int = height - len(final_content) + ptop
+        else:
+            raise ValueError("Invalid vertical alignment specified.")
 
         if not self.border:
-            rendered = content_lines
-        else:
-            rendered = []
+            temp_rendered: list[list[str]] = [
+                [" " for _ in range(width)] for _ in range(height)
+            ]
 
+            for i, line in enumerate(final_content):
+                for j, char in enumerate(line):
+                    if start_pos_y + i >= height:
+                        break
+                    temp_rendered[start_pos_y + i][pleft + j + 1] = char
+
+        else:
             if self.rounded_corners:
                 tl, tr, bl, br = "╭", "╮", "╰", "╯"
             else:
                 tl, tr, bl, br = "┌", "┐", "└", "┘"
             h, v = "─", "│"
 
-        top_border: list[str] = [tl] + [h] * (width - 2) + [tr]
-        if self.title:
-            title: str = f" {self.title} "
-            if len(title) <= width - 2:
-                match self.align_title:
-                    case "left":
-                        start_pos: int = 1
-                    case "center":
-                        start_pos: int = (width - len(title)) // 2
-                    case "right":
-                        start_pos: int = width - len(title) - 1
-                    case _:
-                        raise ValueError("Invalid title alignment specified.")
-                end_pos: int = start_pos + len(title)
-                top_border[start_pos:end_pos] = list(title)
-        rendered.append(top_border)
+            temp_rendered: list[list[str]] = []
 
-        for i in range(height - 2):
-            row: list[str] = [v] + [" "] * (width - 2) + [v]
-            rendered.append(row)
+            top_border: list[str] = [tl] + [h] * (width - 2) + [tr]
+            if self.title:
+                title: str = f" {self.title} "
+                if len(title) <= width - 2:
+                    match self.align_title:
+                        case "left":
+                            start_pos: int = 1
+                        case "center":
+                            start_pos: int = (width - len(title)) // 2
+                        case "right":
+                            start_pos: int = width - len(title) - 1
+                        case _:
+                            raise ValueError("Invalid title alignment specified.")
+                    end_pos: int = start_pos + len(title)
+                    top_border[start_pos:end_pos] = list(title)
+            temp_rendered.append(top_border)
 
-        rendered.append([bl] + [h] * (width - 2) + [br])
+            for _ in range(height - 2):
+                temp_rendered.append([v] + [" "] * (width - 2) + [v])
 
-        content_start_row: int = 1 + ptop
-        content_start_col: int = 1 + pleft
-        for i, line in enumerate(content_lines):
-            if content_start_row + i >= content_height + 1:
-                break
-            for j, char in enumerate(line):
-                if content_start_col + j >= content_width:
+            temp_rendered.append([bl] + [h] * (width - 2) + [br])
+
+            for i, line in enumerate(final_content):
+                if start_pos_y + i >= height - 1:
                     break
-                rendered[content_start_row + i][content_start_col + j] = char
+                for j, char in enumerate(line):
+                    if j < max_content_width:
+                        temp_rendered[start_pos_y + i][j + pleft + 1] = char
+
+            rendered = temp_rendered
 
         return rendered

@@ -33,6 +33,7 @@ class App(ABC):
         """Switch to a different screen by name."""
         if screen_name in self.screens:
             self.current_screen = self.screens[screen_name]
+            self.current_screen.render()
         else:
             raise ValueError(f"Screen '{screen_name}' not found.")
 
@@ -44,6 +45,3 @@ class App(ABC):
         """Run the application."""
         self.setup()
         self.update()
-        if self.current_screen is None:
-            raise RuntimeError("No current screen set.")
-        self.current_screen.render()
