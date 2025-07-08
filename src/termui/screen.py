@@ -1,4 +1,3 @@
-import os
 from .div import Div
 from .utils import clear_terminal, get_terminal_size
 from abc import ABC, abstractmethod
