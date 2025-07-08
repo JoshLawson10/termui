@@ -1,18 +1,18 @@
 from dataclasses import dataclass
+from typing import Callable
 
 
 @dataclass(frozen=True)
 class Keybind:
     key: str
-    action: str = ""
+    action: Callable = lambda: None
     description: str = ""
     visible: bool = True
 
-    def parse_keybind(self) -> tuple[list[str], str]:
+    def parse_keybind(self) -> tuple[list[str], Callable]:
         """Parse the keybind into a list of keys and an action."""
         keys: list[str] = self.key.split("+")
-        action: str = self.action if self.action else "default_action"
-        return keys, action
+        return keys, self.action
 
     def matches(self, pressed_keys: set[str]) -> bool:
         """Check if the pressed keys match this keybind."""

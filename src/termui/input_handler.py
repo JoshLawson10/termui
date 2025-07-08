@@ -10,7 +10,6 @@ class InputHandler:
     def __init__(self):
         self._keybinds: List[Keybind] = []
         self._current_keys: Set[str] = set()
-        self._key_actions: Dict[str, Callable] = {}
         self._should_exit = False
         self._escape_sequences: Dict[str, str] = {
             "\x1b[A": "up",
@@ -46,20 +45,13 @@ class InputHandler:
             " ": "space",
         }
 
-    def register_keybind(self, keybind: Keybind, action: Callable) -> None:
+    def register_keybind(self, keybind: Keybind) -> None:
         """Register a new keybind with its associated action."""
         self._keybinds.append(keybind)
-        keys, _ = keybind.parse_keybind()
-        key_str = "+".join(keys)
-        self._key_actions[key_str] = action
 
     def unregister_keybind(self, keybind: Keybind) -> None:
         """Unregister a keybind."""
         self._keybinds.remove(keybind)
-        keys, _ = keybind.parse_keybind()
-        key_str = "+".join(keys)
-        if key_str in self._key_actions:
-            del self._key_actions[key_str]
 
     def _get_key(self) -> Optional[str]:
         """Get a single key press, handling escape sequences."""
@@ -104,10 +96,7 @@ class InputHandler:
 
         for keybind in self._keybinds:
             if keybind.matches(self._current_keys):
-                keys, _ = keybind.parse_keybind()
-                key_str = "+".join(keys)
-                if key_str in self._key_actions:
-                    self._key_actions[key_str]()
+                keybind.action()
                 self._current_keys.clear()
                 break
 
