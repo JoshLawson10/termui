@@ -4,6 +4,20 @@ from typing import Callable
 
 @dataclass(frozen=True)
 class Keybind:
+    """A class representing a keybind.
+
+    Attributes
+    ----------
+    key : str
+        The key or combination of keys that trigger the action.
+    action : Callable
+        The action to be executed when the keybind is triggered.
+    description : str
+        A description of the keybind, used for documentation or UI display.
+    visible : bool
+        Whether the keybind should be visible in the UI.
+    """
+
     key: str
     action: Callable = lambda: None
     description: str = ""

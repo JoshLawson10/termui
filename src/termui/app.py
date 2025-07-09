@@ -1,6 +1,5 @@
 from .screen import Screen
-from .input_handler import InputHandler
-from .keybind import Keybind
+from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 import inspect
 
@@ -13,13 +12,12 @@ class App(ABC):
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
-        # inspect.getmembers finds all methods of the instance
         for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
             info = getattr(method, "_keybind_info", None)
             if info is not None:
                 keybind_obj = Keybind(
                     key=info["key"],
-                    action=method,  # The action is the bound method itself
+                    action=method,
                     description=info["description"],
                     visible=info["visible"],
                 )
