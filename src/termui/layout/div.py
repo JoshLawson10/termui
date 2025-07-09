@@ -1,4 +1,5 @@
-from typing import Literal
+from typing import Literal, Optional
+from termui.colors import colorize, Color
 
 
 class Div:
@@ -33,6 +34,18 @@ class Div:
         Valid values are "top", "center", and "bottom".
     padding (tuple[int, int, int, int])
         Padding around the content of the div in the order (top, right, bottom, left) (default is (0, 0, 0, 0)).
+    fg_color (Optional[Color])
+        Foreground color of the div (default is None).
+    bg_color (Optional[Color])
+        Background color of the div (default is None).
+    border_fg_color (Optional[Color])
+        Foreground color of the border (default is None).
+    border_bg_color (Optional[Color])
+        Background color of the border (default is None).
+    title_fg_color (Optional[Color])
+        Foreground color of the title (default is None).
+    title_bg_color (Optional[Color])
+        Background color of the title (default is None).
     """
 
     def __init__(
@@ -49,6 +62,12 @@ class Div:
         horizontal_align: Literal["left", "center", "right"] = "left",
         vertical_align: Literal["top", "center", "bottom"] = "top",
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
+        fg_color: Optional[Color] = None,
+        bg_color: Optional[Color] = None,
+        border_fg_color: Optional[Color] = None,
+        border_bg_color: Optional[Color] = None,
+        title_fg_color: Optional[Color] = None,
+        title_bg_color: Optional[Color] = None,
     ) -> None:
         self.name: str = name
         self.start_col: int = start_col
@@ -62,7 +81,15 @@ class Div:
         self.horizontal_align: Literal["left", "center", "right"] = horizontal_align
         self.vertical_align: Literal["top", "center", "bottom"] = vertical_align
         self.padding: tuple[int, int, int, int] = padding
-        self.content: list[list[str]] = []
+        self.fg_color: Optional[Color] = fg_color
+        self.bg_color: Optional[Color] = bg_color
+        self.border_fg_color: Optional[Color] = border_fg_color
+        self.border_bg_color: Optional[Color] = border_bg_color
+        self.title_fg_color: Optional[Color] = title_fg_color
+        self.title_bg_color: Optional[Color] = title_bg_color
+        self._styled_content: list[
+            list[tuple[str, Optional[Color], Optional[Color]]]
+        ] = []
 
     def __str__(self) -> str:
         return (
@@ -76,7 +103,13 @@ class Div:
             f"title={self.title}, "
             f"horizontal_align={self.horizontal_align}, "
             f"vertical_align={self.vertical_align}, "
-            f"padding={self.padding})"
+            f"padding={self.padding}), "
+            f"fg_color={self.fg_color}, "
+            f"bg_color={self.bg_color}, "
+            f"border_fg_color={self.border_fg_color}, "
+            f"border_bg_color={self.border_bg_color}, "
+            f"title_fg_color={self.title_fg_color}, "
+            f"title_bg_color={self.title_bg_color}"
         )
 
     def __repr__(self) -> str:
@@ -84,44 +117,61 @@ class Div:
 
     def set_content(
         self,
-        content: str | list[str] | list[list[str]],
+        content: (
+            str
+            | list[str]
+            | list[list[str]]
+            | list[list[tuple[str, Optional[Color], Optional[Color]]]]
+        ),
+        fg_color: Optional[Color] = None,
+        bg_color: Optional[Color] = None,
     ) -> None:
         """Set the content of the Div.
 
         Parameters
         ----------
-        content : str | list[str] | list[list[str]]
-            The content to set. It can be a single string, a list of strings, or
-            a list of lists of strings. Each string will be treated as a line,
-            and each list will be treated as a line containing multiple items.
+        content : str | list[str] | list[list[str]] | list[list[tuple[str, Optional[Color], Optional[Color]]]]
+            The content to set. It can be:
+            - A single string
+            - A list of strings (each string is a line)
+            - A list of lists of strings (each inner list is a line with multiple items)
+            - A list of lists of tuples (pre-styled content with (text, fg_color, bg_color))
+        fg_color : Optional[Color]
+            Default foreground color for unstyled content
+        bg_color : Optional[Color]
+            Default background color for unstyled content
         """
-        result: list[list[str]] = []
+        self._styled_content = []
 
         if isinstance(content, str):
-            result.append(list(content))
-            self.content = result
-            return
+            lines = [content]
+        else:
+            lines = content
 
-        for line in content:
-            formatted_line: list[str] = []
-
+        for line in lines:
+            styled_line = []
             if isinstance(line, str):
-                if len(line) == 0:
-                    formatted_line.append("")
-                else:
-                    formatted_line = list(line)
+                styled_line.append(
+                    (line, fg_color or self.fg_color, bg_color or self.bg_color)
+                )
             else:
-                if len(line) == 0:
-                    formatted_line.append("")
-                else:
-                    for item in line:
-                        if len(item) == 0:
-                            formatted_line.append("")
-                        else:
-                            formatted_line.extend(list(item))
+                for item in line:
+                    if isinstance(item, tuple):
+                        styled_line.append(item)
+                    else:
+                        styled_line.append(
+                            (item, fg_color or self.fg_color, bg_color or self.bg_color)
+                        )
+            self._styled_content.append(styled_line)
 
-            result.append(formatted_line)
-        self.content = result
+    def _apply_style(
+        self, char: str, is_border: bool = False, is_title: bool = False
+    ) -> str:
+        if is_title:
+            return colorize(char, fg=self.title_fg_color, bg=self.title_bg_color)
+        elif is_border:
+            return colorize(char, fg=self.border_fg_color, bg=self.border_bg_color)
+        return colorize(char, fg=self.fg_color, bg=self.bg_color)
 
     def _align_content(
         self,
@@ -139,7 +189,7 @@ class Div:
                 case "right":
                     aligned.append(line.rjust(width))
                 case _:
-                    raise ValueError("Invalid alignment specified.")
+                    raise ValueError(f"Invalid alignment specified: {align}")
         return aligned
 
     def render(self, width: int, height: int) -> list[list[str]]:
@@ -157,48 +207,55 @@ class Div:
         list[list[str]]
             A 2D list of strings representing the rendered Div.
         """
-        rendered: list[list[str]] = [[" " for _ in range(width)] for _ in range(height)]
+        if width <= 0 or height <= 0:
+            return []
+
         ptop, pright, pbottom, pleft = self.padding
 
-        max_content_width: int = max(
-            0, width - pleft - pright - (2 if self.border else 0)
-        )
-        max_content_height: int = max(
-            0, height - ptop - pbottom - (2 if self.border else 0)
-        )
+        content_width = max(0, width - pleft - pright - (2 if self.border else 0))
 
-        content_lines: list[str] = ["".join(line) for line in self.content if line]
-        aligned_content: list[str] = self._align_content(
-            content_lines, max_content_width, self.horizontal_align
-        )
+        content_lines = []
+        for styled_line in self._styled_content:
+            line = "".join([item[0] for item in styled_line])
+            content_lines.append(line)
 
-        final_content: list[list[str]] = []
-        for i in range(max_content_height):
-            if i < len(aligned_content):
-                final_content.append(list(aligned_content[i][:max_content_width]))
+        aligned_content = []
+        for line in content_lines:
+            if self.horizontal_align == "left":
+                aligned = line.ljust(content_width)[:content_width]
+            elif self.horizontal_align == "center":
+                aligned = line.center(content_width)[:content_width]
+            elif self.horizontal_align == "right":
+                aligned = line.rjust(content_width)[:content_width]
             else:
-                final_content.append([" "] * max_content_width)
+                aligned = line.ljust(content_width)[:content_width]
+            aligned_content.append(aligned)
 
-        if self.vertical_align == "top":
-            start_pos_y: int = ptop
-        elif self.vertical_align == "center":
-            start_pos_y: int = height // 2 + ptop
-        elif self.vertical_align == "bottom":
-            start_pos_y: int = height - len(final_content) + ptop
-        else:
-            raise ValueError("Invalid vertical alignment specified.")
+        rendered: list[list[str]] = [[" " for _ in range(width)] for _ in range(height)]
 
         if not self.border:
-            temp_rendered: list[list[str]] = [
-                [" " for _ in range(width)] for _ in range(height)
-            ]
+            if self.vertical_align == "top":
+                start_y: int = ptop
+            elif self.vertical_align == "center":
+                start_y: int = max(0, (height - len(aligned_content)) // 2)
+            elif self.vertical_align == "bottom":
+                start_y: int = max(0, height - len(aligned_content) - pbottom)
+            else:
+                start_y: int = ptop
 
-            for i, line in enumerate(final_content):
-                for j, char in enumerate(line):
-                    if start_pos_y + i >= height:
-                        break
-                    temp_rendered[start_pos_y + i][pleft + j + 1] = char
-
+            for i, line in enumerate(aligned_content):
+                y_pos: int = start_y + i
+                if 0 <= y_pos < height:
+                    for j, char in enumerate(line):
+                        x_pos: int = pleft + j
+                        if 0 <= x_pos < width:
+                            if i < len(self._styled_content) and j < len(
+                                self._styled_content[i]
+                            ):
+                                _, fg, bg = self._styled_content[i][j]
+                            else:
+                                fg, bg = self.fg_color, self.bg_color
+                            rendered[y_pos][x_pos] = colorize(char, fg=fg, bg=bg)
         else:
             if self.rounded_corners:
                 tl, tr, bl, br = "╭", "╮", "╰", "╯"
@@ -206,37 +263,69 @@ class Div:
                 tl, tr, bl, br = "┌", "┐", "└", "┘"
             h, v = "─", "│"
 
-            temp_rendered: list[list[str]] = []
+            for y in range(height):
+                for x in range(width):
+                    if y == 0 and x == 0:
+                        rendered[y][x] = self._apply_style(tl, is_border=True)
+                    elif y == 0 and x == width - 1:
+                        rendered[y][x] = self._apply_style(tr, is_border=True)
+                    elif y == height - 1 and x == 0:
+                        rendered[y][x] = self._apply_style(bl, is_border=True)
+                    elif y == height - 1 and x == width - 1:
+                        rendered[y][x] = self._apply_style(br, is_border=True)
+                    elif y == 0 or y == height - 1:
+                        rendered[y][x] = self._apply_style(h, is_border=True)
+                    elif x == 0 or x == width - 1:
+                        rendered[y][x] = self._apply_style(v, is_border=True)
 
-            top_border: list[str] = [tl] + [h] * (width - 2) + [tr]
-            if self.title:
+            if self.title and height > 0:
                 title: str = f" {self.title} "
                 if len(title) <= width - 2:
-                    match self.align_title:
-                        case "left":
-                            start_pos: int = 1
-                        case "center":
-                            start_pos: int = (width - len(title)) // 2
-                        case "right":
-                            start_pos: int = width - len(title) - 1
-                        case _:
-                            raise ValueError("Invalid title alignment specified.")
-                    end_pos: int = start_pos + len(title)
-                    top_border[start_pos:end_pos] = list(title)
-            temp_rendered.append(top_border)
+                    if self.align_title == "left":
+                        start_x: int = 1
+                    elif self.align_title == "center":
+                        start_x: int = (width - len(title)) // 2
+                    elif self.align_title == "right":
+                        start_x: int = width - len(title) - 1
+                    else:
+                        start_x: int = 1
 
-            for _ in range(height - 2):
-                temp_rendered.append([v] + [" "] * (width - 2) + [v])
+                    for i, char in enumerate(title):
+                        x_pos = start_x + i
+                        if 1 <= x_pos < width - 1:
+                            rendered[0][x_pos] = self._apply_style(char, is_title=True)
 
-            temp_rendered.append([bl] + [h] * (width - 2) + [br])
+            if self.vertical_align == "top":
+                start_y: int = ptop + 1
+            elif self.vertical_align == "center":
+                start_y: int = max(1, (height - len(aligned_content)) // 2)
+            elif self.vertical_align == "bottom":
+                start_y: int = max(1, height - len(aligned_content) - pbottom - 1)
+            else:
+                start_y: int = ptop + 1
 
-            for i, line in enumerate(final_content):
-                if start_pos_y + i >= height - 1:
-                    break
-                for j, char in enumerate(line):
-                    if j < max_content_width:
-                        temp_rendered[start_pos_y + i][j + pleft + 1] = char
+            for i, line in enumerate(aligned_content):
+                y_pos: int = start_y + i
+                if 1 <= y_pos < height - 1:
+                    line_length: int = len(line)
+                    if self.horizontal_align == "left":
+                        start_x: int = pleft + 1
+                    elif self.horizontal_align == "center":
+                        start_x: int = max(1, (width - line_length) // 2)
+                    elif self.horizontal_align == "right":
+                        start_x: int = max(1, width - line_length - pright - 1)
+                    else:
+                        start_x: int = pleft + 1
 
-            rendered = temp_rendered
+                    for j, char in enumerate(line):
+                        x_pos: int = start_x + j
+                        if 1 <= x_pos < width - 1:
+                            if i < len(self._styled_content) and j < len(
+                                self._styled_content[i]
+                            ):
+                                _, fg, bg = self._styled_content[i][j]
+                            else:
+                                fg, bg = self.fg_color, self.bg_color
+                            rendered[y_pos][x_pos] = colorize(char, fg=fg, bg=bg)
 
         return rendered

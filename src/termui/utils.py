@@ -12,3 +12,11 @@ def get_terminal_size() -> tuple[int, int]:
         return (size.columns, size.lines)
     except OSError:
         return (80, 24)
+
+
+def remove_ansi_escape_sequences(text: str) -> str:
+    """Remove ANSI escape sequences from a string."""
+    import re
+
+    ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    return ansi_escape.sub("", text)
