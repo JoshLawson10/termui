@@ -1,5 +1,5 @@
 from .div import Div
-from .utils import clear_terminal, get_terminal_size
+from ..utils import clear_terminal, get_terminal_size
 from abc import ABC, abstractmethod
 from typing import Any
 

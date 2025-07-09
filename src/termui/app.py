@@ -1,4 +1,4 @@
-from .screen import Screen
+from .layout.screen import Screen
 from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 import inspect
