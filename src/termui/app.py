@@ -1,11 +1,29 @@
 from .screen import Screen
+from .input_handler import InputHandler
+from .keybind import Keybind
 from abc import ABC, abstractmethod
+import inspect
 
 
 class App(ABC):
     def __init__(self) -> None:
         self.screens: dict[str, Screen] = {}
         self.current_screen: Screen | None = None
+        self.input_handler = InputHandler()
+
+    def _register_decorated_keybinds(self):
+        """Finds and registers all methods decorated with @keybind."""
+        # inspect.getmembers finds all methods of the instance
+        for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
+            info = getattr(method, "_keybind_info", None)
+            if info is not None:
+                keybind_obj = Keybind(
+                    key=info["key"],
+                    action=method,  # The action is the bound method itself
+                    description=info["description"],
+                    visible=info["visible"],
+                )
+                self.input_handler.register_keybind(keybind_obj)
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen."""
@@ -13,7 +31,6 @@ class App(ABC):
             raise TypeError("Expected a Screen instance.")
         screen.setup()
         self.screens[screen.name] = screen
-        print(f"Registered screen: {screen.name}")
 
     @abstractmethod
     def setup(self) -> None:
@@ -44,4 +61,11 @@ class App(ABC):
     def run(self) -> None:
         """Run the application."""
         self.setup()
-        self.update()
+        self._register_decorated_keybinds()
+
+        try:
+            while True:
+                self.input_handler.process_input()
+                self.update()
+        except KeyboardInterrupt:
+            pass
