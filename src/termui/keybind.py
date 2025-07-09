@@ -38,11 +38,11 @@ def keybind(
     """
 
     def decorator(func: Callable) -> Callable:
-        func._keybind = Keybind(
-            key=key,
-            description=description,
-            visible=visible,
-        )
+        func._keybind_info = {
+            "key": key,
+            "description": description,
+            "visible": visible,
+        }
         return func
 
     return decorator

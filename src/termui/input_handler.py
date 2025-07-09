@@ -1,8 +1,9 @@
+import os
 import sys
 import tty
 import termios
 import select
-from typing import Callable, Dict, List, Set, Optional
+from typing import Dict, List, Set, Optional
 from .keybind import Keybind
 
 
@@ -103,3 +104,4 @@ class InputHandler:
     def stop(self) -> None:
         """Stop the input handler."""
         self._should_exit = True
+        os._exit(0)
