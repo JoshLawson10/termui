@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 
-class Color(Enum):
+class AnsiColor(Enum):
     BLACK = 30
     RED = 31
     GREEN = 32
@@ -21,30 +21,16 @@ class Color(Enum):
     BRIGHT_WHITE = 97
 
 
-class Style(Enum):
-    RESET = 0
-    BOLD = 1
-    DIM = 2
-    ITALIC = 3
-    UNDERLINE = 4
-    BLINK = 5
-    REVERSE = 7
-    HIDDEN = 8
-
-
 def colorize(
     text: str,
-    fg: Optional[Color] = None,
-    bg: Optional[Color] = None,
-    style: Optional[Style] = None,
+    fg: Optional[AnsiColor] = None,
+    bg: Optional[AnsiColor] = None,
 ) -> str:
     codes: list[str] = []
     if fg:
         codes.append(str(fg.value))
     if bg:
         codes.append(str(bg.value + 10))
-    if style:
-        codes.append(str(style.value))
 
     if not codes:
         return text

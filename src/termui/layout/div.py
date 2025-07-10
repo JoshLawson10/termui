@@ -1,5 +1,5 @@
 from typing import Literal, Optional
-from termui.colors import colorize, Color
+from termui.colors import colorize, AnsiColor
 
 
 class Div:
@@ -62,12 +62,12 @@ class Div:
         horizontal_align: Literal["left", "center", "right"] = "left",
         vertical_align: Literal["top", "center", "bottom"] = "top",
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
-        fg_color: Optional[Color] = None,
-        bg_color: Optional[Color] = None,
-        border_fg_color: Optional[Color] = None,
-        border_bg_color: Optional[Color] = None,
-        title_fg_color: Optional[Color] = None,
-        title_bg_color: Optional[Color] = None,
+        fg_color: Optional[AnsiColor] = None,
+        bg_color: Optional[AnsiColor] = None,
+        border_fg_color: Optional[AnsiColor] = None,
+        border_bg_color: Optional[AnsiColor] = None,
+        title_fg_color: Optional[AnsiColor] = None,
+        title_bg_color: Optional[AnsiColor] = None,
     ) -> None:
         self.name: str = name
         self.start_col: int = start_col
@@ -81,14 +81,14 @@ class Div:
         self.horizontal_align: Literal["left", "center", "right"] = horizontal_align
         self.vertical_align: Literal["top", "center", "bottom"] = vertical_align
         self.padding: tuple[int, int, int, int] = padding
-        self.fg_color: Optional[Color] = fg_color
-        self.bg_color: Optional[Color] = bg_color
-        self.border_fg_color: Optional[Color] = border_fg_color
-        self.border_bg_color: Optional[Color] = border_bg_color
-        self.title_fg_color: Optional[Color] = title_fg_color
-        self.title_bg_color: Optional[Color] = title_bg_color
+        self.fg_color: Optional[AnsiColor] = fg_color
+        self.bg_color: Optional[AnsiColor] = bg_color
+        self.border_fg_color: Optional[AnsiColor] = border_fg_color
+        self.border_bg_color: Optional[AnsiColor] = border_bg_color
+        self.title_fg_color: Optional[AnsiColor] = title_fg_color
+        self.title_bg_color: Optional[AnsiColor] = title_bg_color
         self._styled_content: list[
-            list[tuple[str, Optional[Color], Optional[Color]]]
+            list[tuple[str, Optional[AnsiColor], Optional[AnsiColor]]]
         ] = []
 
     def __str__(self) -> str:
@@ -121,16 +121,16 @@ class Div:
             str
             | list[str]
             | list[list[str]]
-            | list[list[tuple[str, Optional[Color], Optional[Color]]]]
+            | list[list[tuple[str, Optional[AnsiColor], Optional[AnsiColor]]]]
         ),
-        fg_color: Optional[Color] = None,
-        bg_color: Optional[Color] = None,
+        fg_color: Optional[AnsiColor] = None,
+        bg_color: Optional[AnsiColor] = None,
     ) -> None:
         """Set the content of the Div.
 
         Parameters
         ----------
-        content : str | list[str] | list[list[str]] | list[list[tuple[str, Optional[Color], Optional[Color]]]]
+        content : str | list[str] | list[list[str]] | list[list[tuple[str, Optional[AnsiColor], Optional[AnsiColor]]]]
             The content to set. It can be:
             - A single string
             - A list of strings (each string is a line)

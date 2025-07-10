@@ -1,7 +1,6 @@
-from .ansi import colorize, Color, Style
+from .ansi import colorize, AnsiColor
 
 __all__: list[str] = [
     "colorize",
-    "Color",
-    "Style",
+    "AnsiColor",
 ]
