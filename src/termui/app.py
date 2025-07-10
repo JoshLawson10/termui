@@ -47,8 +47,10 @@ class App(ABC):
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
         if screen_name in self.screens:
+            if self.current_screen is not None:
+                self.current_screen.unmount()
             self.current_screen = self.screens[screen_name]
-            self.current_screen.render()
+            self.current_screen.mount(self.input_handler)
         else:
             raise ValueError(f"Screen '{screen_name}' not found.")
 

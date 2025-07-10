@@ -1,7 +1,9 @@
 from .div import Div
 from ..utils import clear_terminal, get_terminal_size
+from ..input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 from typing import Any
+import inspect
 
 
 class Screen(ABC):
@@ -17,12 +19,32 @@ class Screen(ABC):
         self.cell_width: int = self.width // self.cols
         self.cell_height: int = self.height // self.rows
         self.divs: list[Div] = []
+        self._local_keybinds: list[Keybind] = []
+        self._input_handler: InputHandler = InputHandler()
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @property
+    def local_keybinds(self) -> list[Keybind]:
+        """Get the local keybinds for this screen."""
+        return self._local_keybinds
+
+    def _setup_local_keybinds(self):
+        """Finds and registers all methods decorated with @keybind."""
+        for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
+            info = getattr(method, "_keybind_info", None)
+            if info is not None:
+                keybind_obj = Keybind(
+                    key=info["key"],
+                    action=method,
+                    description=info["description"],
+                    visible=info["visible"],
+                )
+                self._local_keybinds.append(keybind_obj)
 
     def _update_cell_dimensions(self) -> None:
         """Update the cell dimensions based on the current screen size."""
@@ -39,6 +61,13 @@ class Screen(ABC):
         """Remove a Div from the screen."""
         if div in self.divs:
             self.divs.remove(div)
+
+    def get_div(self, name: str) -> Div | None:
+        """Get a Div by its name."""
+        for div in self.divs:
+            if div.name == name:
+                return div
+        return None
 
     def screen_metadata(self, **kwargs: Any) -> None:
         """Initialize the screen.
@@ -67,7 +96,20 @@ class Screen(ABC):
         """
         pass
 
-    def render(self) -> None:
+    def mount(self, input_handler: InputHandler) -> None:
+        """Mount the screen."""
+        self._setup_local_keybinds()
+        self._input_handler = input_handler
+        for keybind in self.local_keybinds:
+            self._input_handler.register_keybind(keybind)
+        self._render()
+
+    def unmount(self) -> None:
+        """Unmount the screen."""
+        for keybind in self.local_keybinds:
+            self._input_handler.unregister_keybind(keybind)
+
+    def _render(self) -> None:
         """Render the screen with all Divs."""
         self._update_cell_dimensions()
 

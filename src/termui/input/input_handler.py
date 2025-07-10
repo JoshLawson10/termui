@@ -54,6 +54,14 @@ class InputHandler:
         """Unregister a keybind."""
         self._keybinds.remove(keybind)
 
+    def clear_keybinds(self) -> None:
+        """Clear all registered keybinds."""
+        self._keybinds.clear()
+
+    def get_keybinds(self) -> List[Keybind]:
+        """Get a list of all registered keybinds."""
+        return self._keybinds
+
     def _get_key(self) -> Optional[str]:
         """Get a single key press, handling escape sequences."""
         fd = sys.stdin.fileno()
