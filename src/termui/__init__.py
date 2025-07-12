@@ -1,5 +1,5 @@
 from .app import App
-from .layout.screen import Screen
+from .screen import Screen
 from .layout.div import Div
 from .input import InputHandler, Keybind, keybind
 

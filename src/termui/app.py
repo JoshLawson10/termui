@@ -1,4 +1,4 @@
-from .layout.screen import Screen
+from .screen import Screen
 from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 import inspect
@@ -27,11 +27,11 @@ class App(ABC):
         """Register a new screen."""
         if not isinstance(screen, Screen):
             raise TypeError("Expected a Screen instance.")
-        screen.setup()
+        screen.build()
         self.screens[screen.name] = screen
 
     @abstractmethod
-    def setup(self) -> None:
+    def build(self) -> None:
         """Setup the application with initial screens.
 
         This method is intended to be overridden by the inheriting class."""
@@ -60,7 +60,7 @@ class App(ABC):
 
     def run(self) -> None:
         """Run the application."""
-        self.setup()
+        self.build()
         self._register_decorated_keybinds()
 
         try:
