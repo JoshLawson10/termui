@@ -1,4 +1,4 @@
-from .layout.div import Div
+from .layouts.div import Div
 from .utils import clear_terminal, get_terminal_size
 from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
@@ -87,7 +87,7 @@ class Screen(ABC):
         self.rows = kwargs.get("rows", 12)
 
     @abstractmethod
-    def build(self) -> None:
+    def build(self):
         """Setup the screen with initial Divs.
 
         From within :meth:`Screen.build`, you can add Divs to the screen
