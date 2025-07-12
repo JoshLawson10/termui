@@ -1,9 +1,13 @@
-from .layouts.div import Div
-from .utils import clear_terminal, get_terminal_size
-from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 from typing import Any
 import inspect
+
+from termui.layouts.layout import Layout
+from termui.layouts.div import Div
+from termui.widgets.base import Widget
+from termui.input import InputHandler, Keybind
+
+from termui.utils import clear_terminal, get_terminal_size
 
 
 class Screen(ABC):
@@ -87,7 +91,7 @@ class Screen(ABC):
         self.rows = kwargs.get("rows", 12)
 
     @abstractmethod
-    def build(self):
+    def build(self) -> Layout:
         """Setup the screen with initial Divs.
 
         From within :meth:`Screen.build`, you can add Divs to the screen
