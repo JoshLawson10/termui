@@ -3,6 +3,7 @@ from typing import Any
 import inspect
 
 from termui.layouts.layout import Layout
+from termui.renderer import Renderer
 from termui.widgets.base import Widget
 from termui.input import InputHandler, Keybind
 
@@ -60,6 +61,10 @@ class Screen(ABC):
         self.height = kwargs.get("height", max_height)
 
     @abstractmethod
+    def setup(self) -> None:
+        pass
+
+    @abstractmethod
     def build(self) -> Layout:
         """Setup the screen with initial Divs.
 
@@ -75,24 +80,47 @@ class Screen(ABC):
         self._input_handler = input_handler
         for keybind in self.local_keybinds:
             self._input_handler.register_keybind(keybind)
-        self._render()
+
+        self.width, self.height = get_terminal_size()
 
     def unmount(self) -> None:
         """Unmount the screen."""
         for keybind in self.local_keybinds:
             self._input_handler.unregister_keybind(keybind)
 
-    def _render(self) -> None:
+    def _render(self, renderer: Renderer) -> None:
         """Render the screen."""
         clear_terminal()
         layout: Layout = self.build()
         layout.update_dimensions(self.width, self.height)
         layout.arrange()
 
+        def unpack_and_pipe_layout(layout: Layout) -> None:
+            """Pipe a child widget or layout to the renderer."""
+            for placement in layout.placements:
+                child = placement.child
+                if isinstance(child, Widget):
+                    child.update_dimensions(
+                        placement.region.width, placement.region.height
+                    )
+                    renderer.pipe(child, placement.region.x, placement.region.y)
+                elif isinstance(child, Layout):
+                    child.update_dimensions(
+                        placement.region.width, placement.region.height
+                    )
+                    unpack_and_pipe_layout(child)
+                else:
+                    raise TypeError(
+                        f"Child {child} is not a Widget or Layout instance."
+                    )
+
         for placement in layout.placements:
             child = placement.child
             if isinstance(child, Widget):
                 child.update_dimensions(placement.region.width, placement.region.height)
-                child.render()
+                renderer.pipe(child, placement.region.x, placement.region.y)
+            elif isinstance(child, Layout):
+                child.update_dimensions(placement.region.width, placement.region.height)
+                unpack_and_pipe_layout(child)
             else:
-                raise TypeError(f"Child {child} is not a Widget instance.")
+                raise TypeError(f"Child {child} is not a Widget or Layout instance.")

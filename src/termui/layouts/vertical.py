@@ -5,7 +5,7 @@ from termui.widgets.base import Widget
 class VerticalLayout(Layout):
     """A layout that arranges widgets vertically."""
 
-    def __init__(self, *children: Widget) -> None:
+    def __init__(self, *children: Widget | Layout) -> None:
         super().__init__(*children)
 
     def arrange(self) -> None:
@@ -29,4 +29,7 @@ class VerticalLayout(Layout):
                 child.height
                 if hasattr(child, "height")
                 else self.height // len(self.children)
+            )
+            print(
+                f"Placed {child} at ({0}, {current_y - child.height}) with width {self.width} and height {child.height}"
             )

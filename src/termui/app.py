@@ -1,7 +1,9 @@
-from .screen import Screen
-from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 import inspect
+
+from termui.screen import Screen
+from termui.input import InputHandler, Keybind
+from termui.renderer import Renderer
 
 
 class App(ABC):
@@ -9,6 +11,7 @@ class App(ABC):
         self.screens: dict[str, Screen] = {}
         self.current_screen: Screen | None = None
         self.input_handler = InputHandler()
+        self.renderer = Renderer()
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -27,7 +30,7 @@ class App(ABC):
         """Register a new screen."""
         if not isinstance(screen, Screen):
             raise TypeError("Expected a Screen instance.")
-        screen.build()
+        screen.setup()
         self.screens[screen.name] = screen
 
     @abstractmethod
@@ -46,13 +49,15 @@ class App(ABC):
 
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
-        if screen_name in self.screens:
-            if self.current_screen is not None:
-                self.current_screen.unmount()
-            self.current_screen = self.screens[screen_name]
-            self.current_screen.mount(self.input_handler)
-        else:
+        if screen_name not in self.screens:
+            print(f"Available screens: {list(self.screens.keys())}")
             raise ValueError(f"Screen '{screen_name}' not found.")
+
+        if self.current_screen is not None:
+            self.current_screen.unmount()
+
+        self.current_screen = self.screens[screen_name]
+        self.current_screen.mount(self.input_handler)
 
     def run(self) -> None:
         """Run the application."""
@@ -63,11 +68,12 @@ class App(ABC):
             while True:
                 self.input_handler.process_input()
                 if self.current_screen:
-                    self.current_screen._render()
+                    self.current_screen._render(self.renderer)
                 else:
                     self.screens[next(iter(self.screens))].mount(
                         self.input_handler
                     )  # Default to the first screen
+                self.renderer.render()
                 self.update()
         except KeyboardInterrupt:
             pass
