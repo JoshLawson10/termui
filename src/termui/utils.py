@@ -20,3 +20,8 @@ def remove_ansi_escape_sequences(text: str) -> str:
 
     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
     return ansi_escape.sub("", text)
+
+
+def move_cursor_to(x: int, y: int) -> None:
+    """Move the cursor to a specific position in the terminal."""
+    print(f"\033[{y};{x}H", end="", flush=True)

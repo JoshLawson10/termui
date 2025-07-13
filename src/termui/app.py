@@ -54,10 +54,6 @@ class App(ABC):
         else:
             raise ValueError(f"Screen '{screen_name}' not found.")
 
-    def get_current_screen(self) -> Screen | None:
-        """Get the currently active screen."""
-        return self.current_screen
-
     def run(self) -> None:
         """Run the application."""
         self.build()
@@ -66,6 +62,12 @@ class App(ABC):
         try:
             while True:
                 self.input_handler.process_input()
+                if self.current_screen:
+                    self.current_screen._render()
+                else:
+                    self.screens[next(iter(self.screens))].mount(
+                        self.input_handler
+                    )  # Default to the first screen
                 self.update()
         except KeyboardInterrupt:
             pass
