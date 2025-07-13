@@ -27,10 +27,11 @@ class Renderer:
 
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
-        self.current_frame = [
-            [" "] * self.screen_width for _ in range(self.screen_height)
-        ]
+        for row in self.current_frame:
+            row[:] = [" "] * self.screen_width
+
         screen_changed: bool = False
+        self.widgets.sort(key=lambda obj: obj.index)
         for rendered_object in self.widgets:
             if not rendered_object.dirty:
                 continue
@@ -61,4 +62,4 @@ class Renderer:
 
         if screen_changed:
             sys.stdout.flush()
-        self.previous_frame = self.current_frame[:]
+        self.previous_frame = [row[:] for row in self.current_frame]
