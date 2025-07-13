@@ -1,0 +1,5 @@
+[project]
+name = "termui"
+version = "0.1"
+description = "A terminal UI library"
+authors = ["Josh Lawson <joshlawson100@outlook.com>"]

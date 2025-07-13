@@ -19,8 +19,6 @@ class Renderer:
     def render(self) -> None:
         """Render all widgets."""
         for rendered_object in self.widgets:
-            # Here you would implement the actual rendering logic,
-            # such as drawing the widget to the terminal.
             move_cursor_to(rendered_object.region.x, rendered_object.region.y)
             print(
                 f"Rendering {rendered_object.widget.name} at {rendered_object.region}"
