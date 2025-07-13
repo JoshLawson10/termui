@@ -15,6 +15,6 @@ class Widget(ABC):
         self.height = height
 
     @abstractmethod
-    def render(self) -> list[str]:
+    def render(self) -> list[list[str]]:
         """Render the widget."""
         pass

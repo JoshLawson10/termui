@@ -11,3 +11,4 @@ class RenderedObject:
     widget: Widget
     region: Region
     index: int
+    dirty: bool = True

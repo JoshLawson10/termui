@@ -90,7 +90,6 @@ class Screen(ABC):
 
     def _render(self, renderer: Renderer) -> None:
         """Render the screen."""
-        clear_terminal()
         layout: Layout = self.build()
         layout.update_dimensions(self.width, self.height)
         layout.arrange()
