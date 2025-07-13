@@ -1,4 +1,4 @@
-from termui.widgets.base import Widget
+from termui.widgets.widget import Widget
 
 
 class Text(Widget):
@@ -11,5 +11,5 @@ class Text(Widget):
             width=max(len(line) for line in self.content), height=len(self.content)
         )
 
-    def render(self) -> list[str]:
-        return self.content
+    def render(self) -> list[list[str]]:
+        return [list(line) for line in self.content]

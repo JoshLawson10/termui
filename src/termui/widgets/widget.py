@@ -1,4 +1,8 @@
 from abc import ABC, abstractmethod
+from typing import Literal
+
+"""Defines the way widget sizing is to behave"""
+type SizingPolicy = Literal["fixed", "grow", "shrink"]
 
 
 class Widget(ABC):
@@ -8,6 +12,7 @@ class Widget(ABC):
         self.name = name
         self.width: int = 0
         self.height: int = 0
+        self.sizing_policy: SizingPolicy = "fixed"
 
     def update_dimensions(self, width: int, height: int) -> None:
         """Update the dimensions of the widget."""

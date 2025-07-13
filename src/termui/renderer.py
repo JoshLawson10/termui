@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import sys
 
-from termui.widgets.base import Widget
+from termui.widgets.widget import Widget
 from termui.geometry import Region
 from termui.render_geometry import RenderedObject
 from termui.utils import move_cursor_to, get_terminal_size, clear_terminal
