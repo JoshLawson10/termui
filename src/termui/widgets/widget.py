@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from termui.types.char import Char
+
 
 class Widget(ABC):
     """Base class for all widgets in the TermUI framework."""
@@ -15,6 +17,6 @@ class Widget(ABC):
         self.height = height
 
     @abstractmethod
-    def render(self) -> list[list[str]]:
+    def render(self) -> list[list[Char]]:
         """Render the widget."""
         pass
