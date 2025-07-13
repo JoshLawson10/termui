@@ -30,6 +30,3 @@ class VerticalLayout(Layout):
                 if hasattr(child, "height")
                 else self.height // len(self.children)
             )
-            print(
-                f"Placed {child} at ({0}, {current_y - child.height}) with width {self.width} and height {child.height}"
-            )

@@ -34,9 +34,6 @@ class Layout(ABC):
         self, child: Object, x_pos: int, y_pos: int, width: int, height: int
     ) -> None:
         """Add a placement for a widget."""
-        print(
-            f"Added placement for {child} at ({x_pos}, {y_pos}) with width {width} and height {height}"
-        )
         region = Region(x_pos, y_pos, width, height)
         self.placements.append(Placement(child=child, region=region))
 

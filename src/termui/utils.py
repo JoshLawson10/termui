@@ -1,6 +1,10 @@
+import sys
+
+
 def clear_terminal() -> None:
     """Clear the terminal screen."""
-    print("\033[H\033[J", end="", flush=True)
+    sys.stdout.write("\033[H\033[J")
+    sys.stdout.flush()
 
 
 def get_terminal_size() -> tuple[int, int]:
@@ -24,4 +28,5 @@ def remove_ansi_escape_sequences(text: str) -> str:
 
 def move_cursor_to(x: int, y: int) -> None:
     """Move the cursor to a specific position in the terminal."""
-    print(f"\033[{y};{x}H", end="", flush=True)
+    sys.stdout.write(f"\033[{y};{x}H")
+    sys.stdout.flush()

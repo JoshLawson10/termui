@@ -11,5 +11,5 @@ class Text(Widget):
             width=max(len(line) for line in self.content), height=len(self.content)
         )
 
-    def render(self) -> str:
-        return "\n".join(self.content)
+    def render(self) -> list[str]:
+        return self.content
