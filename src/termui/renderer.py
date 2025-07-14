@@ -63,11 +63,9 @@ class Renderer:
                             region.x + col_index
                         ] = char
 
-        current_y: int = 0
         for y, (old_char, new_char) in enumerate(
             zip(self.previous_frame, self.current_frame)
         ):
-            current_y += 1
             for x, (old_char, new_char) in enumerate(zip(old_char, new_char)):
                 if old_char == new_char:
                     continue
@@ -76,9 +74,5 @@ class Renderer:
                     colorize(new_char.char, fg=new_char.fg_color, bg=new_char.bg_color)
                 )
 
-        for rendered_object in self.widgets:
-            move_cursor_to(0, current_y - 30)
-            sys.stdout.write(f"Widget: {rendered_object.widget}, ")
-            current_y += 1
         sys.stdout.flush()
         self.previous_frame = [row[:] for row in self.current_frame]
