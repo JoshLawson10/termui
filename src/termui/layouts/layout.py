@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 
 from termui.geometry import Region
-from termui.widgets.widget import Widget
+from termui.widgets._widget import Widget
 
 type Object = "Widget | Layout"
 

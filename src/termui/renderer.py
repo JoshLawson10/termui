@@ -1,8 +1,7 @@
-from dataclasses import dataclass
 import sys
 
 from termui.colors import colorize
-from termui.widgets.widget import Widget
+from termui.widgets._widget import Widget
 from termui.geometry import Region
 from termui.types.char import Char
 from termui.types.render_types import RenderedObject

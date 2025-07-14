@@ -4,7 +4,7 @@ import inspect
 
 from termui.layouts.layout import Layout
 from termui.renderer import Renderer
-from termui.widgets.widget import Widget
+from termui.widgets._widget import Widget
 from termui.input import InputHandler, Keybind
 
 from termui.utils import clear_terminal, get_terminal_size

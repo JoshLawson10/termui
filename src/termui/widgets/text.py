@@ -1,6 +1,6 @@
 from typing import Optional
 
-from termui.widgets.widget import Widget
+from termui.widgets._widget import Widget
 from termui.types.char import Char
 from termui.colors.ansi import AnsiColor
 from termui.colors.rgb import RGBColor

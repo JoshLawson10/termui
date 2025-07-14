@@ -1,5 +1,5 @@
 from termui.layouts.layout import Layout
-from termui.widgets.widget import Widget
+from termui.widgets._widget import Widget
 
 
 class VerticalLayout(Layout):
