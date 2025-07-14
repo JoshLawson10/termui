@@ -1,14 +1,20 @@
-from .layout.screen import Screen
-from .input import InputHandler, Keybind
 from abc import ABC, abstractmethod
 import inspect
+import asyncio
+from typing import Optional
+
+from termui.screen import Screen
+from termui.input import InputHandler, Keybind
+from termui.renderer import Renderer
 
 
 class App(ABC):
     def __init__(self) -> None:
         self.screens: dict[str, Screen] = {}
-        self.current_screen: Screen | None = None
+        self.current_screen: Optional[Screen] = None
         self.input_handler = InputHandler()
+        self.renderer = Renderer()
+        self._running = True
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -31,7 +37,7 @@ class App(ABC):
         self.screens[screen.name] = screen
 
     @abstractmethod
-    def setup(self) -> None:
+    def build(self) -> None:
         """Setup the application with initial screens.
 
         This method is intended to be overridden by the inheriting class."""
@@ -46,26 +52,58 @@ class App(ABC):
 
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
-        if screen_name in self.screens:
-            if self.current_screen is not None:
-                self.current_screen.unmount()
-            self.current_screen = self.screens[screen_name]
-            self.current_screen.mount(self.input_handler)
-        else:
+        if screen_name not in self.screens:
+            print(f"Available screens: {list(self.screens.keys())}")
             raise ValueError(f"Screen '{screen_name}' not found.")
 
-    def get_current_screen(self) -> Screen | None:
-        """Get the currently active screen."""
-        return self.current_screen
+        if self.current_screen is not None:
+            self.current_screen.unmount()
+
+        self.current_screen = self.screens[screen_name]
+        self.current_screen.mount(self.input_handler)
+
+    async def _input_loop(self):
+        """Run the input handler in an asynchronous loop."""
+        while True:
+            self.input_handler.process_input()
+            await asyncio.sleep(0.01)
+
+    async def _render_loop(self):
+        """Run the renderer in an asynchronous loop."""
+        while self._running:
+            if self.current_screen:
+                self.current_screen._render(self.renderer)
+            else:
+                self.screens[next(iter(self.screens))].mount(self.input_handler)
+
+            self.renderer.render()
+            self.update()
+            await asyncio.sleep(0.01)
+
+    async def run_async(self) -> None:
+        """Run the application asynchronously."""
+        self.build()
+        self._register_decorated_keybinds()
+        self._running = True
+
+        try:
+            await asyncio.gather(
+                self._input_loop(),
+                self._render_loop(),
+            )
+        except KeyboardInterrupt:
+            self._running = False
+        except asyncio.CancelledError:
+            pass
+        finally:
+            if self.current_screen:
+                self.current_screen.unmount()
+            self.input_handler.stop()
+            self._running = False
 
     def run(self) -> None:
         """Run the application."""
-        self.setup()
-        self._register_decorated_keybinds()
-
         try:
-            while True:
-                self.input_handler.process_input()
-                self.update()
+            asyncio.run(self.run_async())
         except KeyboardInterrupt:
-            pass
+            self._running = False

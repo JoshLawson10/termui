@@ -46,6 +46,8 @@ class InputHandler:
             " ": "space",
         }
 
+        self._set_raw_mode(True)
+
     def register_keybind(self, keybind: Keybind) -> None:
         """Register a new keybind with its associated action."""
         self._keybinds.append(keybind)
@@ -109,7 +111,16 @@ class InputHandler:
                 self._current_keys.clear()
                 break
 
+    def _set_raw_mode(self, enable: bool):
+        fd = sys.stdin.fileno()
+        if enable:
+            self._original_term_settings = termios.tcgetattr(fd)
+            tty.setraw(fd)
+        elif self._original_term_settings:
+            termios.tcsetattr(fd, termios.TCSADRAIN, self._original_term_settings)
+
     def stop(self) -> None:
         """Stop the input handler."""
+        self._set_raw_mode(False)
         self._should_exit = True
         os._exit(0)
