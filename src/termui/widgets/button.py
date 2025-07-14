@@ -4,30 +4,18 @@ from enum import Enum, auto
 
 from termui.widgets._widget import Widget
 from termui.types.char import Char
-from termui.colors.ansi import AnsiColor
+from termui.colors import AnsiColor, RGBColor
+from termui.draw_rectangle import BorderStyle, draw_rectangle
 
 
 type ButtonStyle = Literal["solid", "outline"]
 
 
-class BorderStyle(Enum):
-    """Enum for border styles."""
-
-    ASCII = ("+", "+", "+", "+", "-", "|")
-    NONE = (" ", " ", " ", " ", " ", " ")
-    ROUND = ("╭", "╮", "╰", "╯", "│", "─")
-    SOLID = ("┌", "┐", "└", "┘", "│", "─")
-    DOUBLE = ("╔", "╗", "╚", "╝", "║", "═")
-    DASHED = ("┏", "┓", "┗", "┛", "╏", "╍")
-    HEAVY = ("┏", "┓", "┗", "┛", "┃", "━")
-    THICK = ("█", "█", "█", "█", "█", "▀")
-
-
 @dataclass
 class ButtonVariant:
     name: str
-    fg_color: AnsiColor
-    bg_color: AnsiColor
+    fg_color: AnsiColor | RGBColor
+    bg_color: AnsiColor | RGBColor
     border_style: BorderStyle
     style: ButtonStyle = "solid"
 
@@ -127,46 +115,31 @@ class Button(Widget):
         self.width = len(self.label) + self.padding[1] + self.padding[3] + 2
         self.height = 3 + self.padding[0] + self.padding[2]
 
-        tl, tr, bl, br, v, h = self.variant.border_style.value
-
         if self.style == "solid":
             fg = self.variant.fg_color
             bg = self.variant.bg_color
             border_color = self.variant.bg_color
-            empty_char = Char(" ", fg, bg)
-            border_char = Char(" ", border_color, bg)
+            border_style = BorderStyle.FULL
         else:
             fg = self.variant.bg_color
             bg = None
             border_color = self.variant.bg_color
-            empty_char = Char(" ", fg, bg)
-            border_char = Char(h, border_color, bg)
+            border_style = self.variant.border_style
 
-        tl_char = Char(tl, border_color, bg)
-        tr_char = Char(tr, border_color, bg)
-        bl_char = Char(bl, border_color, bg)
-        br_char = Char(br, border_color, bg)
-        v_char = Char(v, border_color, bg)
-        h_char = border_char
-
-        content: list[list[Char]] = [
-            [tl_char] + [h_char] * (self.width - 2) + [tr_char]
-        ]
-
-        for _ in range(self.padding[0]):
-            content.append([empty_char] * self.width)
-
-        label_line: list[Char] = (
-            [empty_char] * self.padding[3]
-            + [Char(c, fg, bg) for c in self.label]
-            + [empty_char] * (self.width - len(self.label) - self.padding[3] - 2)
+        content: list[list[Char]] = draw_rectangle(
+            self.width,
+            self.height,
+            border_style=border_style,
+            border_color=border_color,
         )
-        content.append([v_char] + label_line + [v_char])
 
-        for _ in range(self.padding[2]):
-            content.append([empty_char] * self.width)
+        label_line: list[Char] = [Char(c, fg, bg) for c in self.label]
 
-        content.append([bl_char] + [h_char] * (self.width - 2) + [br_char])
+        label_start_x = self.padding[3] + 1
+        label_start_y = self.padding[0] + 1
+
+        for i, char in enumerate(label_line):
+            content[label_start_y][label_start_x + i] = char
 
         return content
 
