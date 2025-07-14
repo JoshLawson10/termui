@@ -42,3 +42,7 @@ class Container(Widget):
             title_alignment=self.title_alignment,
         )
         return content
+
+    def update_title(self, title: str) -> None:
+        """Update the title of the container."""
+        self.title = title

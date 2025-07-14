@@ -43,13 +43,6 @@ class App(ABC):
         This method is intended to be overridden by the inheriting class."""
         pass
 
-    @abstractmethod
-    def update(self) -> None:
-        """Update the application state.
-
-        This method is intended to be overridden by the inheriting class."""
-        pass
-
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
         if screen_name not in self.screens:
@@ -60,7 +53,7 @@ class App(ABC):
             self.current_screen.unmount()
 
         self.current_screen = self.screens[screen_name]
-        self.current_screen.mount(self.input_handler)
+        self.current_screen.mount(self.input_handler, self.renderer)
 
     async def _input_loop(self):
         """Run the input handler in an asynchronous loop."""
@@ -71,13 +64,12 @@ class App(ABC):
     async def _render_loop(self):
         """Run the renderer in an asynchronous loop."""
         while self._running:
-            if self.current_screen:
-                self.current_screen._render(self.renderer)
-            else:
-                self.screens[next(iter(self.screens))].mount(self.input_handler)
+            if not self.current_screen:
+                self.current_screen = self.screens[next(iter(self.screens))]
+                self.current_screen.mount(self.input_handler, self.renderer)
 
+            self.current_screen.update()
             self.renderer.render()
-            self.update()
             await asyncio.sleep(0.01)
 
     async def run_async(self) -> None:

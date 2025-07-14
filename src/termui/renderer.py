@@ -28,6 +28,9 @@ class Renderer:
 
     def pipe(self, widget: Widget, x: int, y: int, index: int = 1) -> None:
         """Add a rendered object to the renderer."""
+        for rendered_object in self.widgets:
+            if rendered_object.widget == widget:
+                return
         region = Region(x, y, widget.width, widget.height)
         rendered_object = RenderedObject(widget=widget, region=region, index=index)
         self.widgets.append(rendered_object)
@@ -37,7 +40,6 @@ class Renderer:
         for row in self.current_frame:
             row[:] = [Char(" ")] * self.screen_width
 
-        screen_changed: bool = False
         self.widgets.sort(key=lambda obj: obj.index)
         for rendered_object in self.widgets:
             if not rendered_object.dirty:
@@ -57,9 +59,11 @@ class Renderer:
                             region.x + col_index
                         ] = char
 
+        current_y: int = 0
         for y, (old_char, new_char) in enumerate(
             zip(self.previous_frame, self.current_frame)
         ):
+            current_y += 1
             for x, (old_char, new_char) in enumerate(zip(old_char, new_char)):
                 if old_char == new_char:
                     continue
@@ -67,8 +71,10 @@ class Renderer:
                 sys.stdout.write(
                     colorize(new_char.char, fg=new_char.fg_color, bg=new_char.bg_color)
                 )
-                screen_changed = True
 
-        if screen_changed:
-            sys.stdout.flush()
+        for rendered_object in self.widgets:
+            move_cursor_to(0, current_y - 30)
+            sys.stdout.write(f"Widget: {rendered_object.widget}, ")
+            current_y += 1
+        sys.stdout.flush()
         self.previous_frame = [row[:] for row in self.current_frame]
