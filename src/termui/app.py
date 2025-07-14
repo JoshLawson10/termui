@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 import inspect
+import asyncio
+from typing import Optional
 
 from termui.screen import Screen
 from termui.input import InputHandler, Keybind
@@ -9,9 +11,10 @@ from termui.renderer import Renderer
 class App(ABC):
     def __init__(self) -> None:
         self.screens: dict[str, Screen] = {}
-        self.current_screen: Screen | None = None
+        self.current_screen: Optional[Screen] = None
         self.input_handler = InputHandler()
         self.renderer = Renderer()
+        self._running = True
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -59,21 +62,48 @@ class App(ABC):
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount(self.input_handler)
 
-    def run(self) -> None:
-        """Run the application."""
+    async def _input_loop(self):
+        """Run the input handler in an asynchronous loop."""
+        while True:
+            self.input_handler.process_input()
+            await asyncio.sleep(0.01)
+
+    async def _render_loop(self):
+        """Run the renderer in an asynchronous loop."""
+        while self._running:
+            if self.current_screen:
+                self.current_screen._render(self.renderer)
+            else:
+                self.screens[next(iter(self.screens))].mount(self.input_handler)
+
+            self.renderer.render()
+            self.update()
+            await asyncio.sleep(0.01)
+
+    async def run_async(self) -> None:
+        """Run the application asynchronously."""
         self.build()
         self._register_decorated_keybinds()
+        self._running = True
 
         try:
-            while True:
-                self.input_handler.process_input()
-                if self.current_screen:
-                    self.current_screen._render(self.renderer)
-                else:
-                    self.screens[next(iter(self.screens))].mount(
-                        self.input_handler
-                    )  # Default to the first screen
-                self.renderer.render()
-                self.update()
+            await asyncio.gather(
+                self._input_loop(),
+                self._render_loop(),
+            )
         except KeyboardInterrupt:
+            self._running = False
+        except asyncio.CancelledError:
             pass
+        finally:
+            if self.current_screen:
+                self.current_screen.unmount()
+            self.input_handler.stop()
+            self._running = False
+
+    def run(self) -> None:
+        """Run the application."""
+        try:
+            asyncio.run(self.run_async())
+        except KeyboardInterrupt:
+            self._running = False
