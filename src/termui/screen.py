@@ -127,5 +127,6 @@ class Screen(ABC):
 
     def unmount(self) -> None:
         """Unmount the screen."""
+        self._renderer.clear()
         for keybind in self.local_keybinds:
             self._input_handler.unregister_keybind(keybind)

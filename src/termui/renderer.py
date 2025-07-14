@@ -35,6 +35,10 @@ class Renderer:
         rendered_object = RenderedObject(widget=widget, region=region, index=index)
         self.widgets.append(rendered_object)
 
+    def clear(self) -> None:
+        """Clear the current frame."""
+        self.widgets.clear()
+
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
         for row in self.current_frame:
