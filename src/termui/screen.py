@@ -7,7 +7,7 @@ from termui.renderer import Renderer
 from termui.widgets._widget import Widget
 from termui.input import InputHandler, Keybind
 
-from termui.utils import clear_terminal, get_terminal_size
+from termui.utils.terminal_utils import get_terminal_size
 
 
 class Screen(ABC):
@@ -99,9 +99,6 @@ class Screen(ABC):
             for placement in layout.placements:
                 child = placement.child
                 if isinstance(child, Widget):
-                    child.update_dimensions(
-                        placement.region.width, placement.region.height
-                    )
                     renderer.pipe(child, placement.region.x, placement.region.y)
                 elif isinstance(child, Layout):
                     child.update_dimensions(
@@ -113,13 +110,4 @@ class Screen(ABC):
                         f"Child {child} is not a Widget or Layout instance."
                     )
 
-        for placement in layout.placements:
-            child = placement.child
-            if isinstance(child, Widget):
-                child.update_dimensions(placement.region.width, placement.region.height)
-                renderer.pipe(child, placement.region.x, placement.region.y)
-            elif isinstance(child, Layout):
-                child.update_dimensions(placement.region.width, placement.region.height)
-                unpack_and_pipe_layout(child)
-            else:
-                raise TypeError(f"Child {child} is not a Widget or Layout instance.")
+        unpack_and_pipe_layout(layout)

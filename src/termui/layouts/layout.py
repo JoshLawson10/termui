@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
 
-from termui.geometry import Region
+from termui.utils.geometry import Region
 from termui.widgets._widget import Widget
 
 type Object = "Widget | Layout"

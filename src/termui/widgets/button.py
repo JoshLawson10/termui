@@ -1,11 +1,12 @@
-from typing import Callable, Literal
+from optparse import Option
+from typing import Callable, Literal, Optional
 from dataclasses import dataclass
-from enum import Enum, auto
 
 from termui.widgets._widget import Widget
 from termui.types.char import Char
 from termui.colors import AnsiColor, RGBColor
-from termui.draw_rectangle import BorderStyle, draw_rectangle
+from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
+from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 
 
 type ButtonStyle = Literal["solid", "outline"]
@@ -25,35 +26,35 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="default",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.BLUE,
-        border_style=BorderStyle.SOLID,
+        border_style="solid",
         style="solid",
     ),
     "primary": ButtonVariant(
         name="primary",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.GREEN,
-        border_style=BorderStyle.SOLID,
+        border_style="solid",
         style="solid",
     ),
     "success": ButtonVariant(
         name="success",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.GREEN,
-        border_style=BorderStyle.SOLID,
+        border_style="solid",
         style="solid",
     ),
     "warning": ButtonVariant(
         name="warning",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.YELLOW,
-        border_style=BorderStyle.SOLID,
+        border_style="solid",
         style="solid",
     ),
     "error": ButtonVariant(
         name="error",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.RED,
-        border_style=BorderStyle.SOLID,
+        border_style="solid",
         style="solid",
     ),
 }
@@ -82,9 +83,11 @@ class Button(Widget):
 
     def __init__(
         self,
-        label: str,
+        text: str,
+        width: Optional[int] = None,
+        height: Optional[int] = None,
         *,
-        name: str | None = None,
+        name: Optional[str] = None,
         variant: str = "default",
         style: ButtonStyle = "solid",
         on_click: Callable,
@@ -93,53 +96,63 @@ class Button(Widget):
     ) -> None:
         """Initialize a Button widget."""
         super().__init__(
-            name=name if name else f"Button {label}",
+            name=name if name else f"Button {text}",
         )
         if not callable(on_click):
             raise TypeError("on_click must be a callable function.")
-        self.name = name if name else f"Button {label}"
+
+        self.name = name if name else f"Button {text}"
         self.variant = BUTTON_VARIANTS.get(variant, BUTTON_VARIANTS["default"])
         self.style = style
         self.variant.style = style
-        self.label = label
-        self.width = len(label) + padding[1] + padding[3] + 2
-        self.height = 3 + padding[0] + padding[2]
+        self.text = text
         self.on_click = on_click
         self.disabled = disabled
         self.padding = padding
+
+        min_width = len(text) + padding[1] + padding[3] + 2
+        min_height = 3 + padding[0] + padding[2]
+
+        self.update_dimensions(
+            width=max(min_width, width) if width is not None else min_width,
+            height=max(min_height, height) if height is not None else min_height,
+        )
 
         self._state: Literal["default", "selected", "pressed"] = "default"
 
     def render(self) -> list[list[Char]]:
         """Render the button."""
-        self.width = len(self.label) + self.padding[1] + self.padding[3] + 2
-        self.height = 3 + self.padding[0] + self.padding[2]
 
         if self.style == "solid":
             fg = self.variant.fg_color
             bg = self.variant.bg_color
             border_color = self.variant.bg_color
-            border_style = BorderStyle.FULL
+            border_style = "full"
+            fill = Char("█", self.variant.bg_color, None)
         else:
             fg = self.variant.bg_color
             bg = None
             border_color = self.variant.bg_color
             border_style = self.variant.border_style
+            fill = Char(" ", fg, bg)
 
         content: list[list[Char]] = draw_rectangle(
             self.width,
             self.height,
             border_style=border_style,
             border_color=border_color,
+            fill=fill,
         )
 
-        label_line: list[Char] = [Char(c, fg, bg) for c in self.label]
+        text_line: list[Char] = [Char(c, fg, bg) for c in self.text]
 
-        label_start_x = self.padding[3] + 1
-        label_start_y = self.padding[0] + 1
+        text_start_x = get_aligned_start_x(
+            self.text, self.width - self.padding[1] - self.padding[3], "center"
+        )
+        text_start_y = get_aligned_start_y(self.height, "middle")
 
-        for i, char in enumerate(label_line):
-            content[label_start_y][label_start_x + i] = char
+        for i, char in enumerate(text_line):
+            content[text_start_y][text_start_x + i] = char
 
         return content
 
