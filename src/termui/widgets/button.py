@@ -7,7 +7,7 @@ from termui.types.char import Char
 from termui.colors.ansi import AnsiColor
 
 
-type ButtonStyle = Literal["solid", "outline", "text"]
+type ButtonStyle = Literal["solid", "outline"]
 
 
 class BorderStyle(Enum):
@@ -129,29 +129,29 @@ class Button(Widget):
 
         tl, tr, bl, br, v, h = self.variant.border_style.value
 
-        if self.variant.style == "solid":
-            tl = "█"
-            tr = "█"
-            bl = "█"
-            br = "█"
-            v = "█"
-            h = "█"
+        if self.style == "solid":
             fg = self.variant.fg_color
             bg = self.variant.bg_color
-            border_color = bg
-            empty_char = Char("█", bg, bg)
+            border_color = self.variant.bg_color
+            empty_char = Char(" ", fg, bg)
+            border_char = Char(" ", border_color, bg)
         else:
             fg = self.variant.bg_color
             bg = None
             border_color = self.variant.bg_color
             empty_char = Char(" ", fg, bg)
-        tl = Char(tl, border_color, None)
-        tr = Char(tr, border_color, None)
-        bl = Char(bl, border_color, None)
-        br = Char(br, border_color, None)
-        v = Char(v, border_color, None)
-        h = Char(h, border_color, None)
-        content: list[list[Char]] = [[tl] + [h] * (self.width - 2) + [tr]]
+            border_char = Char(h, border_color, bg)
+
+        tl_char = Char(tl, border_color, bg)
+        tr_char = Char(tr, border_color, bg)
+        bl_char = Char(bl, border_color, bg)
+        br_char = Char(br, border_color, bg)
+        v_char = Char(v, border_color, bg)
+        h_char = border_char
+
+        content: list[list[Char]] = [
+            [tl_char] + [h_char] * (self.width - 2) + [tr_char]
+        ]
 
         for _ in range(self.padding[0]):
             content.append([empty_char] * self.width)
@@ -161,12 +161,12 @@ class Button(Widget):
             + [Char(c, fg, bg) for c in self.label]
             + [empty_char] * (self.width - len(self.label) - self.padding[3] - 2)
         )
-        content.append([v] + label_line + [v])
+        content.append([v_char] + label_line + [v_char])
 
         for _ in range(self.padding[2]):
             content.append([empty_char] * self.width)
 
-        content.append([bl] + [h] * (self.width - 2) + [br])
+        content.append([bl_char] + [h_char] * (self.width - 2) + [br_char])
 
         return content
 
@@ -175,5 +175,3 @@ class Button(Widget):
         if self.disabled:
             return
         self.on_click()
-
-    """A widget that represents a button."""
