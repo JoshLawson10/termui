@@ -28,7 +28,6 @@ class ButtonVariant:
     name: str
     fg_color: AnsiColor
     bg_color: AnsiColor
-    border_color: AnsiColor
     border_style: BorderStyle
     style: ButtonStyle = "solid"
 
@@ -38,7 +37,6 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="default",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.BLUE,
-        border_color=AnsiColor.WHITE,
         border_style=BorderStyle.SOLID,
         style="solid",
     ),
@@ -46,7 +44,6 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="primary",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.GREEN,
-        border_color=AnsiColor.WHITE,
         border_style=BorderStyle.SOLID,
         style="solid",
     ),
@@ -54,7 +51,6 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="success",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.GREEN,
-        border_color=AnsiColor.WHITE,
         border_style=BorderStyle.SOLID,
         style="solid",
     ),
@@ -62,7 +58,6 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="warning",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.YELLOW,
-        border_color=AnsiColor.BLACK,
         border_style=BorderStyle.SOLID,
         style="solid",
     ),
@@ -70,7 +65,6 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
         name="error",
         fg_color=AnsiColor.BLACK,
         bg_color=AnsiColor.RED,
-        border_color=AnsiColor.WHITE,
         border_style=BorderStyle.SOLID,
         style="solid",
     ),
@@ -144,11 +138,13 @@ class Button(Widget):
             h = "█"
             fg = self.variant.fg_color
             bg = self.variant.bg_color
-            border_color = self.variant.bg_color
+            border_color = bg
+            empty_char = Char("█", bg, bg)
         else:
             fg = self.variant.bg_color
             bg = None
-            border_color = self.variant.border_color
+            border_color = self.variant.bg_color
+            empty_char = Char(" ", fg, bg)
         tl = Char(tl, border_color, None)
         tr = Char(tr, border_color, None)
         bl = Char(bl, border_color, None)
@@ -158,17 +154,17 @@ class Button(Widget):
         content: list[list[Char]] = [[tl] + [h] * (self.width - 2) + [tr]]
 
         for _ in range(self.padding[0]):
-            content.append([Char(" ")] * self.width)
+            content.append([empty_char] * self.width)
 
         label_line: list[Char] = (
-            [Char(" ", fg, bg)] * self.padding[3]
+            [empty_char] * self.padding[3]
             + [Char(c, fg, bg) for c in self.label]
-            + [Char(" ", fg, bg)] * (self.width - len(self.label) - self.padding[3] - 2)
+            + [empty_char] * (self.width - len(self.label) - self.padding[3] - 2)
         )
         content.append([v] + label_line + [v])
 
         for _ in range(self.padding[2]):
-            content.append([Char(" ")] * self.width)
+            content.append([empty_char] * self.width)
 
         content.append([bl] + [h] * (self.width - 2) + [br])
 
