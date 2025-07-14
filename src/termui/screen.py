@@ -92,7 +92,7 @@ class Screen(ABC):
         """
         pass
 
-    def _unpack_layout(self, layout: Layout) -> None:
+    def _unpack_and_pipe_layout(self, layout: Layout) -> None:
         """Unpack the screen's layout and pipe its widgets to the renderer."""
 
         for placement in layout.placements:
@@ -107,7 +107,7 @@ class Screen(ABC):
                     self.widgets.append(child)
             elif isinstance(child, Layout):
                 child.update_dimensions(placement.region.width, placement.region.height)
-                self._unpack_layout(child)
+                self._unpack_and_pipe_layout(child)
             else:
                 raise TypeError(f"Child {child} is not a Widget or Layout instance.")
 
@@ -123,7 +123,7 @@ class Screen(ABC):
         layout: Layout = self.build()
         layout.update_dimensions(self.width, self.height)
         layout.arrange()
-        self._unpack_layout(layout)
+        self._unpack_and_pipe_layout(layout)
 
     def unmount(self) -> None:
         """Unmount the screen."""
