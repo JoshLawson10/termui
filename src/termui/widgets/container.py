@@ -1,35 +1,26 @@
-from typing import Optional
-
-
 from ._widget import Widget
 from termui.colors import AnsiColor, RGBColor
 from termui.types.char import Char
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
-from termui.utils.align import HorizontalAlignment
+from termui.utils.align import HorizontalAlignment, VerticalAlignment
 
 
 class Container(Widget):
-    def __init__(
-        self,
-        width: int,
-        height: int,
-        title: Optional[str] = None,
-        *,
-        name: str = "Container",
-        border_style: BorderStyle = "solid",
-        border_color: AnsiColor | RGBColor = AnsiColor.WHITE,
-        title_color: AnsiColor | RGBColor = AnsiColor.WHITE,
-        title_alignment: HorizontalAlignment = "left",
-        padding: tuple[int, int, int, int] = (0, 0, 0, 0),
-    ) -> None:
-        super().__init__(name=name)
-        self.update_dimensions(width, height)
-        self.border_style: BorderStyle = border_style
-        self.border_color = border_color
-        self.padding = padding
-        self.title = title
-        self.title_color = title_color
-        self.title_alignment: HorizontalAlignment = title_alignment
+    def __init__(self, *children, **kwargs) -> None:
+        super().__init__(name=kwargs.get("name", "Container"))
+        min_width = max(len(child) for child in children) if children else 0
+        min_height = len(children) if children else 0
+        self.update_dimensions(
+            kwargs.get("width", min_width), kwargs.get("height", min_height)
+        )
+        self.border_style: BorderStyle = kwargs.get("border_style", "solid")
+        self.border_color = kwargs.get("border_color", AnsiColor.WHITE)
+        self.padding = kwargs.get("padding", (0, 0, 0, 0))
+        self.title = kwargs.get("title", None)
+        self.title_color = kwargs.get("title_color", AnsiColor.WHITE)
+        self.title_alignment: HorizontalAlignment = kwargs.get(
+            "title_alignment", "left"
+        )
 
     def render(self) -> list[list[Char]]:
         content = draw_rectangle(

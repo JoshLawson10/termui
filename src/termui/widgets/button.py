@@ -81,41 +81,29 @@ class Button(Widget):
         Padding around the button content, by default (0, 0, 0, 0).
     """
 
-    def __init__(
-        self,
-        text: str,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        *,
-        name: Optional[str] = None,
-        variant: str = "default",
-        style: ButtonStyle = "solid",
-        on_click: Callable,
-        disabled: bool = False,
-        padding: tuple[int, int, int, int] = (0, 0, 0, 0),
-    ) -> None:
+    def __init__(self, text: str, **kwargs) -> None:
         """Initialize a Button widget."""
-        super().__init__(
-            name=name if name else f"Button {text}",
+        super().__init__(name=kwargs.get("name", f"Button {text}"))
+        self.variant = BUTTON_VARIANTS.get(
+            kwargs.get("variant", "default"), BUTTON_VARIANTS["default"]
         )
-        if not callable(on_click):
+        self.style = kwargs.get("style", self.variant.style)
+        self.variant.style = self.style
+        self.text = text
+
+        self.on_click = kwargs.get("on_click", lambda: None)
+        if not callable(self.on_click):
             raise TypeError("on_click must be a callable function.")
 
-        self.name = name if name else f"Button {text}"
-        self.variant = BUTTON_VARIANTS.get(variant, BUTTON_VARIANTS["default"])
-        self.style = style
-        self.variant.style = style
-        self.text = text
-        self.on_click = on_click
-        self.disabled = disabled
-        self.padding = padding
+        self.disabled = kwargs.get("disabled", False)
+        self.padding = kwargs.get("padding", (0, 0, 0, 0))
 
-        min_width = len(text) + padding[1] + padding[3] + 2
-        min_height = 3 + padding[0] + padding[2]
+        min_width = len(text) + self.padding[1] + self.padding[3] + 2
+        min_height = 3 + self.padding[0] + self.padding[2]
 
         self.update_dimensions(
-            width=max(min_width, width) if width is not None else min_width,
-            height=max(min_height, height) if height is not None else min_height,
+            width=max(min_width, kwargs.get("width", min_width)),
+            height=max(min_height, kwargs.get("height", min_height)),
         )
 
         self._state: Literal["default", "selected", "pressed"] = "default"
