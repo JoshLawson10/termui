@@ -9,6 +9,7 @@ from termui.utils.terminal_utils import (
     move_cursor_to,
     get_terminal_size,
     clear_terminal,
+    hide_cursor,
 )
 
 
@@ -25,6 +26,7 @@ class Renderer:
             for _ in range(self.screen_height)
         ]
         clear_terminal()
+        hide_cursor()
 
     def pipe(self, widget: Widget, x: int, y: int, index: int = 1) -> None:
         """Add a rendered object to the renderer."""

@@ -30,3 +30,15 @@ def move_cursor_to(x: int, y: int) -> None:
     """Move the cursor to a specific position in the terminal."""
     sys.stdout.write(f"\033[{y};{x}H")
     sys.stdout.flush()
+
+
+def hide_cursor() -> None:
+    """Hide the terminal cursor."""
+    sys.stdout.write("\033[?25l")
+    sys.stdout.flush()
+
+
+def show_cursor() -> None:
+    """Show the terminal cursor."""
+    sys.stdout.write("\033[?25h")
+    sys.stdout.flush()
