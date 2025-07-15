@@ -99,3 +99,6 @@ class App(ABC):
             asyncio.run(self.run_async())
         except KeyboardInterrupt:
             self._running = False
+
+    def quit(self) -> None:
+        self.input_handler.stop()
