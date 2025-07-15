@@ -17,7 +17,7 @@ class Text(Widget):
         super().__init__(name=kwargs.get("name", "Text"))
         self.content: list[str] = content if isinstance(content, list) else [content]
         self.fg_color = kwargs.get("fg_color", AnsiColor.WHITE)
-        self.bg_color = kwargs.get("bg_color", AnsiColor.BLACK)
+        self.bg_color = kwargs.get("bg_color", None)
         self.update_dimensions(
             width=max(len(line) for line in self.content), height=len(self.content)
         )
