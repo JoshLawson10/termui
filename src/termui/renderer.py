@@ -5,11 +5,10 @@ from termui.widgets._widget import Widget
 from termui.utils.geometry import Region
 from termui.types.char import Char
 from termui.types.render_types import RenderedObject
+from termui.cursor import Cursor as cursor
 from termui.utils.terminal_utils import (
-    move_cursor_to,
     get_terminal_size,
     clear_terminal,
-    hide_cursor,
 )
 
 
@@ -26,7 +25,7 @@ class Renderer:
             for _ in range(self.screen_height)
         ]
         clear_terminal()
-        hide_cursor()
+        cursor.hide()
 
     def pipe(self, widget: Widget, x: int, y: int, index: int = 1) -> None:
         """Add a rendered object to the renderer."""
@@ -71,7 +70,7 @@ class Renderer:
             for x, (old_char, new_char) in enumerate(zip(old_char, new_char)):
                 if old_char == new_char:
                     continue
-                move_cursor_to(x + 1, y + 1)
+                cursor.move(x + 1, y + 1)
                 sys.stdout.write(
                     colorize(new_char.char, fg=new_char.fg_color, bg=new_char.bg_color)
                 )
