@@ -28,10 +28,13 @@ class Keybind:
         keys: list[str] = self.key.split("+")
         return keys, self.action
 
+    def keys(self) -> frozenset[str]:
+        """Get the keys associated with this keybind."""
+        return frozenset(self.key.split("+"))
+
     def matches(self, pressed_keys: set[str]) -> bool:
         """Check if the pressed keys match this keybind."""
-        required_keys, _ = self.parse_keybind()
-        return set(required_keys) == pressed_keys
+        return self.keys() == pressed_keys
 
 
 def keybind(
