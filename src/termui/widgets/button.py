@@ -133,10 +133,12 @@ class Button(Widget):
 
         text_line: list[Char] = [Char(c, fg, bg) for c in self.text]
 
-        text_start_x = get_aligned_start_x(
+        text_start_x = self.padding[3] + get_aligned_start_x(
             self.text, self.width - self.padding[1] - self.padding[3], "center"
         )
-        text_start_y = get_aligned_start_y(self.height, "middle")
+        text_start_y = self.padding[0] + get_aligned_start_y(
+            self.height - self.padding[0] - self.padding[2], "middle"
+        )
 
         for i, char in enumerate(text_line):
             content[text_start_y][text_start_x + i] = char

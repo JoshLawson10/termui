@@ -8,6 +8,7 @@ from termui.utils.align import HorizontalAlignment, VerticalAlignment
 class Container(Widget):
     def __init__(self, *children, **kwargs) -> None:
         super().__init__(name=kwargs.get("name", "Container"))
+        self.children = list(children)
         min_width = max(child.width for child in children) if children else 0
         min_height = len(children) if children else 0
         self.update_dimensions(

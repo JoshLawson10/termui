@@ -41,6 +41,4 @@ class Region:
 
     def move(self, dx: int, dy: int) -> "Region":
         """Move the region by dx and dy."""
-        self.x += dx
-        self.y += dy
-        return Region(self.x, self.y, self.width, self.height)
+        return Region(self.x + dx, self.y + dy, self.width, self.height)
