@@ -1,5 +1,4 @@
-from optparse import Option
-from typing import Callable, Literal, Optional
+from typing import Literal
 from dataclasses import dataclass
 
 from termui.widgets._widget import Widget
