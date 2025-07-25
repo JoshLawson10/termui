@@ -1,27 +1,33 @@
-from abc import ABC, abstractmethod
-from typing import Any
+from abc import abstractmethod
+from typing import Any, Optional
 import inspect
 
-from termui.layouts.layout import Layout
-from termui.renderer import Renderer
 from termui.widgets._widget import Widget
+from termui.widgets._base_container import BaseContainerWidget
+
+from termui.layouts import VerticalLayoutManager
+from termui.renderer import Renderer
 from termui.input import InputHandler, Keybind
+from termui.utils.terminal_utils import get_terminal_size
 
 from termui.utils.terminal_utils import get_terminal_size
 
 
-class Screen(ABC):
+class Screen(BaseContainerWidget):
     """A class representing a screen in the terminal UI."""
 
-    def __init__(self) -> None:
-        self.name: str = ""
-        self.width: int
-        self.height: int
-        self.width, self.height = get_terminal_size()
+    def __init__(self, name: Optional[str] = None, **kwargs) -> None:
+        width, height = get_terminal_size()
+        super().__init__(name=name, width=width, height=height, **kwargs)
+
+        self.screen_name = name or f"Screen_{self.id[:8]}"
         self._local_keybinds: list[Keybind] = []
-        self._input_handler: InputHandler = InputHandler()
-        self._renderer: Renderer = Renderer()
-        self.widgets: list[Widget] = []
+        self._input_handler: Optional[InputHandler] = None
+        self._renderer: Optional[Renderer] = None
+        self._is_mounted = False
+
+        self.set_layout_manager(VerticalLayoutManager())
+        self.setup()
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
@@ -48,85 +54,161 @@ class Screen(ABC):
                 self._local_keybinds.append(keybind_obj)
 
     def screen_metadata(self, **kwargs: Any) -> None:
-        """Initialize the screen.
+        """Configure screen metadata (for backward compatibility)."""
+        if "name" in kwargs:
+            self.screen_name = kwargs["name"]
+            self.name = kwargs["name"]
 
-        Parameters:
-            name (str): The name of the screen.
-            width (int): The width of the screen. Defaults to the terminal's current width.
-            height (int): The height of the screen. Defaults to the terminal's current height.
-            cols (int): The number of columns in the screen. Defaults to 4.
-            rows (int): The number of rows in the screen. Defaults to 12.
-        """
-        self.name = kwargs.get("name", "Default Screen")
         max_width, max_height = get_terminal_size()
-        self.width = kwargs.get("width", max_width)
-        self.height = kwargs.get("height", max_height)
+        new_width = kwargs.get("width", max_width)
+        new_height = kwargs.get("height", max_height)
 
-    def get_widget_by_name(self, name: str) -> Widget | None:
-        """Get a widget by its name."""
-        for widget in self.widgets:
-            if widget.name == name:
+        if new_width != self.width or new_height != self.height:
+            self.set_size(new_width, new_height)
+
+    def get_widget_by_name(self, name: str) -> Optional[Widget]:
+        """Get a widget by its name (searches recursively)."""
+
+        def search_widget(widget: Widget, target_name: str) -> Optional[Widget]:
+            if widget.name == target_name:
                 return widget
-        return None
+
+            if isinstance(widget, BaseContainerWidget):
+                for child in widget.children:
+                    result = search_widget(child, target_name)
+                    if result:
+                        return result
+
+            return None
+
+        return search_widget(self, name)
+
+    def get_widget_by_id(self, widget_id: str) -> Optional[Widget]:
+        """Get a widget by its ID (searches recursively)."""
+
+        def search_widget(widget: Widget, target_id: str) -> Optional[Widget]:
+            if widget.id == target_id:
+                return widget
+
+            if isinstance(widget, BaseContainerWidget):
+                for child in widget.children:
+                    result = search_widget(child, target_id)
+                    if result:
+                        return result
+
+            return None
+
+        return search_widget(self, widget_id)
+
+    def add_widget(self, widget: Widget) -> None:
+        """Add a widget to the screen."""
+        self.add_child(widget)
+
+    def remove_widget(self, widget: Widget) -> None:
+        """Remove a widget from the screen."""
+        self.remove_child(widget)
+
+    def clear_widgets(self) -> None:
+        """Remove all widgets from the screen."""
+        self.clear_children()
 
     @abstractmethod
     def setup(self) -> None:
+        """Set up the screen (called during initialization)."""
         pass
 
     @abstractmethod
-    def build(self) -> Layout:
-        """Setup the screen with initial Divs.
-
-        From within :meth:`Screen.build`, you can add Divs to the screen
-        by calling :meth:`Screen.add`, and remove them by calling :meth:`Screen.remove`.
-        All Divs currently on the screen will be stored in the :attr:`Screen.divs` list.
-        """
+    def build(self) -> None:
+        """Build the screen content. Should add widgets using add_widget()."""
         pass
 
     @abstractmethod
     def update(self) -> None:
-        """Update the screen dynamically.
-
-        This method can be used to update the screen content or state.
-        It is called periodically by the application loop.
-        """
+        """Update the screen dynamically (called each frame)."""
         pass
 
-    def _unpack_and_pipe_layout(self, layout: Layout) -> None:
-        """Unpack the screen's layout and pipe its widgets to the renderer."""
-
-        for placement in layout.placements:
-            child = placement.child
-            if isinstance(child, Widget):
-                if child not in self.widgets:
-                    self._renderer.pipe(
-                        child,
-                        placement.region.x,
-                        placement.region.y,
-                    )
-                    self.widgets.append(child)
-            elif isinstance(child, Layout):
-                child.update_dimensions(placement.region.width, placement.region.height)
-                self._unpack_and_pipe_layout(child)
-            else:
-                raise TypeError(f"Child {child} is not a Widget or Layout instance.")
+    def render(self) -> list[list[Any]]:
+        """Render the screen (container renders its background/border if any)."""
+        return [[]]
 
     def mount(self, input_handler: InputHandler, renderer: Renderer) -> None:
-        """Mount the screen."""
+        """Mount the screen with input handler and renderer."""
+        if self._is_mounted:
+            return
+
         self._setup_local_keybinds()
         self._input_handler = input_handler
         self._renderer = renderer
+
         for keybind in self.local_keybinds:
             self._input_handler.register_keybind(keybind)
 
         self.width, self.height = get_terminal_size()
-        layout: Layout = self.build()
-        layout.update_dimensions(self.width, self.height)
-        layout.arrange()
-        self._unpack_and_pipe_layout(layout)
+        self.build()
+        self.layout_children()
+        self._register_widgets_with_renderer(self)
+        self._is_mounted = True
 
     def unmount(self) -> None:
         """Unmount the screen."""
-        self._renderer.clear()
-        for keybind in self.local_keybinds:
-            self._input_handler.unregister_keybind(keybind)
+        if not self._is_mounted:
+            return
+
+        if self._input_handler:
+            for keybind in self.local_keybinds:
+                self._input_handler.unregister_keybind(keybind)
+
+        if self._renderer:
+            self._unregister_widgets_from_renderer(self)
+
+        self._is_mounted = False
+
+    def _register_widgets_with_renderer(
+        self, widget: Widget, parent_id: str = "root"
+    ) -> None:
+        """Recursively register widgets with the renderer."""
+        if not self._renderer:
+            return
+
+        self._renderer.register_renderable(widget, parent_id)
+
+        if isinstance(widget, BaseContainerWidget):
+            for child in widget.children:
+                self._register_widgets_with_renderer(child, widget.id)
+
+    def _unregister_widgets_from_renderer(self, widget: Widget) -> None:
+        """Recursively unregister widgets from the renderer."""
+        if not self._renderer:
+            return
+
+        if isinstance(widget, BaseContainerWidget):
+            for child in widget.children:
+                self._unregister_widgets_from_renderer(child)
+
+        self._renderer.unregister_renderable(widget.id)
+
+    def refresh(self) -> None:
+        """Refresh the screen layout and rendering."""
+        if self._is_mounted:
+            new_width, new_height = get_terminal_size()
+            if new_width != self.width or new_height != self.height:
+                self.set_size(new_width, new_height)
+                self.layout_children()
+
+            self.update()
+            self.mark_dirty()
+
+    def on_resize(self, width: int, height: int) -> None:
+        """Called when the screen is resized."""
+        self.set_size(width, height)
+        self.layout_children()
+
+    def focus_widget(self, widget: Widget) -> None:
+        """Focus a specific widget (placeholder for future focus management)."""
+        # TODO: Implement focus management
+        pass
+
+    def get_focused_widget(self) -> Optional[Widget]:
+        """Get the currently focused widget (placeholder)."""
+        # TODO: Implement focus management
+        return None

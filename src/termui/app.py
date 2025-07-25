@@ -14,7 +14,9 @@ class App(ABC):
         self.current_screen: Optional[Screen] = None
         self.input_handler = InputHandler()
         self.renderer = Renderer()
-        self._running = True
+        self._running = False
+        self._frame_rate = 60
+        self._frame_time = 1.0 / self._frame_rate
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -33,14 +35,12 @@ class App(ABC):
         """Register a new screen."""
         if not isinstance(screen, Screen):
             raise TypeError("Expected a Screen instance.")
-        screen.setup()
+
         self.screens[screen.name] = screen
 
     @abstractmethod
     def build(self) -> None:
-        """Setup the application with initial screens.
-
-        This method is intended to be overridden by the inheriting class."""
+        """Setup the application with initial screens."""
         pass
 
     def show_screen(self, screen_name: str) -> None:
@@ -55,50 +55,143 @@ class App(ABC):
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount(self.input_handler, self.renderer)
 
+    def get_current_screen(self) -> Optional[Screen]:
+        """Get the currently active screen."""
+        return self.current_screen
+
+    def get_screen(self, screen_name: str) -> Optional[Screen]:
+        """Get a screen by name."""
+        return self.screens.get(screen_name)
+
+    def set_frame_rate(self, fps: int) -> None:
+        """Set the target frame rate."""
+        self._frame_rate = max(1, fps)
+        self._frame_time = 1.0 / self._frame_rate
+
     async def _input_loop(self):
         """Run the input handler in an asynchronous loop."""
-        while True:
-            self.input_handler.process_input()
-            await asyncio.sleep(0.01)
+        while self._running:
+            try:
+                self.input_handler.process_input()
+                await asyncio.sleep(0.001)
+            except Exception as e:
+                print(f"Input error: {e}")
+                break
 
     async def _render_loop(self):
         """Run the renderer in an asynchronous loop."""
         while self._running:
-            if not self.current_screen:
-                self.current_screen = self.screens[next(iter(self.screens))]
-                self.current_screen.mount(self.input_handler, self.renderer)
+            try:
+                if not self.current_screen and self.screens:
+                    first_screen_name = next(iter(self.screens.keys()))
+                    self.show_screen(first_screen_name)
 
-            self.current_screen.update()
-            self.renderer.render()
-            await asyncio.sleep(0.01)
+                if self.current_screen:
+                    self.current_screen.refresh()
+
+                self.renderer.render_frame()
+                await asyncio.sleep(self._frame_time)
+            except Exception as e:
+                print(f"Render error: {e}")
+                break
+
+    async def _update_loop(self):
+        """Run application updates at a slower rate."""
+        while self._running:
+            try:
+                # Application-level updates can go here
+                await asyncio.sleep(0.1)
+            except Exception as e:
+                print(f"Update error: {e}")
+                break
 
     async def run_async(self) -> None:
         """Run the application asynchronously."""
-        self.build()
-        self._register_decorated_keybinds()
-        self._running = True
-
         try:
+            self.build()
+            self._register_decorated_keybinds()
+            self._running = True
+
             await asyncio.gather(
                 self._input_loop(),
                 self._render_loop(),
+                self._update_loop(),
+                return_exceptions=True,
             )
+
         except KeyboardInterrupt:
-            self._running = False
-        except asyncio.CancelledError:
             pass
+        except Exception as e:
+            print(f"Application error: {e}")
         finally:
-            if self.current_screen:
-                self.current_screen.unmount()
-            self.input_handler.stop()
-            self._running = False
+            await self.cleanup()
+
+    async def cleanup(self) -> None:
+        """Clean up application resources."""
+        self._running = False
+
+        if self.current_screen:
+            self.current_screen.unmount()
+
+        self.input_handler.stop()
+        self.renderer.clear()
 
     def run(self) -> None:
-        """Run the application."""
+        """Run the application synchronously."""
         try:
             asyncio.run(self.run_async())
         except KeyboardInterrupt:
+            pass
+        finally:
             self._running = False
 
     def quit(self) -> None:
-        self.input_handler.stop()
+        """Quit the application gracefully."""
+        self._running = False
+        # Note: The actual cleanup will happen in the finally blocks of the loops
+
+    def reload_screen(self, screen_name: Optional[str] = None) -> None:
+        """Reload a screen (useful for development)."""
+        target_screen = screen_name or (
+            self.current_screen.screen_name if self.current_screen else None
+        )
+
+        if target_screen and target_screen in self.screens:
+            was_current = (
+                self.current_screen and self.current_screen.screen_name == target_screen
+            )
+
+            if was_current:
+                if self.current_screen is not None:
+                    self.current_screen.unmount()
+
+            screen = self.screens[target_screen]
+            screen.clear_children()
+            screen.build()
+            screen.layout_children()
+
+            if was_current:
+                screen.mount(self.input_handler, self.renderer)
+
+    def get_all_screens(self) -> dict[str, Screen]:
+        """Get all registered screens."""
+        return self.screens.copy()
+
+    def remove_screen(self, screen_name: str) -> None:
+        """Remove a screen from the application."""
+        if screen_name in self.screens:
+            screen = self.screens[screen_name]
+
+            if self.current_screen == screen:
+                screen.unmount()
+                self.current_screen = None
+
+            del self.screens[screen_name]
+
+    def __enter__(self):
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit."""
+        self.quit()

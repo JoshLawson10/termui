@@ -1,3 +1,3 @@
-from .layout import Layout
-from .vertical import VerticalLayout
-from .horizontal import HorizontalLayout
+from ._layout import LayoutManager
+from .vertical import VerticalLayoutManager
+from .horizontal import HorizontalLayoutManager

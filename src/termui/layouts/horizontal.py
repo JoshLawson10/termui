@@ -1,32 +1,8 @@
-from termui.layouts.layout import Layout
-from termui.widgets._widget import Widget
+from ._layout import BoxLayoutManager
 
 
-class HorizontalLayout(Layout):
-    """A layout that arranges widgets horizontally."""
+class HorizontalLayoutManager(BoxLayoutManager):
+    """Layout manager for horizontal arrangement."""
 
-    def __init__(self, *children: Widget | Layout) -> None:
-        super().__init__(*children)
-
-    def arrange(self) -> None:
-        if not self.children:
-            return
-
-        current_x: int = 0
-        for child in self.children:
-            self.add_placement(
-                child=child,
-                x_pos=current_x,
-                y_pos=0,
-                width=(
-                    child.width
-                    if hasattr(child, "width")
-                    else self.width // len(self.children)
-                ),
-                height=self.height,
-            )
-            current_x += (
-                child.width
-                if hasattr(child, "width")
-                else self.width // len(self.children)
-            )
+    def __init__(self, gap: int = 0, padding: tuple[int, int, int, int] = (0, 0, 0, 0)):
+        super().__init__("horizontal", gap, padding)
