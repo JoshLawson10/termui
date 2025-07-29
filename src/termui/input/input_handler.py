@@ -1,4 +1,3 @@
-import os
 import sys
 import tty
 import termios
@@ -123,4 +122,3 @@ class InputHandler:
         """Stop the input handler."""
         self._set_raw_mode(False)
         self._should_exit = True
-        os._exit(0)

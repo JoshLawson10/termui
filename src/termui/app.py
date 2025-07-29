@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import inspect
 import asyncio
 from typing import Optional
+import os
 
 from termui.screen import Screen
 from termui.input import InputHandler, Keybind
@@ -63,9 +64,9 @@ class App(ABC):
 
     async def _input_loop(self):
         """Run the input handler in an asynchronous loop."""
-        while True:
+        while self._running:
             self.input_handler.process_input()
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
 
     async def _render_loop(self):
         """Run the renderer in an asynchronous loop."""
@@ -76,7 +77,7 @@ class App(ABC):
 
             self.current_screen.update()
             self.renderer.render()
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
 
     async def run_async(self) -> None:
         """Run the application asynchronously."""
@@ -108,3 +109,4 @@ class App(ABC):
 
     def quit(self) -> None:
         self.input_handler.stop()
+        os._exit(0)
