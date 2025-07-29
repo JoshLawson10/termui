@@ -81,15 +81,15 @@ class Button(Widget):
         Padding around the button content, by default (0, 0, 0, 0).
     """
 
-    def __init__(self, text: str, **kwargs) -> None:
+    def __init__(self, label: str, **kwargs) -> None:
         """Initialize a Button widget."""
-        super().__init__(name=kwargs.get("name", f"Button {text}"))
+        super().__init__(name=kwargs.get("name", f"Button {label}"))
         self.variant = BUTTON_VARIANTS.get(
             kwargs.get("variant", "default"), BUTTON_VARIANTS["default"]
         )
         self.style = kwargs.get("style", self.variant.style)
         self.variant.style = self.style
-        self.text = text
+        self.label = label
 
         self.on_click = kwargs.get("on_click", lambda: None)
         if not callable(self.on_click):
@@ -98,7 +98,7 @@ class Button(Widget):
         self.disabled = kwargs.get("disabled", False)
         self.padding = kwargs.get("padding", (0, 0, 0, 0))
 
-        min_width = len(text) + self.padding[1] + self.padding[3] + 2
+        min_width = len(label) + self.padding[1] + self.padding[3] + 2
         min_height = 3 + self.padding[0] + self.padding[2]
 
         self.update_dimensions(
@@ -132,10 +132,10 @@ class Button(Widget):
             fill=fill,
         )
 
-        text_line: list[Char] = [Char(c, fg, bg) for c in self.text]
+        text_line: list[Char] = [Char(c, fg, bg) for c in self.label]
 
         text_start_x = get_aligned_start_x(
-            self.text, self.width - self.padding[1] - self.padding[3], "center"
+            self.label, self.width - self.padding[1] - self.padding[3], "center"
         )
         text_start_y = get_aligned_start_y(self.height, "middle")
 
