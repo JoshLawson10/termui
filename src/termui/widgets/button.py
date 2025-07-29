@@ -61,28 +61,26 @@ BUTTON_VARIANTS: dict[str, ButtonVariant] = {
 
 
 class Button(Widget):
-    """A simple button widget that can be clicked.
-
-    Parameters
-    ----------
-    label : str
-        The text displayed on the button.
-    variant : ButtonVariant, optional
-        The visual style of the button, by default "default".
-    style : ButtonStyle, optional
-        The button style, by default "solid".
-    name : str, optional
-        The name of the button, by default None.
-    on_click : Callable[[str], None]
-        The callback function to be called when the button is clicked.
-    disabled : bool, optional
-        Whether the button is disabled, by default False.
-    padding : tuple[int, int, int, int], optional
-        Padding around the button content, by default (0, 0, 0, 0).
-    """
-
     def __init__(self, label: str, **kwargs) -> None:
-        """Initialize a Button widget."""
+        """A simple button widget that can be clicked.
+
+        Parameters
+        ----------
+        label : str
+            The text displayed on the button.
+        variant : ButtonVariant, optional
+            The visual style of the button, by default "default".
+        style : ButtonStyle, optional
+            The button style, by default "solid".
+        name : str, optional
+            The name of the button, by default None.
+        on_click : Callable[[str], None]
+            The callback function to be called when the button is clicked.
+        disabled : bool, optional
+            Whether the button is disabled, by default False.
+        padding : tuple[int, int, int, int], optional
+            Padding around the button content, by default (0, 0, 0, 0).
+        """
         super().__init__(name=kwargs.get("name", f"Button {label}"))
         self.variant = BUTTON_VARIANTS.get(
             kwargs.get("variant", "default"), BUTTON_VARIANTS["default"]
