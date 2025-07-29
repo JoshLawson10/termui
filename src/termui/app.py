@@ -15,6 +15,9 @@ class App(ABC):
         self.input_handler = InputHandler()
         self.renderer = Renderer()
         self._running = True
+        self._default_keybinds: list[Keybind] = [
+            Keybind(key="q", action=self.quit, description="Quit the application"),
+        ]
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -28,6 +31,9 @@ class App(ABC):
                     visible=info["visible"],
                 )
                 self.input_handler.register_keybind(keybind_obj)
+
+        for keybind in self._default_keybinds:
+            self.input_handler.register_keybind(keybind)
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen."""
