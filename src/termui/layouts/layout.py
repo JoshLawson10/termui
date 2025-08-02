@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
-
 from termui.utils.geometry import Region
 from termui.widgets._widget import Widget
 

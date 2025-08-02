@@ -1,8 +1,9 @@
-import sys
-import tty
-import termios
 import select
-from typing import Dict, List, Set, Optional
+import sys
+import termios
+import tty
+from typing import Dict, List, Optional, Set
+
 from .keybind import Keybind
 
 

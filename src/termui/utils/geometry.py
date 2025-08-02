@@ -28,7 +28,7 @@ class Region:
             print(f"Warning: Region coordinates ({self.x}, {self.y}) are negative.")
             raise ValueError("Region must have non-negative coordinates.")
 
-        if self.width <= 0 or self.height <= 0:
+        if self.width < 0 or self.height < 0:
             print(
                 f"Warning: Region dimensions ({self.width}, {self.height}) are non-positive."
             )

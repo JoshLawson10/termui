@@ -1,6 +1,6 @@
 from .ansi import AnsiColor
-from .rgb import RGBColor
 from .colorize import colorize
+from .rgb import RGBColor
 
 __all__: list[str] = [
     "colorize",

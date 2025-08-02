@@ -1,4 +1,5 @@
 from typing import Optional
+
 from termui.colors.ansi import AnsiColor
 from termui.colors.rgb import RGBColor
 

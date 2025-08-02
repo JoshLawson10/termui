@@ -1,10 +1,10 @@
 from enum import Enum
-from typing import Optional, Literal
+from typing import Literal, Optional
 
-from termui.colors.rgb import RGBColor
 from termui.colors.ansi import AnsiColor
+from termui.colors.rgb import RGBColor
 from termui.types.char import Char
-from termui.utils.align import HorizontalAlignment, get_aligned_start_x
+from termui.utils.align import get_aligned_start_x, HorizontalAlignment
 
 
 class BorderStyleChars(Enum):

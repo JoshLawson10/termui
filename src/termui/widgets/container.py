@@ -1,8 +1,8 @@
-from ._widget import Widget
 from termui.colors import AnsiColor, RGBColor
 from termui.types.char import Char
-from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from termui.utils.align import HorizontalAlignment, VerticalAlignment
+from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
+from ._widget import Widget
 
 
 class Container(Widget):

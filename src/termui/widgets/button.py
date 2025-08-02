@@ -1,12 +1,13 @@
+from dataclasses import dataclass
 from optparse import Option
 from typing import Callable, Literal, Optional
-from dataclasses import dataclass
+
+from termui.colors import AnsiColor, RGBColor
+from termui.types.char import Char
+from termui.utils.align import get_aligned_start_x, get_aligned_start_y
+from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 
 from termui.widgets._widget import Widget
-from termui.types.char import Char
-from termui.colors import AnsiColor, RGBColor
-from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
-from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 
 
 type ButtonStyle = Literal["solid", "outline"]

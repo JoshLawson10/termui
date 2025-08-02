@@ -1,9 +1,10 @@
 from typing import Optional
 
-from termui.widgets._widget import Widget
-from termui.types.char import Char
 from termui.colors.ansi import AnsiColor
 from termui.colors.rgb import RGBColor
+from termui.types.char import Char
+
+from termui.widgets._widget import Widget
 
 
 class Text(Widget):

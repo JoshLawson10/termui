@@ -1,12 +1,13 @@
-from abc import ABC, abstractmethod
-import inspect
 import asyncio
-from typing import Optional
+import inspect
 import os
+from abc import ABC, abstractmethod
+from typing import Optional
 
-from termui.screen import Screen
 from termui.input import InputHandler, Keybind
 from termui.renderer import Renderer
+
+from termui.screen import Screen
 
 
 class App(ABC):

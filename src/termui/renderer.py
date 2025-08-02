@@ -1,15 +1,12 @@
 import sys
 
 from termui.colors import colorize
-from termui.widgets._widget import Widget
-from termui.utils.geometry import Region
+from termui.cursor import Cursor as cursor
 from termui.types.char import Char
 from termui.types.render_types import RenderedObject
-from termui.cursor import Cursor as cursor
-from termui.utils.terminal_utils import (
-    get_terminal_size,
-    clear_terminal,
-)
+from termui.utils.geometry import Region
+from termui.utils.terminal_utils import clear_terminal, get_terminal_size
+from termui.widgets._widget import Widget
 
 
 class Renderer:

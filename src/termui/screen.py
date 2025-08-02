@@ -1,13 +1,14 @@
+import inspect
 from abc import ABC, abstractmethod
 from typing import Any
-import inspect
+
+from termui.input import InputHandler, Keybind
 
 from termui.layouts.layout import Layout
 from termui.renderer import Renderer
-from termui.widgets._widget import Widget
-from termui.input import InputHandler, Keybind
 
 from termui.utils.terminal_utils import get_terminal_size
+from termui.widgets._widget import Widget
 
 
 class Screen(ABC):
