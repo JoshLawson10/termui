@@ -4,9 +4,9 @@ import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from termui.errors import AsyncError, Logger, ScreenError
 from termui.input import InputHandler, Keybind
 from termui.renderer import Renderer
-
 from termui.screen import Screen
 
 
@@ -15,11 +15,17 @@ class App(ABC):
         self.screens: dict[str, Screen] = {}
         self.current_screen: Optional[Screen] = None
         self.input_handler = InputHandler()
-        self.renderer = Renderer()
+        self.renderer = Renderer(self)
         self._running = True
         self._default_keybinds: list[Keybind] = [
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
+        self._logger = Logger("/Users/joshlawson/3.Dev/termui/logs/log.txt")
+
+    @property
+    def log(self) -> Logger:
+        """Logger instance for the application."""
+        return self._logger
 
     def _register_decorated_keybinds(self):
         """Finds and registers all methods decorated with @keybind."""
@@ -40,7 +46,7 @@ class App(ABC):
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen."""
         if not isinstance(screen, Screen):
-            raise TypeError("Expected a Screen instance.")
+            raise ScreenError("Expected a Screen instance.")
         screen.setup()
         self.screens[screen.name] = screen
 
@@ -54,14 +60,15 @@ class App(ABC):
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name."""
         if screen_name not in self.screens:
-            print(f"Available screens: {list(self.screens.keys())}")
-            raise ValueError(f"Screen '{screen_name}' not found.")
+            raise ScreenError(
+                f"Screen '{screen_name}' not found. \n Available screens: {list(self.screens.keys())}"
+            )
 
         if self.current_screen is not None:
-            self.current_screen.unmount(self.input_handler, self.renderer)
+            self.current_screen.unmount()
 
         self.current_screen = self.screens[screen_name]
-        self.current_screen.mount(self.input_handler, self.renderer)
+        self.current_screen.mount(self)
 
     async def _input_loop(self):
         """Run the input handler in an asynchronous loop."""
@@ -69,14 +76,20 @@ class App(ABC):
             self.input_handler.process_input()
             await asyncio.sleep(0.001)
 
+    async def _update_loop(self):
+        """Run the update loop for the current screen."""
+        while self._running:
+            if self.current_screen:
+                self.current_screen.update()
+            await asyncio.sleep(0.001)
+
     async def _render_loop(self):
         """Run the renderer in an asynchronous loop."""
         while self._running:
             if not self.current_screen:
                 self.current_screen = self.screens[next(iter(self.screens))]
-                self.current_screen.mount(self.input_handler, self.renderer)
+                self.current_screen.mount(self)
 
-            self.current_screen.update()
             self.renderer.render()
             await asyncio.sleep(0.001)
 
@@ -89,17 +102,24 @@ class App(ABC):
         try:
             await asyncio.gather(
                 self._input_loop(),
+                self._update_loop(),
                 self._render_loop(),
             )
         except KeyboardInterrupt:
             self._running = False
+            self.quit()
         except asyncio.CancelledError:
-            pass
+            raise AsyncError("Application loop was cancelled.")
+        except Exception as e:
+            self.log.error(e)
+            self._running = False
+            self.quit()
         finally:
             if self.current_screen:
-                self.current_screen.unmount(self.input_handler, self.renderer)
+                self.current_screen.unmount()
             self.input_handler.stop()
             self._running = False
+            self.quit()
 
     def run(self) -> None:
         """Run the application."""
@@ -107,6 +127,11 @@ class App(ABC):
             asyncio.run(self.run_async())
         except KeyboardInterrupt:
             self._running = False
+            self.quit()
+        except Exception as e:
+            self.log.error(e)
+            self._running = False
+            self.quit()
 
     def quit(self) -> None:
         self.input_handler.stop()

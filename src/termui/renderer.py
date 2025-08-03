@@ -1,73 +1,40 @@
 import sys
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-from termui.colors import colorize
 from termui.cursor import Cursor as cursor
-from termui.dom import DOMNode
+from termui.dom import DOMNode, DOMTree
 from termui.screen import Screen
 from termui.types.char import Char
-from termui.utils.geometry import Region
 from termui.utils.terminal_utils import clear_terminal, get_terminal_size
-from termui.widgets._widget import Widget
+
+if TYPE_CHECKING:
+    from termui.app import App
 
 
 class Renderer:
-    def __init__(self) -> None:
+    def __init__(self, app: "App") -> None:
+        self.app = app
         self.width, self.height = get_terminal_size()
-        self.root = None
+        self.dom_tree = DOMTree()
         self.previous_frame: list[list[Char]] = [
             [Char(" ") for _ in range(self.width)] for _ in range(self.height)
         ]
         self.current_frame: list[list[Char]] = [
             [Char(" ") for _ in range(self.width)] for _ in range(self.height)
         ]
-        clear_terminal()
-        cursor.hide()
-
-    def construct_dom_tree(self, parent: DOMNode, child: DOMNode) -> None:
-        """Construct a DOM tree by adding a child DOMNode to a parent DOMNode."""
-        if not isinstance(parent, DOMNode):
-            raise TypeError("Parent must be a DOMNode.")
-        if not isinstance(child, DOMNode):
-            raise TypeError("Child must be a DOMNode.")
-        parent.add_child(child)
-        if child.children:
-            for grandchild in child.children:
-                self.construct_dom_tree(child, grandchild)
+        # clear_terminal()
+        # cursor.hide()
 
     def pipe(self, screen: Screen) -> None:
         """Pipe a screen to the renderer."""
-        if not isinstance(screen, Screen):
-            raise TypeError("Piped object must be a Screen instance.")
-
-        screen_content = screen.build()
-        if not isinstance(screen_content, Widget):
-            raise TypeError("Screen build method must return a Widget instance.")
-
-        self.root = screen_content
-        for child in screen_content.children:
-            if not isinstance(child, Widget):
-                raise TypeError("All children must be Widget instances.")
-            self.construct_dom_tree(self.root, child)
-
-    def print_dom_tree(self, node: Optional[DOMNode] = None, indent: int = 4) -> None:
-        """Print the DOM tree starting from the given node."""
-        if node is None:
-            node = self.root
-        if node is None:
-            print("No DOM tree to display.")
-            return
-
-        print(
-            " " * indent
-            + f"Node ID: {node.id}, Name: {node.widget.name if node.widget else 'None'}"
-        )
-        for child in node.children:
-            self.print_dom_tree(child, indent + 2)
+        self.app.log.system(f"Piping screen: {screen.name} to renderer")
+        screen_root = screen.build()
+        self.dom_tree.set_root(screen_root)
 
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
-        self.print_dom_tree(self.root)  # Debugging: print the DOM tree structure
+        self.app.log.system("Rendering DOM tree...")
+        self.app.log.system(self.dom_tree.get_tree_string(self.dom_tree.root))
         """ for row in self.current_frame:
             row[:] = [Char(" ")] * self.width
 

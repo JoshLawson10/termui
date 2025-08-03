@@ -1,14 +1,14 @@
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, TYPE_CHECKING
+from typing import Any, Optional, TYPE_CHECKING
 
+from termui.errors import ScreenError
 from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
 
 if TYPE_CHECKING:
-    from termui.input import InputHandler
+    from termui.app import App
     from termui.layouts.layout import Layout
-    from termui.renderer import Renderer
     from termui.widgets._widget import Widget
 
 
@@ -20,6 +20,7 @@ class Screen(ABC):
         self.width: int
         self.height: int
         self.width, self.height = get_terminal_size()
+        self._app: Optional["App"] = None
         self._local_keybinds: list[Keybind] = []
         self.widgets: list[Widget] = []
 
@@ -28,6 +29,13 @@ class Screen(ABC):
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @property
+    def app(self) -> "App":
+        """Get the application instance."""
+        if self._app is None:
+            raise ScreenError("Screen is not mounted to an App instance.")
+        return self._app
 
     @property
     def local_keybinds(self) -> list[Keybind]:
@@ -92,18 +100,19 @@ class Screen(ABC):
         """
         pass
 
-    def mount(self, input_handler: "InputHandler", renderer: "Renderer") -> None:
+    def mount(self, app: "App") -> None:
         """Mount the screen."""
+        self._app = app
         self._setup_local_keybinds()
-        self._input_handler = input_handler
         for keybind in self.local_keybinds:
-            self._input_handler.register_keybind(keybind)
+            app.input_handler.register_keybind(keybind)
 
         self.width, self.height = get_terminal_size()
-        renderer.pipe(self)
+        app.renderer.pipe(self)
+        self.app.log.system(f"Mounted screen: {self.name}")
 
-    def unmount(self, input_handler: "InputHandler", renderer: "Renderer") -> None:
+    def unmount(self) -> None:
         """Unmount the screen."""
-        renderer.clear()
+        self.app.renderer.clear()
         for keybind in self.local_keybinds:
-            input_handler.unregister_keybind(keybind)
+            self.app.input_handler.unregister_keybind(keybind)

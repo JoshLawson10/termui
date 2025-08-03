@@ -6,7 +6,7 @@ class VerticalLayout(Layout):
     """A layout that arranges widgets vertically."""
 
     def __init__(self, *children: Widget | Layout) -> None:
-        super().__init__(*children)
+        super().__init__("VerticalLayout", *children)
 
     def arrange(self) -> None:
         return

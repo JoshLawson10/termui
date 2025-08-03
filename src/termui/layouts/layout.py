@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from dataclasses import dataclass
+from typing import Optional
 
 from termui.utils.geometry import Region
 from termui.widgets._widget import Widget
@@ -16,8 +17,8 @@ class Placement:
 class Layout(Widget):
     """An abstract base class for layouts."""
 
-    def __init__(self, *children: Widget) -> None:
-        super().__init__()
+    def __init__(self, name: Optional[str] = None, *children: Widget) -> None:
+        super().__init__(name=name or "Layout")
         self.children: list[Widget] = list(children)
         self.placements: list[Placement] = []
         self.width: int = 0
