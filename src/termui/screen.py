@@ -93,25 +93,6 @@ class Screen(ABC):
         """
         pass
 
-    def _unpack_and_pipe_layout(self, layout: Layout) -> None:
-        """Unpack the screen's layout and pipe its widgets to the renderer."""
-
-        for placement in layout.placements:
-            child = placement.child
-            if isinstance(child, Widget):
-                if child not in self.widgets:
-                    self._renderer.pipe(
-                        child,
-                        placement.region.x,
-                        placement.region.y,
-                    )
-                    self.widgets.append(child)
-            elif isinstance(child, Layout):
-                child.update_dimensions(placement.region.width, placement.region.height)
-                self._unpack_and_pipe_layout(child)
-            else:
-                raise TypeError(f"Child {child} is not a Widget or Layout instance.")
-
     def mount(self, input_handler: InputHandler, renderer: Renderer) -> None:
         """Mount the screen."""
         self._setup_local_keybinds()
@@ -121,10 +102,7 @@ class Screen(ABC):
             self._input_handler.register_keybind(keybind)
 
         self.width, self.height = get_terminal_size()
-        layout: Layout = self.build()
-        layout.update_dimensions(self.width, self.height)
-        layout.arrange()
-        self._unpack_and_pipe_layout(layout)
+        self._renderer.pipe(self)
 
     def unmount(self) -> None:
         """Unmount the screen."""

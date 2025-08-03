@@ -1,25 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from dataclasses import dataclass
 
 from termui.utils.geometry import Region
 from termui.widgets._widget import Widget
-
-type Object = "Widget | Layout"
 
 
 @dataclass
 class Placement:
     """A class representing the placement of a widget on a screen."""
 
-    child: Object
+    child: Widget
     region: Region
 
 
-class Layout(ABC):
+class Layout(Widget):
     """An abstract base class for layouts."""
 
-    def __init__(self, *children: Object) -> None:
-        self.children: list[Object] = list(children)
+    def __init__(self, *children: Widget) -> None:
+        self.children: list[Widget] = list(children)
         self.placements: list[Placement] = []
         self.width: int = 0
         self.height: int = 0
@@ -30,7 +28,7 @@ class Layout(ABC):
         self.height = height
 
     def add_placement(
-        self, child: Object, x_pos: int, y_pos: int, width: int, height: int
+        self, child: Widget, x_pos: int, y_pos: int, width: int, height: int
     ) -> None:
         """Add a placement for a widget."""
         region = Region(x_pos, y_pos, width, height)

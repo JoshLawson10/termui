@@ -7,12 +7,13 @@ from termui.types.char import Char
 from termui.utils.geometry import Region
 
 
-class Widget(DOMNode):
+class Widget(DOMNode, ABC):
     """Base class for all widgets in the TermUI framework."""
 
     def __init__(self, name: Optional[str] = None, **kwargs) -> None:
         self.id = kwargs.get("id", str(uuid.uuid4()))
         self.name = name or f"Widget_{self.id[:8]}"
+        super().__init__(id=self.id)
 
         self.region = Region(
             kwargs.get("x", 0),
@@ -20,8 +21,6 @@ class Widget(DOMNode):
             kwargs.get("width", 0),
             kwargs.get("height", 0),
         )
-
-        self._dom_node: Optional[DOMNode] = None
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id}, name={self.name})"
