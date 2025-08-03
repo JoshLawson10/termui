@@ -17,6 +17,7 @@ class Layout(Widget):
     """An abstract base class for layouts."""
 
     def __init__(self, *children: Widget) -> None:
+        super().__init__()
         self.children: list[Widget] = list(children)
         self.placements: list[Placement] = []
         self.width: int = 0

@@ -13,7 +13,7 @@ class Widget(DOMNode, ABC):
     def __init__(self, name: Optional[str] = None, **kwargs) -> None:
         self.id = kwargs.get("id", str(uuid.uuid4()))
         self.name = name or f"Widget_{self.id[:8]}"
-        super().__init__(id=self.id)
+        super().__init__(id=self.id, name=self.name)
 
         self.region = Region(
             kwargs.get("x", 0),

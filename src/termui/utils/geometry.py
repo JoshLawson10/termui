@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from termui.errors import DimensionError
+
 
 @dataclass
 class Size:
@@ -25,14 +27,14 @@ class Region:
 
     def __post_init__(self):
         if self.x < 0 or self.y < 0:
-            print(f"Warning: Region coordinates ({self.x}, {self.y}) are negative.")
-            raise ValueError("Region must have non-negative coordinates.")
+            raise DimensionError(
+                f"Region coordinates ({self.x}, {self.y}) are negative. Region must have non-negative coordinates."
+            )
 
         if self.width < 0 or self.height < 0:
-            print(
-                f"Warning: Region dimensions ({self.width}, {self.height}) are non-positive."
+            raise DimensionError(
+                f"Region dimensions ({self.width}, {self.height}) are non-positive. Region must have positive dimensions."
             )
-            raise ValueError("Region must have positive dimensions.")
 
     def __str__(self):
         return (

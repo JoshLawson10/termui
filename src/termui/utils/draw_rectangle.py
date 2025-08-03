@@ -3,6 +3,7 @@ from typing import Literal, Optional
 
 from termui.colors.ansi import AnsiColor
 from termui.colors.rgb import RGBColor
+from termui.errors import DimensionError
 from termui.types.char import Char
 from termui.utils.align import get_aligned_start_x, HorizontalAlignment
 
@@ -43,7 +44,7 @@ def draw_rectangle(
 ) -> list[list[Char]]:
     """Draw a rectangle with the specified width, height, and border style."""
     if width < 2 or height < 2:
-        raise ValueError("Width and height must be at least 2.")
+        raise DimensionError("Width and height must be at least 2.")
 
     tl, tr, bl, br, lv, rv, th, bh = BorderStyleChars[border_style.upper()].value
     tl_char = Char(tl, border_color)
