@@ -12,6 +12,12 @@ class Logger:
         self.stdout = stdout
         self.stderr = stderr
 
+        if self.log_file:
+            with open(self.log_file, "a") as f:
+                f.seek(0)
+                f.truncate()
+                f.write(f"[TermUI Logger Initialized]\n")
+
     def system(self, message: str) -> None:
         if self.stdout:
             if self.log_file:
