@@ -58,7 +58,10 @@ class Renderer:
             print("No DOM tree to display.")
             return
 
-        print(" " * indent + f"Node ID: {node.id}, Name: {node.widget.name}")
+        print(
+            " " * indent
+            + f"Node ID: {node.id}, Name: {node.widget.name if node.widget else 'None'}"
+        )
         for child in node.children:
             self.print_dom_tree(child, indent + 2)
 

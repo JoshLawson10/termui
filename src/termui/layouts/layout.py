@@ -40,4 +40,8 @@ class Layout(Widget):
 
         This method should be implemented by subclasses to define how widgets are placed.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement the arrange method.")
+
+    def render(self) -> list[list[str]]:
+        """Placeholder needed for compatibility with Widget's render method."""
+        return [[]]

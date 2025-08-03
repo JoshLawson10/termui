@@ -100,7 +100,7 @@ class Button(Widget):
         min_width = len(label) + self.padding[1] + self.padding[3] + 2
         min_height = 3 + self.padding[0] + self.padding[2]
 
-        self.update_dimensions(
+        self.set_size(
             width=max(min_width, kwargs.get("width", min_width)),
             height=max(min_height, kwargs.get("height", min_height)),
         )
@@ -124,8 +124,8 @@ class Button(Widget):
             fill = Char(" ", fg, bg)
 
         content: list[list[Char]] = draw_rectangle(
-            self.width,
-            self.height,
+            self.region.width,
+            self.region.height,
             border_style=border_style,
             border_color=border_color,
             fill=fill,
@@ -134,9 +134,9 @@ class Button(Widget):
         text_line: list[Char] = [Char(c, fg, bg) for c in self.label]
 
         text_start_x = get_aligned_start_x(
-            self.label, self.width - self.padding[1] - self.padding[3], "center"
+            self.label, self.region.width - self.padding[1] - self.padding[3], "center"
         )
-        text_start_y = get_aligned_start_y(self.height, "middle")
+        text_start_y = get_aligned_start_y(self.region.height, "middle")
 
         for i, char in enumerate(text_line):
             content[text_start_y][text_start_x + i] = char

@@ -1,14 +1,15 @@
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from termui.input import InputHandler, Keybind
-
-from termui.layouts.layout import Layout
-from termui.renderer import Renderer
-
+from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
-from termui.widgets._widget import Widget
+
+if TYPE_CHECKING:
+    from termui.input import InputHandler
+    from termui.layouts.layout import Layout
+    from termui.renderer import Renderer
+    from termui.widgets._widget import Widget
 
 
 class Screen(ABC):
@@ -20,8 +21,6 @@ class Screen(ABC):
         self.height: int
         self.width, self.height = get_terminal_size()
         self._local_keybinds: list[Keybind] = []
-        self._input_handler: InputHandler = InputHandler()
-        self._renderer: Renderer = Renderer()
         self.widgets: list[Widget] = []
 
     def __str__(self) -> str:
@@ -63,7 +62,7 @@ class Screen(ABC):
         self.width = kwargs.get("width", max_width)
         self.height = kwargs.get("height", max_height)
 
-    def get_widget_by_name(self, name: str) -> Widget | None:
+    def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name."""
         for widget in self.widgets:
             if widget.name == name:
@@ -75,7 +74,7 @@ class Screen(ABC):
         pass
 
     @abstractmethod
-    def build(self) -> Layout:
+    def build(self) -> "Layout":
         """Setup the screen with initial Divs.
 
         From within :meth:`Screen.build`, you can add Divs to the screen
@@ -93,19 +92,18 @@ class Screen(ABC):
         """
         pass
 
-    def mount(self, input_handler: InputHandler, renderer: Renderer) -> None:
+    def mount(self, input_handler: "InputHandler", renderer: "Renderer") -> None:
         """Mount the screen."""
         self._setup_local_keybinds()
         self._input_handler = input_handler
-        self._renderer = renderer
         for keybind in self.local_keybinds:
             self._input_handler.register_keybind(keybind)
 
         self.width, self.height = get_terminal_size()
-        self._renderer.pipe(self)
+        renderer.pipe(self)
 
-    def unmount(self) -> None:
+    def unmount(self, input_handler: "InputHandler", renderer: "Renderer") -> None:
         """Unmount the screen."""
-        self._renderer.clear()
+        renderer.clear()
         for keybind in self.local_keybinds:
-            self._input_handler.unregister_keybind(keybind)
+            input_handler.unregister_keybind(keybind)

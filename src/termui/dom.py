@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 @dataclass
 class DOMNode:
     id: str
-    widget: Widget = field(default_factory=Widget)
+    widget: Optional["Widget"] = None
     parent: Optional["DOMNode"] = None
     children: list["DOMNode"] = field(default_factory=list)
 

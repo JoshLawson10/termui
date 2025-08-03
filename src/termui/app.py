@@ -58,7 +58,7 @@ class App(ABC):
             raise ValueError(f"Screen '{screen_name}' not found.")
 
         if self.current_screen is not None:
-            self.current_screen.unmount()
+            self.current_screen.unmount(self.input_handler, self.renderer)
 
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount(self.input_handler, self.renderer)
@@ -97,7 +97,7 @@ class App(ABC):
             pass
         finally:
             if self.current_screen:
-                self.current_screen.unmount()
+                self.current_screen.unmount(self.input_handler, self.renderer)
             self.input_handler.stop()
             self._running = False
 

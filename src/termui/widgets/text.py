@@ -19,7 +19,7 @@ class Text(Widget):
         self.content: list[str] = content if isinstance(content, list) else [content]
         self.fg_color = kwargs.get("fg_color", AnsiColor.WHITE)
         self.bg_color = kwargs.get("bg_color", None)
-        self.update_dimensions(
+        self.set_size(
             width=max(len(line) for line in self.content), height=len(self.content)
         )
 
