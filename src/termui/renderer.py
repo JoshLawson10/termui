@@ -1,8 +1,10 @@
 import sys
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+from termui.colors.colorize import colorize
 
 from termui.cursor import Cursor as cursor
-from termui.dom import DOMNode, DOMTree
+from termui.dom import DOMTree
 from termui.screen import Screen
 from termui.types.char import Char
 from termui.utils.terminal_utils import clear_terminal, get_terminal_size
@@ -16,14 +18,9 @@ class Renderer:
         self.app = app
         self.width, self.height = get_terminal_size()
         self.dom_tree = DOMTree()
-        self.previous_frame: list[list[Char]] = [
-            [Char(" ") for _ in range(self.width)] for _ in range(self.height)
-        ]
-        self.current_frame: list[list[Char]] = [
-            [Char(" ") for _ in range(self.width)] for _ in range(self.height)
-        ]
-        # clear_terminal()
-        # cursor.hide()
+        self.count = 0
+        clear_terminal()
+        cursor.hide()
 
     def pipe(self, screen: Screen) -> None:
         """Pipe a screen to the renderer."""
@@ -34,22 +31,29 @@ class Renderer:
 
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
-        count = 0
+        if self.count < 1:
+            self.app.log.system(f"self.dom_tree: {self.dom_tree.get_tree_string()}")
+            self.count = 1
 
-        if count < 1:
-            self.app.log.system("Rendering DOM tree...")
-            self.app.log.system(self.dom_tree.get_tree_string(self.dom_tree.root))
-            count += 1
-        """ for row in self.current_frame:
-            row[:] = [Char(" ")] * self.width
+        clear_terminal()
+        current_frame: list[list[Char]] = [
+            [Char(" ") for _ in range(self.width)] for _ in range(self.height)
+        ]
 
-        self.widgets.sort(key=lambda obj: obj.index)
-        for rendered_object in self.widgets:
-            if not rendered_object.dirty:
+        for node in self.dom_tree.get_node_list():
+            if node.widget is None:
                 continue
 
-            widget: Widget = rendered_object.widget
-            region: Region = rendered_object.region
+            widget = node.widget
+            region = widget.region
+
+            if (
+                region.x < 0
+                or region.y < 0
+                or region.x + region.width > self.width
+                or region.y + region.height > self.height
+            ):
+                continue
 
             widget_content: list[list[Char]] = widget.render()
             for row_index, row in enumerate(widget_content):
@@ -58,23 +62,17 @@ class Renderer:
                         0 <= region.y + row_index < self.height
                         and 0 <= region.x + col_index < self.width
                     ):
-                        self.current_frame[region.y + row_index][
-                            region.x + col_index
-                        ] = char
+                        current_frame[region.y + row_index][region.x + col_index] = char
 
-        for y, (old_char, new_char) in enumerate(
-            zip(self.previous_frame, self.current_frame)
-        ):
-            for x, (old_char, new_char) in enumerate(zip(old_char, new_char)):
-                if old_char == new_char:
-                    continue
-                cursor.move(x + 1, y + 1)
-                sys.stdout.write(
-                    colorize(new_char.char, fg=new_char.fg_color, bg=new_char.bg_color)
+        for line in current_frame:
+            formatted_line: list[str] = []
+            for char in line:
+                formatted_line.append(
+                    colorize(char.char, fg=char.fg_color, bg=char.bg_color)
                 )
+            sys.stdout.write("".join(formatted_line))
 
         sys.stdout.flush()
-        self.previous_frame = [row[:] for row in self.current_frame] """
 
     def clear(self) -> None:
         """Clear the renderer's current frame."""

@@ -1,3 +1,4 @@
+from collections import deque
 from dataclasses import dataclass, field
 from typing import Optional, TYPE_CHECKING
 
@@ -62,6 +63,22 @@ class DOMTree:
             self.nodes_by_id.pop(node.id, None)
             if node.parent:
                 node.parent.remove_child(node)
+
+    def get_node_list(self) -> list[DOMNode]:
+        "Returns a list of widgets in breadth-first tree order"
+        if self.root is None:
+            return []
+
+        queue = deque([self.root])
+        node_list = []
+
+        while queue:
+            current_node = queue.popleft()
+            node_list.append(current_node)
+            for child in current_node.children:
+                queue.append(child)
+
+        return node_list
 
     def get_tree_string(self, node: Optional[DOMNode] = None, indent: int = 0) -> str:
         """Get a string representation of the DOM tree."""

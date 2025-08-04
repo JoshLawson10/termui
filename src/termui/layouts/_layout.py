@@ -12,7 +12,6 @@ class Layout(Widget):
     def __init__(self, name: Optional[str] = None, *children: Widget) -> None:
         super().__init__(name=name or "Layout")
         self.children: list[Widget] = list(children)
-        self.arrange()
 
     @abstractmethod
     def arrange(self) -> None:
@@ -24,4 +23,5 @@ class Layout(Widget):
 
     def render(self) -> list[list[str]]:
         """Placeholder needed for compatibility with Widget's render method."""
+        self.arrange()
         return [[]]
