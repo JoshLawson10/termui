@@ -4,8 +4,9 @@ import os
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui.errors import AsyncError, Logger, ScreenError
+from termui.errors import AsyncError, ScreenError
 from termui.input import InputHandler, Keybind
+from termui.logger import Logger
 from termui.renderer import Renderer
 from termui.screen import Screen
 
