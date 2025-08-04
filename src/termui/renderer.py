@@ -29,12 +29,17 @@ class Renderer:
         """Pipe a screen to the renderer."""
         self.app.log.system(f"Piping screen: {screen.name} to renderer")
         screen_root = screen.build()
+        screen_root.set_size(self.width, self.height)
         self.dom_tree.set_root(screen_root)
 
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
-        self.app.log.system("Rendering DOM tree...")
-        self.app.log.system(self.dom_tree.get_tree_string(self.dom_tree.root))
+        count = 0
+
+        if count < 1:
+            self.app.log.system("Rendering DOM tree...")
+            self.app.log.system(self.dom_tree.get_tree_string(self.dom_tree.root))
+            count += 1
         """ for row in self.current_frame:
             row[:] = [Char(" ")] * self.width
 

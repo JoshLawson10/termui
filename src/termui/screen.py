@@ -8,7 +8,7 @@ from termui.utils.terminal_utils import get_terminal_size
 
 if TYPE_CHECKING:
     from termui.app import App
-    from termui.layouts.layout import Layout
+    from termui.layouts._layout import Layout
     from termui.widgets._widget import Widget
 
 

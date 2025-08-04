@@ -70,7 +70,15 @@ class DOMTree:
         if node is None:
             return ""
 
-        lines = [" " * indent + f"{node.name} (ID: {node.id})"]
+        node_width = node.widget.region.width if node.widget else "N/A"
+        node_height = node.widget.region.height if node.widget else "N/A"
+        node_x = node.widget.region.x if node.widget else "N/A"
+        node_y = node.widget.region.y if node.widget else "N/A"
+
+        lines = [
+            " " * indent
+            + f"{node.name} (Dimensions: {node_width}x{node_height}) (Pos: {node_x}, {node_y})"
+        ]
         for child in node.children:
             lines.append(self.get_tree_string(child, indent + 2))
         return "\n".join(line for line in lines if line)
