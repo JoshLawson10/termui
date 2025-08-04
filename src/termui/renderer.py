@@ -18,7 +18,6 @@ class Renderer:
         self.app = app
         self.width, self.height = get_terminal_size()
         self.dom_tree = DOMTree()
-        self.count = 0
         clear_terminal()
         cursor.hide()
 
@@ -28,13 +27,12 @@ class Renderer:
         screen_root = screen.build()
         screen_root.set_size(self.width, self.height)
         self.dom_tree.set_root(screen_root)
+        self.app.log.system(
+            f"Screen {screen.name} DOM Heirarchy: \n {self.dom_tree.get_tree_string()}"
+        )
 
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
-        if self.count < 1:
-            self.app.log.system(f"self.dom_tree: {self.dom_tree.get_tree_string()}")
-            self.count = 1
-
         clear_terminal()
         current_frame: list[list[Char]] = [
             [Char(" ") for _ in range(self.width)] for _ in range(self.height)

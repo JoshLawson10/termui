@@ -1,8 +1,6 @@
 from abc import abstractmethod
-from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import Optional
 
-from termui.utils.geometry import Region
 from termui.widgets._widget import Widget
 
 
@@ -12,6 +10,7 @@ class Layout(Widget):
     def __init__(self, name: Optional[str] = None, *children: Widget) -> None:
         super().__init__(name=name or "Layout")
         self.children: list[Widget] = list(children)
+        self.arrange()
 
     @abstractmethod
     def arrange(self) -> None:
