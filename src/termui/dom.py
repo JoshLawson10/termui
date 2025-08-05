@@ -13,7 +13,7 @@ class DOMNode:
     widget: Optional["Widget"] = None
     parent: Optional["DOMNode"] = None
     children: list["DOMNode"] = field(default_factory=list)
-    dirty: bool = False
+    dirty: bool = True
 
     def __hash__(self):
         return hash(self.id)
