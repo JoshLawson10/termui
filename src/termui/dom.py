@@ -13,6 +13,7 @@ class DOMNode:
     widget: Optional["Widget"] = None
     parent: Optional["DOMNode"] = None
     children: list["DOMNode"] = field(default_factory=list)
+    dirty: bool = False
 
     def __hash__(self):
         return hash(self.id)
@@ -28,6 +29,22 @@ class DOMNode:
         if child in self.children:
             child.parent = None
             self.children.remove(child)
+
+    def mark_dirty(self) -> None:
+        """Mark this node as dirty, indicating it needs to be re-rendered."""
+        self.dirty = True
+
+    def mark_dirty_cascade_up(self) -> None:
+        """Mark this node and all its ancestors as dirty."""
+        self.mark_dirty()
+        if self.parent:
+            self.parent.mark_dirty_cascade_up()
+
+    def mark_dirty_cascade_down(self) -> None:
+        """Mark this node and all its descendants as dirty."""
+        self.mark_dirty()
+        for child in self.children:
+            child.mark_dirty_cascade_down()
 
 
 class DOMTree:
