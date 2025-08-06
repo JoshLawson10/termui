@@ -1,5 +1,7 @@
 from typing import Literal
 
+from termui.errors import AlignmentError
+
 type HorizontalAlignment = Literal["left", "center", "right"]
 type VerticalAlignment = Literal["top", "middle", "bottom"]
 
@@ -26,7 +28,7 @@ def get_aligned_start_x(
     elif alignment == "right":
         return region_width - content_width
     else:
-        raise ValueError(f"Invalid alignment type: {alignment}")
+        raise AlignmentError(f"Invalid alignment type: {alignment}")
 
 
 def get_aligned_start_y(region_height: int, alignment: VerticalAlignment) -> int:
@@ -47,4 +49,4 @@ def get_aligned_start_y(region_height: int, alignment: VerticalAlignment) -> int
     elif alignment == "bottom":
         return region_height - 1
     else:
-        raise ValueError(f"Invalid alignment type: {alignment}")
+        raise AlignmentError(f"Invalid alignment type: {alignment}")

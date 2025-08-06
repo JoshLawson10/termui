@@ -5,7 +5,9 @@
 .venv
 .idea
 
+# Development
 playground/
+logs/
 
 __pycache__/
 

@@ -1,14 +1,15 @@
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional, TYPE_CHECKING
 
-from termui.input import InputHandler, Keybind
-
-from termui.layouts.layout import Layout
-from termui.renderer import Renderer
-
+from termui.errors import ScreenError
+from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
-from termui.widgets._widget import Widget
+
+if TYPE_CHECKING:
+    from termui.app import App
+    from termui.layouts._layout import Layout
+    from termui.widgets._widget import Widget
 
 
 class Screen(ABC):
@@ -19,9 +20,8 @@ class Screen(ABC):
         self.width: int
         self.height: int
         self.width, self.height = get_terminal_size()
+        self._app: Optional["App"] = None
         self._local_keybinds: list[Keybind] = []
-        self._input_handler: InputHandler = InputHandler()
-        self._renderer: Renderer = Renderer()
         self.widgets: list[Widget] = []
 
     def __str__(self) -> str:
@@ -29,6 +29,13 @@ class Screen(ABC):
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @property
+    def app(self) -> "App":
+        """Get the application instance."""
+        if self._app is None:
+            raise ScreenError("Screen is not mounted to an App instance.")
+        return self._app
 
     @property
     def local_keybinds(self) -> list[Keybind]:
@@ -63,7 +70,7 @@ class Screen(ABC):
         self.width = kwargs.get("width", max_width)
         self.height = kwargs.get("height", max_height)
 
-    def get_widget_by_name(self, name: str) -> Widget | None:
+    def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name."""
         for widget in self.widgets:
             if widget.name == name:
@@ -75,7 +82,7 @@ class Screen(ABC):
         pass
 
     @abstractmethod
-    def build(self) -> Layout:
+    def build(self) -> "Layout":
         """Setup the screen with initial Divs.
 
         From within :meth:`Screen.build`, you can add Divs to the screen
@@ -93,41 +100,19 @@ class Screen(ABC):
         """
         pass
 
-    def _unpack_and_pipe_layout(self, layout: Layout) -> None:
-        """Unpack the screen's layout and pipe its widgets to the renderer."""
-
-        for placement in layout.placements:
-            child = placement.child
-            if isinstance(child, Widget):
-                if child not in self.widgets:
-                    self._renderer.pipe(
-                        child,
-                        placement.region.x,
-                        placement.region.y,
-                    )
-                    self.widgets.append(child)
-            elif isinstance(child, Layout):
-                child.update_dimensions(placement.region.width, placement.region.height)
-                self._unpack_and_pipe_layout(child)
-            else:
-                raise TypeError(f"Child {child} is not a Widget or Layout instance.")
-
-    def mount(self, input_handler: InputHandler, renderer: Renderer) -> None:
+    def mount(self, app: "App") -> None:
         """Mount the screen."""
+        self._app = app
         self._setup_local_keybinds()
-        self._input_handler = input_handler
-        self._renderer = renderer
         for keybind in self.local_keybinds:
-            self._input_handler.register_keybind(keybind)
+            app.input_handler.register_keybind(keybind)
 
         self.width, self.height = get_terminal_size()
-        layout: Layout = self.build()
-        layout.update_dimensions(self.width, self.height)
-        layout.arrange()
-        self._unpack_and_pipe_layout(layout)
+        app.renderer.pipe(self)
+        self.app.log.system(f"Mounted screen: {self.name}")
 
     def unmount(self) -> None:
         """Unmount the screen."""
-        self._renderer.clear()
+        self.app.renderer.clear()
         for keybind in self.local_keybinds:
-            self._input_handler.unregister_keybind(keybind)
+            self.app.input_handler.unregister_keybind(keybind)

@@ -10,9 +10,7 @@ class Container(Widget):
         super().__init__(name=kwargs.get("name", "Container"))
         min_width = max(len(child) for child in children) if children else 0
         min_height = len(children) if children else 0
-        self.update_dimensions(
-            kwargs.get("width", min_width), kwargs.get("height", min_height)
-        )
+        self.set_size(kwargs.get("width", min_width), kwargs.get("height", min_height))
         self.border_style: BorderStyle = kwargs.get("border_style", "solid")
         self.border_color = kwargs.get("border_color", AnsiColor.WHITE)
         self.padding = kwargs.get("padding", (0, 0, 0, 0))
@@ -24,8 +22,8 @@ class Container(Widget):
 
     def render(self) -> list[list[Char]]:
         content = draw_rectangle(
-            self.width,
-            self.height,
+            self.region.width,
+            self.region.height,
             border_style=self.border_style,
             border_color=self.border_color,
             title=self.title,
