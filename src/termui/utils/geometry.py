@@ -4,21 +4,6 @@ from termui.errors import DimensionError
 
 
 @dataclass
-class Size:
-    """Represents the size of a terminal or a Div."""
-
-    cols: int
-    rows: int
-
-    def __post_init__(self):
-        if self.cols <= 0 or self.rows <= 0:
-            raise ValueError("Size must have positive dimensions.")
-
-    def __str__(self):
-        return f"{self.cols}x{self.rows}"
-
-
-@dataclass
 class Region:
     x: int
     y: int
