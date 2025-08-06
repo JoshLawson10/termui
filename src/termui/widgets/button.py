@@ -132,8 +132,13 @@ class Button(Widget):
 
         text_line: list[Char] = [Char(c, fg, bg) for c in self.label]
 
-        text_start_x = get_aligned_start_x(
-            self.label, self.region.width - self.padding[1] - self.padding[3], "center"
+        text_start_x = (
+            get_aligned_start_x(
+                self.label,
+                self.region.width - self.padding[1] - self.padding[3],
+                "center",
+            )
+            + 1
         )
         text_start_y = get_aligned_start_y(self.region.height, "middle")
 
