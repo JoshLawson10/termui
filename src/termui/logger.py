@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 
@@ -13,6 +14,8 @@ class Logger:
         self.stderr = stderr
 
         if self.log_file:
+            if not os.path.exists(os.path.dirname(self.log_file)):
+                os.makedirs(os.path.dirname(self.log_file))
             with open(self.log_file, "a") as f:
                 f.seek(0)
                 f.truncate()

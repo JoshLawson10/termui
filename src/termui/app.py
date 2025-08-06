@@ -21,7 +21,7 @@ class App(ABC):
         self._default_keybinds: list[Keybind] = [
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
-        self._logger = Logger("/Users/joshlawson/3.Dev/termui/logs/log.txt")
+        self._logger = Logger("logs/log.txt")
 
     @property
     def log(self) -> Logger:
