@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-from optparse import Option
-from typing import Callable, Literal, Optional
+from typing import Literal
 
 from termui.colors import AnsiColor, RGBColor
 from termui.types.char import Char
