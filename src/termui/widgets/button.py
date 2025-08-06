@@ -81,7 +81,7 @@ class Button(Widget):
         padding : tuple[int, int, int, int], optional
             Padding around the button content, by default (0, 0, 0, 0).
         """
-        super().__init__(name=kwargs.get("name", f"Button {label}"))
+        super().__init__(name=kwargs.get("name", f"Button {label}"), **kwargs)
         self.variant = BUTTON_VARIANTS.get(
             kwargs.get("variant", "default"), BUTTON_VARIANTS["default"]
         )
