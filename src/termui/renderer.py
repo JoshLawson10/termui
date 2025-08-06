@@ -23,7 +23,6 @@ class FrameBuffer:
         self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.dirty_regions: set[tuple[int, int, int, int]] = set()  # (x, y, w, h)
-        self.updates = 0
 
     def mark_entire_screen_dirty(self) -> None:
         """Mark the entire screen as dirty."""
@@ -94,7 +93,6 @@ class FrameBuffer:
                             bg=current_char.bg_color,
                         )
                     )
-                    self.updates += 1
 
         sys.stdout.flush()
 
@@ -142,7 +140,6 @@ class Renderer:
             self.frame_buffer.draw_content(node.widget.region, node.widget.render())
 
         self.frame_buffer.render_to_terminal()
-        self.app.log.system(f"Terminal updates: {self.frame_buffer.updates}")
 
     def clear(self) -> None:
         """Clear the renderer's current frame."""
