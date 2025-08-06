@@ -7,9 +7,10 @@ from termui.widgets._widget import Widget
 class Layout(Widget):
     """An abstract base class for layouts."""
 
-    def __init__(self, name: Optional[str] = None, *children: Widget) -> None:
+    def __init__(self, name: Optional[str] = None, *children: Widget, **kwargs) -> None:
         super().__init__(name=name or "Layout")
         self.children: list[Widget] = list(children)
+        self.spacing = kwargs.get("spacing", 0)
         self.arrange()
 
     @abstractmethod

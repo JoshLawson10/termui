@@ -1,0 +1,144 @@
+from termui.layouts._layout import Layout
+from termui.widgets._widget import Widget
+
+
+class GridLayout(Layout):
+    """A grid layout that arranges widgets in a grid format."""
+
+    def __init__(self, *children: Widget | Layout, **kwargs) -> None:
+        """Initialize the grid layout with the specified number of rows and columns."""
+        self.grid_map: dict[tuple[int, int], Widget] = {}
+        self.span_map: dict[Widget, tuple[int, int, int, int]] = (
+            {}
+        )  # widget -> (row, col, row_span, col_span)
+
+        for child in children:
+            row = child.row[0] if isinstance(child.row, tuple) else child.row
+            col = child.col[0] if isinstance(child.col, tuple) else child.col
+            row_span = (
+                child.row[1] - child.row[0] + 1 if isinstance(child.row, tuple) else 1
+            )
+            col_span = (
+                child.col[1] - child.col[0] + 1 if isinstance(child.col, tuple) else 1
+            )
+
+            row_0_index = row - 1
+            col_0_index = col - 1
+
+            for r in range(row_0_index, row_0_index + row_span):
+                for c in range(col_0_index, col_0_index + col_span):
+                    if (r, c) in self.grid_map:
+                        raise ValueError(
+                            f"Trying to place widget {child.name} at grid position ({r}, {c}). Already occupied by {self.grid_map[(r, c)].name}. Row: {row}, Col: {col}, Row Span: {row_span}, Col Span: {col_span}"
+                        )
+                    self.grid_map[(r, c)] = child
+
+            self.span_map[child] = (row_0_index, col_0_index, row_span, col_span)
+
+        super().__init__("GridLayout", *children, **kwargs)
+
+    def calculate_grid_dimensions(self) -> tuple[int, int]:
+        """Calculate the required grid dimensions based on widget positions."""
+        if not self.grid_map:
+            return 1, 1
+
+        max_row = max(pos[0] for pos in self.grid_map.keys()) + 1
+        max_col = max(pos[1] for pos in self.grid_map.keys()) + 1
+
+        return max_row, max_col
+
+    def calculate_cell_sizes(
+        self, max_rows: int, max_cols: int
+    ) -> tuple[list[int], list[int]]:
+        """Calculate the size of each row and column based on content."""
+        row_heights = [0] * max_rows
+        col_widths = [0] * max_cols
+
+        # Calculate minimum sizes based on widget content
+        for widget, (row, col, row_span, col_span) in self.span_map.items():
+            if hasattr(widget, "get_minimum_size"):
+                min_width, min_height = widget.get_minimum_size()
+            else:
+                min_width, min_height = widget.region.width, widget.region.height
+
+            # For single-cell widgets, update the cell size directly
+            if row_span == 1 and col_span == 1:
+                row_heights[row] = max(row_heights[row], min_height)
+                col_widths[col] = max(col_widths[col], min_width)
+            else:
+                # For spanning widgets, distribute size across cells
+                # This is a simplified approach - you might want more sophisticated distribution
+                height_per_cell = min_height // row_span
+                width_per_cell = min_width // col_span
+
+                for r in range(row, row + row_span):
+                    row_heights[r] = max(row_heights[r], height_per_cell)
+                for c in range(col, col + col_span):
+                    col_widths[c] = max(col_widths[c], width_per_cell)
+
+        # Ensure minimum cell sizes
+        row_heights = [max(h, 1) for h in row_heights]
+        col_widths = [max(w, 1) for w in col_widths]
+
+        return row_heights, col_widths
+
+    def calculate_minimum_size(self) -> tuple[int, int]:
+        """Calculate minimum size needed for the grid layout."""
+        max_rows, max_cols = self.calculate_grid_dimensions()
+        row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
+
+        total_width = sum(col_widths) + (self.spacing * max(0, max_cols - 1))
+        total_height = sum(row_heights) + (self.spacing * max(0, max_rows - 1))
+
+        return total_width, total_height
+
+    def arrange(self) -> None:
+        """Arrange the widgets in the grid."""
+        if not self.children:
+            return
+
+        max_rows, max_cols = self.calculate_grid_dimensions()
+        row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
+
+        # Calculate minimum size and update region if needed
+        min_width, min_height = self.calculate_minimum_size()
+        if self.region.width < min_width:
+            self.region.width = min_width
+        if self.region.height < min_height:
+            self.region.height = min_height
+
+        # Calculate row and column positions
+        row_positions = [0]
+        for i, height in enumerate(row_heights[:-1]):
+            row_positions.append(row_positions[-1] + height + self.spacing)
+
+        col_positions = [0]
+        for i, width in enumerate(col_widths[:-1]):
+            col_positions.append(col_positions[-1] + width + self.spacing)
+
+        # Position each widget
+        positioned_widgets = set()
+        for widget, (row, col, row_span, col_span) in self.span_map.items():
+            if widget in positioned_widgets:
+                continue
+
+            # Calculate widget position
+            x = self.region.x + col_positions[col]
+            y = self.region.y + row_positions[row]
+
+            # Calculate widget size (sum of spanned cells plus spacing)
+            width = sum(col_widths[col : col + col_span])
+            if col_span > 1:
+                width += self.spacing * (col_span - 1)
+
+            height = sum(row_heights[row : row + row_span])
+            if row_span > 1:
+                height += self.spacing * (row_span - 1)
+
+            # Set widget position and size
+            widget.set_position(x, y)
+            widget.set_size(width, height)
+
+            positioned_widgets.add(widget)
+
+        self.mark_dirty()

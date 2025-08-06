@@ -1,6 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, Union
 
 from termui.dom import DOMNode
 from termui.types.char import Char
@@ -21,6 +21,9 @@ class Widget(DOMNode, ABC):
             kwargs.get("width", 0),
             kwargs.get("height", 0),
         )
+
+        self.row: int | tuple[int, int] = kwargs.get("row", 0)
+        self.col: int | tuple[int, int] = kwargs.get("col", 0)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id}, name={self.name})"

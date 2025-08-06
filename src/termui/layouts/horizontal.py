@@ -6,8 +6,7 @@ class HorizontalLayout(Layout):
     """A layout that arranges widgets horizontally."""
 
     def __init__(self, *children: Widget | Layout, **kwargs) -> None:
-        self.spacing = kwargs.get("spacing", 0)
-        super().__init__("HorizontalLayout", *children)
+        super().__init__("HorizontalLayout", *children, **kwargs)
 
     def calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate minimum size needed for horizontal layout."""

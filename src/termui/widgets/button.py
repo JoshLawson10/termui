@@ -94,7 +94,7 @@ class Button(Widget):
             raise TypeError("on_click must be a callable function.")
 
         self.disabled = kwargs.get("disabled", False)
-        self.padding = kwargs.get("padding", (0, 0, 0, 0))
+        self.padding = kwargs.get("padding", (0, 1, 0, 1))
 
         min_width = len(label) + self.padding[1] + self.padding[3] + 2
         min_height = 3 + self.padding[0] + self.padding[2]
