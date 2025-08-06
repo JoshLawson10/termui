@@ -20,6 +20,12 @@ class Container(Widget):
             "title_alignment", "left"
         )
 
+    def get_minimum_size(self) -> tuple[int, int]:
+        """Get the minimum size of the container."""
+        min_width = self.padding[1] + self.padding[3] + 2
+        min_height = self.padding[0] + self.padding[2] + 2
+        return max(min_width, 1), max(min_height, 1)
+
     def render(self) -> list[list[Char]]:
         content = draw_rectangle(
             self.region.width,

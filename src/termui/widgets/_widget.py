@@ -31,6 +31,10 @@ class Widget(DOMNode, ABC):
     def set_size(self, width: int, height: int) -> None:
         self.region.update_dimensions(width, height)
 
+    def get_minimum_size(self) -> tuple[int, int]:
+        """Get the minimum size of the widget."""
+        return 0, 0
+
     @abstractmethod
     def render(self) -> list[list[Char]]:
         """Render the widget."""

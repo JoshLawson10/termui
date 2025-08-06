@@ -106,6 +106,12 @@ class Button(Widget):
 
         self._state: Literal["default", "selected", "pressed"] = "default"
 
+    def get_minimum_size(self) -> tuple[int, int]:
+        """Get the minimum size of the button."""
+        min_width = len(self.label) + self.padding[1] + self.padding[3] + 2
+        min_height = 3 + self.padding[0] + self.padding[2]
+        return max(min_width, 1), max(min_height, 1)
+
     def render(self) -> list[list[Char]]:
         """Render the button."""
 
