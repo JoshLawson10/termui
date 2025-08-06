@@ -1,6 +1,7 @@
 import asyncio
 import inspect
 import os
+import traceback
 from abc import ABC, abstractmethod
 from typing import Optional
 
@@ -111,8 +112,8 @@ class App(ABC):
             self.quit()
         except asyncio.CancelledError:
             raise AsyncError("Application loop was cancelled.")
-        except Exception as e:
-            self.log.error(e)
+        except Exception:
+            self.log.error(traceback.format_exc())
             self._running = False
             self.quit()
         finally:
@@ -129,8 +130,8 @@ class App(ABC):
         except KeyboardInterrupt:
             self._running = False
             self.quit()
-        except Exception as e:
-            self.log.error(e)
+        except Exception:
+            self.log.error(traceback.format_exc())
             self._running = False
             self.quit()
 
