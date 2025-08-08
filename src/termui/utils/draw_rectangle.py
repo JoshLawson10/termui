@@ -17,13 +17,13 @@ class BorderStyleChars(Enum):
     (top-left, top-right, bottom-left, bottom-right, left-vertical, right-vertical, top-horizontal, bottom-horizontal)
     """
 
-    ASCII = ("+", "+", "+", "+", "-", "-", "|", "|")
+    ASCII = ("+", "+", "+", "+", "|", "|", "-", "-")
     NONE = (" ", " ", " ", " ", " ", " ", " ", " ")
     ROUND = ("╭", "╮", "╰", "╯", "│", "│", "─", "─")
     SOLID = ("┌", "┐", "└", "┘", "│", "│", "─", "─")
-    DOUBLE = ("╔", "╗", "╚", "╝", "║", "═", "═", "═")
-    DASHED = ("┏", "┓", "┗", "┛", "╏", "╍", "╍", "╍")
-    HEAVY = ("┏", "┓", "┗", "┛", "┃", "━", "━", "━")
+    DOUBLE = ("╔", "╗", "╚", "╝", "║", "║", "═", "═")
+    DASHED = ("┏", "┓", "┗", "┛", "╏", "╏", "╍", "╍")
+    HEAVY = ("┏", "┓", "┗", "┛", "┃", "┃", "━", "━")
     FULL = ("█", "█", "█", "█", "█", "█", "█", "█")
 
 
@@ -47,19 +47,15 @@ def draw_rectangle(
         raise DimensionError("Width and height must be at least 2.")
 
     tl, tr, bl, br, lv, rv, th, bh = BorderStyleChars[border_style.upper()].value
-    tl_char = Char(tl, border_color)
-    tr_char = Char(tr, border_color)
-    bl_char = Char(bl, border_color)
-    br_char = Char(br, border_color)
-    lv_char = Char(lv, border_color)
-    rv_char = Char(rv, border_color)
-    th_char = Char(th, border_color)
-    bh_char = Char(bh, border_color)
     fill_char = Char(fill, None, None) if isinstance(fill, str) else fill
 
     rectangle: list[list[Char]] = []
 
-    top_line = [tl_char] + [th_char] * (width - 2) + [tr_char]
+    top_line = (
+        [Char(tl, border_color)]
+        + [Char(th, border_color)] * (width - 2)
+        + [Char(tr, border_color)]
+    )
     if title:
         title_text = f" {title} "
         start_x = get_aligned_start_x(title_text, width - 2, title_alignment)
@@ -69,8 +65,16 @@ def draw_rectangle(
     rectangle.append(top_line)
 
     for _ in range(height - 2):
-        rectangle.append([lv_char] + [fill_char] * (width - 2) + [rv_char])
+        rectangle.append(
+            [Char(lv, border_color)]
+            + [fill_char] * (width - 2)
+            + [Char(rv, border_color)]
+        )
 
-    rectangle.append([bl_char] + [bh_char] * (width - 2) + [br_char])
+    rectangle.append(
+        [Char(bl, border_color)]
+        + [Char(bh, border_color)] * (width - 2)
+        + [Char(br, border_color)]
+    )
 
     return rectangle
