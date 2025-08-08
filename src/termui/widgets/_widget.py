@@ -22,8 +22,9 @@ class Widget(DOMNode, ABC):
             kwargs.get("height", 0),
         )
 
-        self.row: int | tuple[int, int] = kwargs.get("row", 0)
-        self.col: int | tuple[int, int] = kwargs.get("col", 0)
+        self.pos: tuple[int | tuple[int, int], int | tuple[int, int]] = kwargs.get(
+            "pos", (0, 0)
+        )
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id}, name={self.name})"

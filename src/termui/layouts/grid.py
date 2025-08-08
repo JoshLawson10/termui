@@ -13,13 +13,14 @@ class GridLayout(Layout):
         )  # widget -> (row, col, row_span, col_span)
 
         for child in children:
-            row = child.row[0] if isinstance(child.row, tuple) else child.row
-            col = child.col[0] if isinstance(child.col, tuple) else child.col
+            child_row, child_col = child.pos
+            row = child_row[0] if isinstance(child_row, tuple) else child_row
+            col = child_col[0] if isinstance(child_col, tuple) else child_col
             row_span = (
-                child.row[1] - child.row[0] + 1 if isinstance(child.row, tuple) else 1
+                child_row[1] - child_row[0] + 1 if isinstance(child_row, tuple) else 1
             )
             col_span = (
-                child.col[1] - child.col[0] + 1 if isinstance(child.col, tuple) else 1
+                child_col[1] - child_col[0] + 1 if isinstance(child_col, tuple) else 1
             )
 
             row_0_index = row - 1
