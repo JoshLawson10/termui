@@ -1,10 +1,8 @@
 from dataclasses import dataclass
-from os import name
-from pydoc import text
-from tkinter import BUTT
+
 from typing import Callable, Literal, Optional
 
-from termui.colors import AnsiColor, RGBColor
+from termui.colors import RGBColor
 from termui.types.char import Char
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
