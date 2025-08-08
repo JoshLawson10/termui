@@ -181,11 +181,24 @@ class Button(Widget):
         )
 
         if self.style.name == "solid" or self.style.name == "soft":
+            match self.size.name:
+                case "icon":
+                    depth_char_top = "█"
+                    depth_char_bottom = "▂"
+                case "small":
+                    depth_char_top = "▆"
+                    depth_char_bottom = "▅"
+                case "medium":
+                    depth_char_top = "▅"
+                    depth_char_bottom = "▃"
+                case "large":
+                    depth_char_top = "▅"
+                    depth_char_bottom = "▃"
             for char in content[0]:
-                char.char = "▆"
+                char.char = depth_char_top
                 char.bg_color = self.color.bg_color.lighten(0.1)
             for char in content[-1]:
-                char.char = "▂"
+                char.char = depth_char_bottom
                 char.fg_color = self.color.bg_color.darken(0.1)
                 char.bg_color = self.color.bg_color
 
