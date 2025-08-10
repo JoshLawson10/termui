@@ -53,7 +53,7 @@ BUTTON_COLORS: dict[ButtonColor, ButtonColorVariant] = {
     "default": ButtonColorVariant(
         name="default",
         fg_color=RGBColor(227, 227, 230),
-        bg_color=RGBColor(8, 8, 11),
+        bg_color=RGBColor(21, 24, 29),
     ),
     "primary": ButtonColorVariant(
         name="primary",
@@ -94,9 +94,9 @@ BUTTON_COLORS: dict[ButtonColor, ButtonColorVariant] = {
 
 BUTTON_SIZES: dict[ButtonSize, ButtonSizeVariant] = {
     "icon": ButtonSizeVariant(name="icon", padding_x=0, padding_y=0),
-    "small": ButtonSizeVariant(name="small", padding_x=1, padding_y=0),
-    "medium": ButtonSizeVariant(name="medium", padding_x=2, padding_y=1),
-    "large": ButtonSizeVariant(name="large", padding_x=3, padding_y=2),
+    "small": ButtonSizeVariant(name="small", padding_x=2, padding_y=0),
+    "medium": ButtonSizeVariant(name="medium", padding_x=4, padding_y=1),
+    "large": ButtonSizeVariant(name="large", padding_x=6, padding_y=2),
 }
 
 
@@ -187,7 +187,7 @@ class Button(Widget):
                     depth_char_bottom = "▂"
                 case "small":
                     depth_char_top = "▆"
-                    depth_char_bottom = "▅"
+                    depth_char_bottom = "▂"
                 case "medium":
                     depth_char_top = "▅"
                     depth_char_bottom = "▃"
