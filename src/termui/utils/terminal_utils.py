@@ -16,3 +16,9 @@ def get_terminal_size() -> tuple[int, int]:
         return (size.columns, size.lines)
     except OSError:
         return (80, 24)
+
+
+def set_terminal_size(width: int, height: int) -> None:
+    """Set the size of the terminal."""
+    sys.stdout.write(f"\033[8;{height};{width}t")
+    sys.stdout.flush()

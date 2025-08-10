@@ -17,12 +17,11 @@ class Screen(ABC):
 
     def __init__(self) -> None:
         self.name: str = ""
-        self.width: int
-        self.height: int
         self.width, self.height = get_terminal_size()
         self._app: Optional["App"] = None
         self._local_keybinds: list[Keybind] = []
         self.widgets: list[Widget] = []
+        self.inline: bool = False
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
@@ -58,17 +57,23 @@ class Screen(ABC):
     def screen_metadata(self, **kwargs: Any) -> None:
         """Initialize the screen.
 
-        Parameters:
-            name (str): The name of the screen.
-            width (int): The width of the screen. Defaults to the terminal's current width.
-            height (int): The height of the screen. Defaults to the terminal's current height.
-            cols (int): The number of columns in the screen. Defaults to 4.
-            rows (int): The number of rows in the screen. Defaults to 12.
+        Parameters
+        ----------
+        name : str
+            The name of the screen.
+        width : int
+            The width of the screen. Defaults to the terminal's current width.
+        height : int
+            The height of the screen. Defaults to the terminal's current height.
+        inline : bool
+            Whether the screen is inline or not. False will resize the terminal
+            depending on the given screen size.
         """
         self.name = kwargs.get("name", "Default Screen")
         max_width, max_height = get_terminal_size()
         self.width = kwargs.get("width", max_width)
         self.height = kwargs.get("height", max_height)
+        self.inline = kwargs.get("inline", True)
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name."""
@@ -107,7 +112,6 @@ class Screen(ABC):
         for keybind in self.local_keybinds:
             app.input_handler.register_keybind(keybind)
 
-        self.width, self.height = get_terminal_size()
         app.renderer.pipe(self)
         self.app.log.system(f"Mounted screen: {self.name}")
 

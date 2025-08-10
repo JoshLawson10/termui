@@ -8,7 +8,11 @@ from termui.dom import DOMTree
 from termui.screen import Screen
 from termui.types.char import Char
 from termui.utils.geometry import Region
-from termui.utils.terminal_utils import clear_terminal, get_terminal_size
+from termui.utils.terminal_utils import (
+    clear_terminal,
+    get_terminal_size,
+    set_terminal_size,
+)
 
 if TYPE_CHECKING:
     from termui.app import App
@@ -23,6 +27,13 @@ class FrameBuffer:
         self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.dirty_regions: set[tuple[int, int, int, int]] = set()  # (x, y, w, h)
+
+    def set_size(self, width: int, height: int) -> None:
+        """Set the size of the frame buffer."""
+        self.width = width
+        self.height = height
+        self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
+        self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
 
     def mark_entire_screen_dirty(self) -> None:
         """Mark the entire screen as dirty."""
@@ -79,6 +90,8 @@ class FrameBuffer:
         if not self.dirty_regions:
             return
 
+        set_terminal_size(self.width, self.height)
+
         for y in range(self.height):
             for x in range(self.width):
                 current_char = self.current_frame[y][x]
@@ -106,9 +119,9 @@ class FrameBuffer:
 class Renderer:
     def __init__(self, app: "App") -> None:
         self.app = app
-        self.width, self.height = get_terminal_size()
+        self.initial_width, self.initial_height = get_terminal_size()
         self.dom_tree = DOMTree()
-        self.frame_buffer = FrameBuffer(self.width, self.height)
+        self.frame_buffer = FrameBuffer(self.initial_width, self.initial_height)
         clear_terminal()
         cursor.hide()
 
@@ -125,8 +138,9 @@ class Renderer:
         """Pipe a screen to the renderer."""
         self.app.log.system(f"Piping screen: {screen.name} to renderer")
         screen_root = screen.build()
-        screen_root.set_size(self.width, self.height)
+        screen_root.set_size(screen.width, screen.height)
         self.dom_tree.set_root(screen_root)
+        self.frame_buffer.set_size(screen.width, screen.height)
         self.app.log.system(
             f"Screen {screen.name} DOM Heirarchy: \n {self.dom_tree.get_tree_string()}"
         )
@@ -144,7 +158,3 @@ class Renderer:
     def clear(self) -> None:
         """Clear the renderer's current frame."""
         self.frame_buffer.clear()
-
-    def __del__(self):
-        """Cleanup when renderer is destroyed."""
-        cursor.show()
