@@ -62,7 +62,6 @@ class FrameBuffer:
         """Set the background color of the frame buffer."""
         self.background_color = color
         self._create_empty_char()
-        # Update existing frames with new background color
         for row in self.current_frame:
             for i, char in enumerate(row):
                 if char.char == " " and char.fg_color is None:
