@@ -27,6 +27,7 @@ class FrameBuffer:
         self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
         self.dirty_regions: set[tuple[int, int, int, int]] = set()  # (x, y, w, h)
+        self.inline: bool = True
 
     def set_size(self, width: int, height: int) -> None:
         """Set the size of the frame buffer."""
@@ -90,7 +91,8 @@ class FrameBuffer:
         if not self.dirty_regions:
             return
 
-        set_terminal_size(self.width, self.height)
+        if not self.inline:
+            set_terminal_size(self.width, self.height)
 
         for y in range(self.height):
             for x in range(self.width):
@@ -140,7 +142,9 @@ class Renderer:
         screen_root = screen.build()
         screen_root.set_size(screen.width, screen.height)
         self.dom_tree.set_root(screen_root)
+        self.clear()
         self.frame_buffer.set_size(screen.width, screen.height)
+        self.frame_buffer.inline = screen.inline
         self.app.log.system(
             f"Screen {screen.name} DOM Heirarchy: \n {self.dom_tree.get_tree_string()}"
         )

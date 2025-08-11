@@ -21,7 +21,7 @@ class Screen(ABC):
         self._app: Optional["App"] = None
         self._local_keybinds: list[Keybind] = []
         self.widgets: list[Widget] = []
-        self.inline: bool = False
+        self.inline: bool = True
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
