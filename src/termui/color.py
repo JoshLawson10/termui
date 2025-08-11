@@ -37,9 +37,9 @@ class Color:
 
     def lighten(self, percent: float) -> "Color":
         """Lighten the color by a percentage."""
-        if not (0 <= percent <= 100):
-            raise ValueError("Percent must be between 0 and 100.")
-        factor = 1 + percent / 100
+        if not (0 <= percent <= 1):
+            raise ValueError("Percent must be between 0 and 1.")
+        factor = 1 + percent
         return Color(
             r=min(255, int(self.r * factor)),
             g=min(255, int(self.g * factor)),
@@ -49,9 +49,9 @@ class Color:
 
     def darken(self, percent: float) -> "Color":
         """Darken the color by a percentage."""
-        if not (0 <= percent <= 100):
-            raise ValueError("Percent must be between 0 and 100.")
-        factor = 1 - percent / 100
+        if not (0 <= percent <= 1):
+            raise ValueError("Percent must be between 0 and 1.")
+        factor = 1 - percent
         return Color(
             r=max(0, int(self.r * factor)),
             g=max(0, int(self.g * factor)),
