@@ -1,5 +1,5 @@
-from termui.colors.ansi import AnsiColor
-from termui.types.char import Char
+from termui.char import Char
+from termui.color import Color
 
 from termui.widgets._widget import Widget
 
@@ -14,7 +14,7 @@ class Text(Widget):
     ) -> None:
         super().__init__(name=kwargs.get("name", "Text"), **kwargs)
         self.content: list[str] = content if isinstance(content, list) else [content]
-        self.fg_color = kwargs.get("fg_color", AnsiColor.WHITE)
+        self.fg_color = kwargs.get("fg_color", Color(255, 255, 255))
         self.bg_color = kwargs.get("bg_color", None)
 
         if "width" not in kwargs or "height" not in kwargs:

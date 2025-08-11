@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import Literal, Optional
 
-from termui.colors.ansi import AnsiColor
-from termui.colors.rgb import RGBColor
+from termui.char import Char
+
+from termui.color import Color
 from termui.errors import DimensionError
-from termui.types.char import Char
 from termui.utils.align import get_aligned_start_x, HorizontalAlignment
 
 
@@ -36,8 +36,8 @@ def draw_rectangle(
     width: int,
     height: int,
     border_style: BorderStyle = "solid",
-    border_color: AnsiColor | RGBColor = AnsiColor.WHITE,
-    title_color: AnsiColor | RGBColor = AnsiColor.WHITE,
+    border_color: Color = Color(255, 255, 255),
+    title_color: Color = Color(255, 255, 255),
     title: Optional[str] = None,
     title_alignment: HorizontalAlignment = "left",
     fill: str | Char = " ",

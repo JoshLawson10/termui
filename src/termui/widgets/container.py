@@ -1,5 +1,5 @@
-from termui.colors import AnsiColor, RGBColor
-from termui.types.char import Char
+from termui.char import Char
+from termui.color import Color
 from termui.utils.align import HorizontalAlignment, VerticalAlignment
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from ._widget import Widget
@@ -12,10 +12,10 @@ class Container(Widget):
         min_height = len(children) if children else 0
         self.set_size(kwargs.get("width", min_width), kwargs.get("height", min_height))
         self.border_style: BorderStyle = kwargs.get("border_style", "solid")
-        self.border_color = kwargs.get("border_color", AnsiColor.WHITE)
+        self.border_color = kwargs.get("border_color", Color(255, 255, 255))
         self.padding = kwargs.get("padding", (0, 0, 0, 0))
         self.title = kwargs.get("title", None)
-        self.title_color = kwargs.get("title_color", AnsiColor.WHITE)
+        self.title_color = kwargs.get("title_color", Color(255, 255, 255))
         self.title_alignment: HorizontalAlignment = kwargs.get(
             "title_alignment", "left"
         )

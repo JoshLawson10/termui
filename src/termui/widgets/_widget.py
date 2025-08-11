@@ -2,8 +2,9 @@ import uuid
 from abc import ABC, abstractmethod
 from typing import Optional, Union
 
+from termui.char import Char
+
 from termui.dom import DOMNode
-from termui.types.char import Char
 from termui.utils.geometry import Region
 
 

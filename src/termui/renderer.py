@@ -1,11 +1,12 @@
 import sys
 from typing import Optional, TYPE_CHECKING
 
-from termui.colors import AnsiColor, colorize, RGBColor
+from termui.char import Char
+
+from termui.color import Color, colorize
 from termui.cursor import Cursor as cursor
 from termui.dom import DOMTree
 from termui.screen import Screen
-from termui.types.char import Char
 from termui.utils.geometry import Region
 from termui.utils.terminal_utils import (
     clear_terminal,
@@ -24,7 +25,7 @@ class FrameBuffer:
         self,
         width: int,
         height: int,
-        background_color: Optional[AnsiColor | RGBColor] = None,
+        background_color: Optional[Color] = None,
     ) -> None:
         self.width = width
         self.height = height
@@ -58,7 +59,7 @@ class FrameBuffer:
             [self._get_empty_char() for _ in range(width)] for _ in range(height)
         ]
 
-    def set_background_color(self, color: Optional[AnsiColor | RGBColor]) -> None:
+    def set_background_color(self, color: Optional[Color]) -> None:
         """Set the background color of the frame buffer."""
         self.background_color = color
         self._create_empty_char()

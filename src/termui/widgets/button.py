@@ -2,8 +2,9 @@ from dataclasses import dataclass
 
 from typing import Callable, Literal, Optional
 
-from termui.colors import RGBColor
-from termui.types.char import Char
+from termui.char import Char
+
+from termui.color import Color
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 
@@ -31,8 +32,8 @@ class ButtonStyleVariant(ButtonVariant):
 
 @dataclass
 class ButtonColorVariant(ButtonVariant):
-    fg_color: RGBColor
-    bg_color: RGBColor
+    fg_color: Color
+    bg_color: Color
 
 
 @dataclass
@@ -52,43 +53,43 @@ BUTTON_STYLES: dict[ButtonStyle, ButtonStyleVariant] = {
 BUTTON_COLORS: dict[ButtonColor, ButtonColorVariant] = {
     "default": ButtonColorVariant(
         name="default",
-        fg_color=RGBColor(227, 227, 230),
-        bg_color=RGBColor(21, 24, 29),
+        fg_color=Color(227, 227, 230),
+        bg_color=Color(21, 24, 29),
     ),
     "primary": ButtonColorVariant(
         name="primary",
-        fg_color=RGBColor(237, 241, 253),
-        bg_color=RGBColor(96, 93, 246),
+        fg_color=Color(237, 241, 253),
+        bg_color=Color(96, 93, 246),
     ),
     "secondary": ButtonColorVariant(
         name="secondary",
-        fg_color=RGBColor(246, 228, 240),
-        bg_color=RGBColor(224, 68, 150),
+        fg_color=Color(246, 228, 240),
+        bg_color=Color(224, 68, 150),
     ),
     "accent": ButtonColorVariant(
         name="accent",
-        fg_color=RGBColor(33, 76, 73),
-        bg_color=RGBColor(80, 206, 188),
+        fg_color=Color(33, 76, 73),
+        bg_color=Color(80, 206, 188),
     ),
     "info": ButtonColorVariant(
         name="info",
-        fg_color=RGBColor(18, 45, 71),
-        bg_color=RGBColor(76, 183, 248),
+        fg_color=Color(18, 45, 71),
+        bg_color=Color(76, 183, 248),
     ),
     "success": ButtonColorVariant(
         name="success",
-        fg_color=RGBColor(27, 75, 58),
-        bg_color=RGBColor(83, 206, 149),
+        fg_color=Color(27, 75, 58),
+        bg_color=Color(83, 206, 149),
     ),
     "warning": ButtonColorVariant(
         name="warning",
-        fg_color=RGBColor(112, 53, 20),
-        bg_color=RGBColor(242, 186, 24),
+        fg_color=Color(112, 53, 20),
+        bg_color=Color(242, 186, 24),
     ),
     "error": ButtonColorVariant(
         name="error",
-        fg_color=RGBColor(70, 10, 24),
-        bg_color=RGBColor(240, 109, 128),
+        fg_color=Color(70, 10, 24),
+        bg_color=Color(240, 109, 128),
     ),
 }
 
