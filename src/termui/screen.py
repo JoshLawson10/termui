@@ -2,6 +2,7 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Any, Optional, TYPE_CHECKING
 
+from termui.colors import AnsiColor, RGBColor
 from termui.errors import ScreenError
 from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
@@ -22,6 +23,7 @@ class Screen(ABC):
         self._local_keybinds: list[Keybind] = []
         self.widgets: list[Widget] = []
         self.inline: bool = True
+        self.background_color: Optional[AnsiColor | RGBColor] = None
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
@@ -74,6 +76,19 @@ class Screen(ABC):
         self.width = kwargs.get("width", max_width)
         self.height = kwargs.get("height", max_height)
         self.inline = kwargs.get("inline", True)
+        self.background_color = kwargs.get("background_color", None)
+
+    def set_background_color(self, color: Optional[AnsiColor | RGBColor]) -> None:
+        """Set the background color of the screen.
+
+        Parameters
+        ----------
+        color : Optional[AnsiColor | RGBColor]
+            The background color to set. If None, removes the background color.
+        """
+        self.background_color = color
+        if self._app and self._app.renderer:
+            self._app.renderer.clear()
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name."""

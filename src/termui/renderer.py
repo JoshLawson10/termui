@@ -1,8 +1,7 @@
 import sys
-from typing import TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
-from termui.colors.colorize import colorize
-
+from termui.colors import AnsiColor, colorize, RGBColor
 from termui.cursor import Cursor as cursor
 from termui.dom import DOMTree
 from termui.screen import Screen
@@ -21,20 +20,54 @@ if TYPE_CHECKING:
 class FrameBuffer:
     """A class to hold the current frame buffer for rendering."""
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        background_color: Optional[AnsiColor | RGBColor] = None,
+    ) -> None:
         self.width = width
         self.height = height
-        self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
-        self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
+        self.background_color = background_color
+        self._create_empty_char()
+        self.current_frame = [
+            [self._get_empty_char() for _ in range(width)] for _ in range(height)
+        ]
+        self.previous_frame = [
+            [self._get_empty_char() for _ in range(width)] for _ in range(height)
+        ]
         self.dirty_regions: set[tuple[int, int, int, int]] = set()  # (x, y, w, h)
         self.inline: bool = True
+
+    def _create_empty_char(self) -> None:
+        """Create the base empty character with background color."""
+        self._empty_char = Char(" ", None, self.background_color)
+
+    def _get_empty_char(self) -> Char:
+        """Get a new empty character with the current background color."""
+        return Char(" ", None, self.background_color)
 
     def set_size(self, width: int, height: int) -> None:
         """Set the size of the frame buffer."""
         self.width = width
         self.height = height
-        self.current_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
-        self.previous_frame = [[Char(" ") for _ in range(width)] for _ in range(height)]
+        self.current_frame = [
+            [self._get_empty_char() for _ in range(width)] for _ in range(height)
+        ]
+        self.previous_frame = [
+            [self._get_empty_char() for _ in range(width)] for _ in range(height)
+        ]
+
+    def set_background_color(self, color: Optional[AnsiColor | RGBColor]) -> None:
+        """Set the background color of the frame buffer."""
+        self.background_color = color
+        self._create_empty_char()
+        # Update existing frames with new background color
+        for row in self.current_frame:
+            for i, char in enumerate(row):
+                if char.char == " " and char.fg_color is None:
+                    row[i] = self._get_empty_char()
+        self.mark_entire_screen_dirty()
 
     def mark_entire_screen_dirty(self) -> None:
         """Mark the entire screen as dirty."""
@@ -54,12 +87,15 @@ class FrameBuffer:
         """Clear the current frame."""
         for row in self.current_frame:
             for i in range(len(row)):
-                row[i] = Char(" ")
+                row[i] = self._get_empty_char()
         self.mark_entire_screen_dirty()
 
     def draw_char(self, x: int, y: int, char: Char) -> None:
         """Draw a character at the specified position."""
         if 0 <= x < self.width and 0 <= y < self.height:
+            if char.bg_color is None and self.background_color is not None:
+                char = Char(char.char, char.fg_color, self.background_color)
+
             if self.current_frame[y][x] != char:
                 self.current_frame[y][x] = char
                 self.mark_region_dirty(Region(x, y, 1, 1))
@@ -81,6 +117,9 @@ class FrameBuffer:
                     continue
 
                 if 0 <= x < self.width and 0 <= y < self.height:
+                    if char.bg_color is None and self.background_color is not None:
+                        char = Char(char.char, char.fg_color, self.background_color)
+
                     if self.current_frame[y][x] != char:
                         self.current_frame[y][x] = char
 
@@ -132,7 +171,9 @@ class Renderer:
         new_width, new_height = get_terminal_size()
         if (new_width, new_height) != (self.width, self.height):
             self.width, self.height = new_width, new_height
-            self.frame_buffer = FrameBuffer(self.width, self.height)
+            self.frame_buffer = FrameBuffer(
+                self.width, self.height, self.frame_buffer.background_color
+            )
             if self.dom_tree.root and self.dom_tree.root.widget:
                 self.dom_tree.root.widget.set_size(self.width, self.height)
 
@@ -143,8 +184,11 @@ class Renderer:
         screen_root.set_size(screen.width, screen.height)
         self.dom_tree.set_root(screen_root)
         self.clear()
+
         self.frame_buffer.set_size(screen.width, screen.height)
+        self.frame_buffer.set_background_color(screen.background_color)
         self.frame_buffer.inline = screen.inline
+
         self.app.log.system(
             f"Screen {screen.name} DOM Heirarchy: \n {self.dom_tree.get_tree_string()}"
         )
