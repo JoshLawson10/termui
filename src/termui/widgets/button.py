@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from pydoc import text
 from typing import Callable, Literal, Optional
 
 from termui.char import Char
@@ -110,7 +111,7 @@ class Button(Widget):
         disabled: bool = False,
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
         on_click: Optional[Callable[[], None]] = None,
-        state: ButtonState = "default",
+        state: ButtonState = "selected",
         **kwargs,
     ) -> None:
         """A simple button widget that can be clicked.
@@ -159,6 +160,46 @@ class Button(Widget):
                 button_size = BUTTON_SIZES[style]
         return button_style, button_color, button_size
 
+    def _get_colors(self) -> tuple[Color, Color, Color, Color | None]:
+        """Get the button colors."""
+        fg = self.color.fg_color
+        bg = self.color.bg_color
+        text_fg = fg
+        text_bg = bg
+
+        match self.style:
+            case "solid":
+                text_fg = fg
+                text_bg = bg
+            case "soft":
+                text_fg = fg.lighten(0.1)
+                text_bg = bg.darken(0.1)
+            case "outline":
+                text_fg = bg
+                text_bg = None
+            case "rounded":
+                text_fg = bg
+                text_bg = None
+            case "dashed":
+                text_fg = fg
+                text_bg = None
+
+        match self.state:
+            case "default":
+                pass
+            case "selected":
+                text_bg = bg.lighten(0.1) if text_bg else text_fg.lighten(0.5)
+            case "pressed":
+                fg = fg.darken(0.2)
+                bg = bg.lighten(0.1)
+            case "disabled":
+                fg = fg.darken(0.5)
+                bg = bg.darken(0.5)
+                text_fg = fg
+                text_bg = bg
+
+        return fg, bg, text_fg, text_bg
+
     def get_minimum_size(self) -> tuple[int, int]:
         """Get the minimum size of the button."""
         min_width = (
@@ -173,12 +214,15 @@ class Button(Widget):
 
     def render(self) -> list[list[Char]]:
         """Render the button."""
+
+        fg, bg, text_fg, text_bg = self._get_colors()
+
         content: list[list[Char]] = draw_rectangle(
             self.region.width,
             self.region.height,
             border_style=self.style.border_style,
-            border_color=self.color.bg_color,
-            fill=Char(self.style.fill_char, self.color.bg_color, None),
+            border_color=bg,
+            fill=Char(self.style.fill_char, bg, None),
         )
 
         if self.style.name == "solid" or self.style.name == "soft":
@@ -197,23 +241,11 @@ class Button(Widget):
                     depth_char_bottom = "▃"
             for char in content[0]:
                 char.char = depth_char_top
-                char.bg_color = self.color.bg_color.lighten(0.1)
+                char.bg_color = bg.lighten(0.1)
             for char in content[-1]:
                 char.char = depth_char_bottom
-                char.fg_color = self.color.bg_color.darken(0.1)
-                char.bg_color = self.color.bg_color
-
-        text_fg = (
-            self.color.fg_color
-            if self.style.name == "solid" or self.style.name == "soft"
-            else self.color.bg_color
-        )
-
-        text_bg = (
-            self.color.bg_color
-            if self.style.name == "solid" or self.style.name == "soft"
-            else self.color.fg_color
-        )
+                char.fg_color = bg.darken(0.1)
+                char.bg_color = bg
 
         text_line: list[Char] = [Char(c, text_fg, text_bg) for c in self.label]
 
