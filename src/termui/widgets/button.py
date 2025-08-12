@@ -111,7 +111,7 @@ class Button(Widget):
         disabled: bool = False,
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
         on_click: Optional[Callable[[], None]] = None,
-        state: ButtonState = "selected",
+        state: ButtonState = "default",
         **kwargs,
     ) -> None:
         """A simple button widget that can be clicked.
