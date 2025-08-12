@@ -39,11 +39,10 @@ class Color:
         """Lighten the color by a percentage."""
         if not (0 <= percent <= 1):
             raise ValueError("Percent must be between 0 and 1.")
-        factor = 1 + percent
         return Color(
-            r=min(255, int(self.r * factor)),
-            g=min(255, int(self.g * factor)),
-            b=min(255, int(self.b * factor)),
+            r=min(255, int(self.r + self.r * percent)),
+            g=min(255, int(self.g + self.g * percent)),
+            b=min(255, int(self.b + self.b * percent)),
             a=self.a,
         )
 
@@ -51,11 +50,10 @@ class Color:
         """Darken the color by a percentage."""
         if not (0 <= percent <= 1):
             raise ValueError("Percent must be between 0 and 1.")
-        factor = 1 - percent
         return Color(
-            r=max(0, int(self.r * factor)),
-            g=max(0, int(self.g * factor)),
-            b=max(0, int(self.b * factor)),
+            r=max(0, int(self.r - self.r * percent)),
+            g=max(0, int(self.g - self.g * percent)),
+            b=max(0, int(self.b - self.b * percent)),
             a=self.a,
         )
 
