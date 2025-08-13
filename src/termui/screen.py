@@ -39,6 +39,12 @@ class Screen(ABC):
         return self._app
 
     @property
+    def log(self):
+        if self._app is None:
+            raise ScreenError("Screen is not mounted to an App instance.")
+        return self._app.log
+
+    @property
     def local_keybinds(self) -> list[Keybind]:
         """Get the local keybinds for this screen."""
         return self._local_keybinds
