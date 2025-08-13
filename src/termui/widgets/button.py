@@ -266,3 +266,4 @@ class Button(Widget):
         if self.disabled:
             return
         self.on_click()
+        self.state = "selected"

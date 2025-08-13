@@ -137,4 +137,5 @@ class App(ABC):
 
     def quit(self) -> None:
         self.input_handler.stop()
+        self.renderer.clear()
         os._exit(0)

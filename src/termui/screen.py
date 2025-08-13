@@ -3,14 +3,16 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional, TYPE_CHECKING
 
 from termui.color import Color
+from termui.dom import DOMNode
 from termui.errors import ScreenError
 from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
+from termui.widgets._widget import Widget
+
 
 if TYPE_CHECKING:
     from termui.app import App
     from termui.layouts._layout import Layout
-    from termui.widgets._widget import Widget
 
 
 class Screen(ABC):
@@ -21,7 +23,7 @@ class Screen(ABC):
         self.width, self.height = get_terminal_size()
         self._app: Optional["App"] = None
         self._local_keybinds: list[Keybind] = []
-        self.widgets: list[Widget] = []
+        self.renderables: list[DOMNode] = []
         self.inline: bool = True
         self.background_color: Optional[Color] = None
 
@@ -98,8 +100,15 @@ class Screen(ABC):
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name."""
-        for widget in self.widgets:
-            if widget.name == name:
+        for widget in self.renderables:
+            if widget.name == name and isinstance(widget, Widget):
+                return widget
+        return None
+
+    def get_widget_by_id(self, widget_id: str) -> "Widget | None":
+        """Get a widget by its ID."""
+        for widget in self.renderables:
+            if widget.id == widget_id and isinstance(widget, Widget):
                 return widget
         return None
 

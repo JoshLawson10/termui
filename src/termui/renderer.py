@@ -185,6 +185,8 @@ class Renderer:
         self.dom_tree.set_root(screen_root)
         self.clear()
 
+        screen.renderables = self.dom_tree.get_node_list()
+
         self.frame_buffer.set_size(screen.width, screen.height)
         self.frame_buffer.set_background_color(screen.background_color)
         self.frame_buffer.inline = screen.inline
@@ -206,3 +208,4 @@ class Renderer:
     def clear(self) -> None:
         """Clear the renderer's current frame."""
         self.frame_buffer.clear()
+        clear_terminal()
