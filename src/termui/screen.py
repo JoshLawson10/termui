@@ -5,6 +5,7 @@ from typing import Any, Optional, TYPE_CHECKING
 from termui.color import Color
 from termui.dom import DOMNode
 from termui.errors import ScreenError
+from termui.events import InputEvent, KeyEvent, MouseEvent
 from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
 from termui.widgets._widget import Widget
@@ -111,6 +112,17 @@ class Screen(ABC):
             if widget.id == widget_id and isinstance(widget, Widget):
                 return widget
         return None
+
+    def handle_input_event(self, event: InputEvent) -> None:
+        """Handle an input event."""
+        if isinstance(event, MouseEvent):
+            for widget in self.renderables:
+                if isinstance(widget, Widget):
+                    if widget.region.contains(event.x, event.y):
+                        widget.handle_mouse_event(event)
+            self.log.system(
+                f"Mouse event at ({event.x}, {event.y}) with button {event.button} and type {event.event_type}"
+            )
 
     @abstractmethod
     def setup(self) -> None:

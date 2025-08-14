@@ -6,9 +6,9 @@ from typing import Callable, Literal, Optional
 from termui.char import Char
 
 from termui.color import Color
+from termui.events import MouseEvent
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
-
 from termui.widgets._widget import Widget
 
 
@@ -17,7 +17,7 @@ type ButtonColor = Literal[
     "default", "primary", "secondary", "accent", "info", "success", "warning", "error"
 ]
 type ButtonSize = Literal["icon", "small", "medium", "large"]
-type ButtonState = Literal["default", "selected", "pressed", "disabled"]
+type ButtonState = Literal["default", "hovered", "pressed", "disabled"]
 
 
 @dataclass
@@ -139,7 +139,7 @@ class Button(Widget):
         self.on_click = on_click or (lambda: None)
 
         self.style, self.color, self.size = self._get_styles(style)
-        self.state = state
+        self.state: ButtonState = state
 
         min_width, min_height = self.get_minimum_size()
         self.set_size(width=min_width, height=min_height)
@@ -187,7 +187,7 @@ class Button(Widget):
         match self.state:
             case "default":
                 pass
-            case "selected":
+            case "hovered":
                 text_bg = bg.lighten(0.1) if text_bg else text_fg.lighten(0.5)
             case "pressed":
                 fg = fg.darken(0.2)
@@ -268,4 +268,13 @@ class Button(Widget):
         if self.disabled:
             return
         self.on_click()
+
+    def _on_mouse_enter(self) -> None:
+        self.state = "default"
+
+    def _on_mouse_exit(self) -> None:
+        self.state = "default"
+
+    def _on_click(self, event: MouseEvent) -> None:
         self.state = "pressed"
+        self.click()

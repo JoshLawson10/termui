@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from termui.char import Char
-
 from termui.dom import DOMNode
+from termui.events import MouseEvent
 from termui.utils.geometry import Region
 
 
@@ -39,6 +39,27 @@ class Widget(DOMNode, ABC):
     def get_minimum_size(self) -> tuple[int, int]:
         """Get the minimum size of the widget."""
         return 0, 0
+
+    def handle_mouse_event(self, event: MouseEvent) -> None:
+        if event.event_type == "press":
+            self._on_click(event)
+        else:
+            if self.region.contains(event.x, event.y):
+                self._on_mouse_enter()
+            else:
+                self._on_mouse_exit()
+
+    def _on_mouse_enter(self) -> None:
+        """Handle mouse enter events."""
+        pass
+
+    def _on_mouse_exit(self) -> None:
+        """Handle mouse exit events."""
+        pass
+
+    def _on_click(self, event: MouseEvent) -> None:
+        """Handle mouse click events."""
+        pass
 
     @abstractmethod
     def render(self) -> list[list[Char]]:

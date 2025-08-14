@@ -75,7 +75,10 @@ class App(ABC):
     async def _input_loop(self):
         """Run the input handler in an asynchronous loop."""
         while self._running:
-            self.input_handler.process_input()
+            event = await self.input_handler.process_input()
+            if self.current_screen and event:
+                self.current_screen.handle_input_event(event)
+
             await asyncio.sleep(0.001)
 
     async def _update_loop(self):

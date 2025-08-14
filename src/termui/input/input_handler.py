@@ -3,10 +3,10 @@ import select
 import sys
 import termios
 import tty
-from typing import Callable, Optional
+from typing import Optional
 
-from termui.events import MouseEvent
-from termui.input import Keybind
+from termui.events import InputEvent, KeyEvent, MouseEvent
+from .keybind import Keybind
 
 
 class InputHandler:
@@ -15,7 +15,6 @@ class InputHandler:
         self._current_keys: set[str] = set()
         self._should_exit = False
         self._mouse_enabled = False
-        self._mouse_callbacks: list[Callable[[MouseEvent], None]] = []
         self._current_mouse_x: int = 0
         self._current_mouse_y: int = 0
         self._escape_sequences: dict[str, str] = {
@@ -84,15 +83,6 @@ class InputHandler:
             sys.stdout.flush()
             self._mouse_enabled = False
 
-    def register_mouse_callback(self, callback: Callable[[MouseEvent], None]) -> None:
-        """Register a callback function to handle mouse events."""
-        self._mouse_callbacks.append(callback)
-
-    def unregister_mouse_callback(self, callback: Callable[[MouseEvent], None]) -> None:
-        """Unregister a mouse callback."""
-        if callback in self._mouse_callbacks:
-            self._mouse_callbacks.remove(callback)
-
     def get_mouse_position(self) -> Optional[tuple[int, int]]:
         """Get the current mouse position by requesting it from the terminal.
 
@@ -160,7 +150,7 @@ class InputHandler:
 
         return MouseEvent(col, row, button, event_type)
 
-    def _get_key(self) -> Optional[str]:
+    async def _get_input_event_async(self) -> Optional[InputEvent]:
         """Get a single key press, handling escape sequences and mouse events."""
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
@@ -182,52 +172,52 @@ class InputHandler:
                                     break
 
                             if self._mouse_enabled:
-                                mouse_event = self._parse_mouse_event(mouse_buf)
-                                if mouse_event:
-                                    for callback in self._mouse_callbacks:
-                                        callback(mouse_event)
-                            return None
+                                return self._parse_mouse_event(mouse_buf)
                         else:
                             seq = char + next_char + third_char
                             if seq in self._escape_sequences:
-                                return self._escape_sequences[seq]
+                                return KeyEvent(self._escape_sequences[seq])
                             else:
                                 fourth_char = sys.stdin.read(1)
                                 longer_seq = seq + fourth_char
                                 if longer_seq in self._escape_sequences:
-                                    return self._escape_sequences[longer_seq]
-                                return "escape"
+                                    return KeyEvent(self._escape_sequences[longer_seq])
+                                return KeyEvent("escape")
                     else:
                         # Two character escape sequence
                         seq = char + next_char
                         if seq in self._escape_sequences:
-                            return self._escape_sequences[seq]
-                        return "escape"
+                            return KeyEvent(self._escape_sequences[seq])
+                        return KeyEvent("escape")
                 elif char in self._special_keys:
-                    return self._special_keys[char]
+                    return KeyEvent(self._special_keys[char])
                 else:
-                    return char.lower()
+                    return KeyEvent(char.lower())
         finally:
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
         return None
 
-    def process_input(self) -> None:
+    async def process_input(self) -> Optional[InputEvent]:
         """Process input and trigger appropriate actions."""
-        key = self._get_key()
-        if key is None:
-            return
+        event = await self._get_input_event_async()
+        if event is None:
+            return None
 
-        if key == "escape":
-            self._current_keys.clear()
-            return
+        if isinstance(event, KeyEvent):
+            self._current_keys.add(event.key)
 
-        self._current_keys.add(key)
+        elif isinstance(event, MouseEvent):
+            self._current_mouse_x = event.x
+            self._current_mouse_y = event.y
+            # Handle mouse events here if needed
 
         for keybind in self._keybinds:
             if keybind.matches(self._current_keys):
                 keybind.action()
                 self._current_keys.clear()
                 break
+
+        return event
 
     def _set_raw_mode(self, enable: bool):
         fd = sys.stdin.fileno()
