@@ -1,10 +1,7 @@
 from dataclasses import dataclass
-
-from pydoc import text
 from typing import Callable, Literal, Optional
 
 from termui.char import Char
-
 from termui.color import Color
 from termui.events import MouseEvent
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y

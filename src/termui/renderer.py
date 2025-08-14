@@ -2,7 +2,6 @@ import sys
 from typing import Optional, TYPE_CHECKING
 
 from termui.char import Char
-
 from termui.color import Color, colorize
 from termui.cursor import Cursor as cursor
 from termui.dom import DOMTree
