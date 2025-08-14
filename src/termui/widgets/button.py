@@ -270,7 +270,7 @@ class Button(Widget):
         self.on_click()
 
     def _on_mouse_enter(self) -> None:
-        self.state = "default"
+        self.state = "hovered"
 
     def _on_mouse_exit(self) -> None:
         self.state = "default"

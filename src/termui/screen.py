@@ -120,6 +120,8 @@ class Screen(ABC):
                 if isinstance(widget, Widget):
                     if widget.region.contains(event.x, event.y):
                         widget.handle_mouse_event(event)
+                    else:
+                        widget._on_mouse_exit()
 
     @abstractmethod
     def setup(self) -> None:

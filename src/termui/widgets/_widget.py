@@ -44,10 +44,7 @@ class Widget(DOMNode, ABC):
         if event.event_type == "press":
             self._on_click(event)
         else:
-            if self.region.contains(event.x, event.y):
-                self._on_mouse_enter()
-            else:
-                self._on_mouse_exit()
+            self._on_mouse_enter()
 
     def _on_mouse_enter(self) -> None:
         """Handle mouse enter events."""
