@@ -100,6 +100,7 @@ class App(ABC):
         self.build()
         self._register_decorated_keybinds()
         self._running = True
+        self.input_handler.enable_mouse()
 
         try:
             await asyncio.gather(
