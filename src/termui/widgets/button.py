@@ -188,11 +188,14 @@ class Button(Widget):
             case "default":
                 pass
             case "hovered":
-                text_bg = bg.lighten(0.1) if text_bg else text_fg.lighten(0.5)
-            case "pressed":
                 fg = fg.darken(0.2)
                 bg = bg.lighten(0.2)
-                text_fg = fg
+                text_fg = fg.lighten(0.2)
+                text_bg = bg
+            case "pressed":
+                fg = fg.darken(0.2)
+                bg = bg.darken(0.2)
+                text_fg = fg.lighten(0.2)
                 text_bg = bg
             case "disabled":
                 fg = fg.darken(0.5)
