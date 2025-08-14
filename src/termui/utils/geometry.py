@@ -26,7 +26,7 @@ class Region:
             f"Region(x={self.x}, y={self.y}, width={self.width}, height={self.height})"
         )
 
-    def is_inside(self, x: int, y: int) -> bool:
+    def contains(self, x: int, y: int) -> bool:
         """Check if the point (x, y) is inside the region."""
         return self.x <= x < self.x + self.width and self.y <= y < self.y + self.height
 
