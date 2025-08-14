@@ -1,6 +1,6 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import Optional, Union
+from typing import Optional
 
 from termui.char import Char
 
