@@ -120,9 +120,6 @@ class Screen(ABC):
                 if isinstance(widget, Widget):
                     if widget.region.contains(event.x, event.y):
                         widget.handle_mouse_event(event)
-            self.log.system(
-                f"Mouse event at ({event.x}, {event.y}) with button {event.button} and type {event.event_type}"
-            )
 
     @abstractmethod
     def setup(self) -> None:
