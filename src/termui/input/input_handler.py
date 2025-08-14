@@ -204,6 +204,10 @@ class InputHandler:
             return None
 
         if isinstance(event, KeyEvent):
+            if event.key == "escape":
+                self._current_keys.clear()
+                return event
+
             self._current_keys.add(event.key)
 
         elif isinstance(event, MouseEvent):
