@@ -101,12 +101,42 @@ class GridLayout(Layout):
         max_rows, max_cols = self.calculate_grid_dimensions()
         row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
 
-        # Calculate minimum size and update region if needed
+        # Calculate minimum size
         min_width, min_height = self.calculate_minimum_size()
+
+        # Ensure grid is at least minimum size
         if self.region.width < min_width:
             self.region.width = min_width
         if self.region.height < min_height:
             self.region.height = min_height
+
+        # Distribute extra space
+        total_spacing_width = self.spacing * max(0, max_cols - 1)
+        total_spacing_height = self.spacing * max(0, max_rows - 1)
+
+        available_width = self.region.width - total_spacing_width
+        available_height = self.region.height - total_spacing_height
+
+        total_min_width = sum(col_widths)
+        total_min_height = sum(row_heights)
+
+        extra_width = max(0, available_width - total_min_width)
+        if extra_width > 0 and max_cols > 0:
+            extra_per_col = extra_width // max_cols
+            remainder_width = extra_width % max_cols
+            for i in range(max_cols):
+                col_widths[i] += extra_per_col
+                if i < remainder_width:
+                    col_widths[i] += 1
+
+        extra_height = max(0, available_height - total_min_height)
+        if extra_height > 0 and max_rows > 0:
+            extra_per_row = extra_height // max_rows
+            remainder_height = extra_height % max_rows
+            for i in range(max_rows):
+                row_heights[i] += extra_per_row
+                if i < remainder_height:
+                    row_heights[i] += 1
 
         # Calculate row and column positions
         row_positions = [0]

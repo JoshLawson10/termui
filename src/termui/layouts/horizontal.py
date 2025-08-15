@@ -36,9 +36,7 @@ class HorizontalLayout(Layout):
         x_offset = 0
         for child in self.children:
             child.set_position(self.region.x + x_offset, self.region.y)
-            if child.region.height > self.region.height:
-                child.set_size(child.region.width, self.region.height)
-
+            child.set_size(child.region.width, self.region.height)
             x_offset += child.region.width + self.spacing
 
         self.mark_dirty()

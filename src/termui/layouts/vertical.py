@@ -36,9 +36,7 @@ class VerticalLayout(Layout):
         y_offset = 0
         for child in self.children:
             child.set_position(self.region.x, self.region.y + y_offset)
-            if child.region.width > self.region.width:
-                child.set_size(self.region.width, child.region.height)
-
+            child.set_size(self.region.width, child.region.height)
             y_offset += child.region.height + self.spacing
 
         self.mark_dirty()

@@ -138,9 +138,6 @@ class Button(Widget):
         self.style, self.color, self.size = self._get_styles(style)
         self.state: ButtonState = state
 
-        min_width, min_height = self.get_minimum_size()
-        self.set_size(width=min_width, height=min_height)
-
     def _get_styles(
         self, style: str
     ) -> tuple[ButtonStyleVariant, ButtonColorVariant, ButtonSizeVariant]:
