@@ -162,23 +162,36 @@ class Renderer:
         self.initial_width, self.initial_height = get_terminal_size()
         self.dom_tree = DOMTree()
         self.frame_buffer = FrameBuffer(self.initial_width, self.initial_height)
+
         clear_terminal()
         cursor.hide()
 
-    def check_resize(self) -> None:
+    def check_resize(self) -> bool:
         """Check if the terminal size has changed and update the renderer."""
         new_width, new_height = get_terminal_size()
-        if (new_width, new_height) != (self.width, self.height):
-            self.width, self.height = new_width, new_height
+        if (new_width, new_height) != (
+            self.frame_buffer.width,
+            self.frame_buffer.height,
+        ):
             self.frame_buffer = FrameBuffer(
-                self.width, self.height, self.frame_buffer.background_color
+                new_width, new_height, self.frame_buffer.background_color
             )
-            if self.dom_tree.root and self.dom_tree.root.widget:
-                self.dom_tree.root.widget.set_size(self.width, self.height)
+            if self.app.current_screen:
+                self.app.current_screen.width = new_width
+                self.app.current_screen.height = new_height
+
+                self.pipe(self.app.current_screen)
+
+            clear_terminal()
+            self.frame_buffer.mark_entire_screen_dirty()
+
+            return True
+        return False
 
     def pipe(self, screen: Screen) -> None:
         """Pipe a screen to the renderer."""
         self.app.log.system(f"Piping screen: {screen.name} to renderer")
+
         screen_root = screen.build()
         screen_root.set_size(screen.width, screen.height)
         self.dom_tree.set_root(screen_root)
@@ -190,12 +203,11 @@ class Renderer:
         self.frame_buffer.set_background_color(screen.background_color)
         self.frame_buffer.inline = screen.inline
 
-        self.app.log.system(
-            f"Screen {screen.name} DOM Heirarchy: \n {self.dom_tree.get_tree_string()}"
-        )
-
     def render(self) -> None:
         """Render all piped widgets to the terminal."""
+        if self.check_resize():
+            pass
+
         for node in self.dom_tree.get_node_list():
             if node.widget is None or node.dirty == False:
                 continue
