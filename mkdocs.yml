@@ -1,10 +1,38 @@
 site_name: TermUI Docs
 
 theme:
-  name: "terminal"
+  name: "material"
+  palette:
+    scheme: slate
+    primary: teal
+  font:
+    text: Ubuntu
+    code: JetBrains Mono
 
 plugins:
-  - mkdocstrings
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            modernize_annotations: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            show_signature_annotations: false
+            separate_signature: true
+            signature_crossrefs: true
+            merge_init_into_class: true
+            parameter_headings: true
+            show_root_heading: false
+            docstring_options:
+              ignore_init_summary: true
+            show_source: false
+            filters:
+              - "!^_"
+              - "^__init__$"
+      watch:
+        - mkdocs.yml
+        - src/textual
 
 nav:
   - Home: "index.md"
@@ -14,12 +42,12 @@ nav:
   - API:
       - "api/index.md"
       - Layouts:
-          - "api/layouts/layout.md"
+          - "api/layouts/base.md"
           - "api/layouts/vertical.md"
           - "api/layouts/horizontal.md"
           - "api/layouts/grid.md"
       - Widgets:
-          - "api/widgets/widget.md"
+          - "api/widgets/base.md"
           - "api/widgets/button.md"
           - "api/widgets/container.md"
           - "api/widgets/text.md"
