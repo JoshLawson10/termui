@@ -1,5 +1,14 @@
 site_name: TermUI Docs
 
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+
 theme:
   name: "material"
   palette:
@@ -8,6 +17,12 @@ theme:
   font:
     text: Ubuntu
     code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.footer
+    - content.code.annotate
+    - content.code.copy
 
 plugins:
   - mkdocstrings:
@@ -33,6 +48,7 @@ plugins:
       watch:
         - mkdocs.yml
         - src/textual
+  - git-revision-date-localized:
 
 nav:
   - Home: "index.md"
@@ -41,14 +57,19 @@ nav:
       - "examples/index.md"
   - API:
       - "api/index.md"
+      - Core:
+          - "api/app.md"
+          - "api/screen.md"
+          - DOM: "api/dom.md"
+          - "api/renderer.md"
       - Layouts:
-          - "api/layouts/base.md"
           - "api/layouts/vertical.md"
           - "api/layouts/horizontal.md"
           - "api/layouts/grid.md"
       - Widgets:
-          - "api/widgets/base.md"
           - "api/widgets/button.md"
           - "api/widgets/container.md"
           - "api/widgets/text.md"
   - FAQ: faq.md
+
+copyright: Copyright &copy; Josh Lawson 2025
