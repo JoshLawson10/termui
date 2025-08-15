@@ -1,0 +1,26 @@
+site_name: TermUI Docs
+
+theme:
+  name: "terminal"
+
+plugins:
+  - mkdocstrings
+
+nav:
+  - Home: "index.md"
+  - Getting Started: "getting_started.md"
+  - Examples:
+      - "examples/index.md"
+  - API:
+      - "api/index.md"
+      - Layouts:
+          - "api/layouts/layout.md"
+          - "api/layouts/vertical.md"
+          - "api/layouts/horizontal.md"
+          - "api/layouts/grid.md"
+      - Widgets:
+          - "api/widgets/widget.md"
+          - "api/widgets/button.md"
+          - "api/widgets/container.md"
+          - "api/widgets/text.md"
+  - FAQ: faq.md
