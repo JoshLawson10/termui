@@ -3,14 +3,34 @@ from termui.widgets._widget import Widget
 
 
 class GridLayout(Layout):
-    """A grid layout that arranges widgets in a grid format."""
+    """A grid layout that arranges widgets in a grid format.
+
+    The GridLayout positions widgets in a two-dimensional grid based on their
+    'pos' attribute. Widgets can span multiple rows and/or columns. The grid
+    automatically calculates cell sizes and distributes available space.
+    """
 
     def __init__(self, *children: Widget | Layout, **kwargs) -> None:
-        """Initialize the grid layout with the specified number of rows and columns."""
+        """Initialize the grid layout with child widgets.
+
+        Args:
+            *children: Child widgets to arrange in the grid. Each child's 'pos'
+                      attribute determines its grid position and span:
+                      - pos=(row, col): Single cell at (row, col)
+                      - pos=((start_row, end_row), col): Row span from start to end
+                      - pos=(row, (start_col, end_col)): Column span from start to end
+                      - pos=((start_row, end_row), (start_col, end_col)): Both spans
+            **kwargs: Additional layout options including spacing.
+
+        Raises:
+            ValueError: If widgets overlap in the grid or have conflicting positions.
+        """
         self.grid_map: dict[tuple[int, int], Widget] = {}
+        """A mapping of grid positions to their corresponding widgets."""
         self.span_map: dict[Widget, tuple[int, int, int, int]] = (
             {}
         )  # widget -> (row, col, row_span, col_span)
+        """A mapping of widgets to their grid positions and spans."""
 
         for child in children:
             child_row, child_col = child.pos
@@ -39,7 +59,12 @@ class GridLayout(Layout):
         super().__init__("GridLayout", *children, **kwargs)
 
     def calculate_grid_dimensions(self) -> tuple[int, int]:
-        """Calculate the required grid dimensions based on widget positions."""
+        """Calculate the required grid dimensions based on widget positions.
+
+        Returns:
+            A tuple (max_rows, max_cols) representing the minimum grid size
+            needed to accommodate all widgets.
+        """
         if not self.grid_map:
             return 1, 1
 
@@ -51,7 +76,16 @@ class GridLayout(Layout):
     def calculate_cell_sizes(
         self, max_rows: int, max_cols: int
     ) -> tuple[list[int], list[int]]:
-        """Calculate the size of each row and column based on content."""
+        """Calculate the size of each row and column based on content.
+
+        Args:
+            max_rows: The number of rows in the grid.
+            max_cols: The number of columns in the grid.
+
+        Returns:
+            A tuple (row_heights, col_widths) where each list contains the
+            calculated size for each row/column.
+        """
         row_heights = [0] * max_rows
         col_widths = [0] * max_cols
 
@@ -84,7 +118,12 @@ class GridLayout(Layout):
         return row_heights, col_widths
 
     def calculate_minimum_size(self) -> tuple[int, int]:
-        """Calculate minimum size needed for the grid layout."""
+        """Calculate minimum size needed for the grid layout.
+
+        Returns:
+            A tuple (min_width, min_height) representing the minimum space
+            required to display all widgets with proper spacing.
+        """
         max_rows, max_cols = self.calculate_grid_dimensions()
         row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
 

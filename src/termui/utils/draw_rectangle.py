@@ -30,6 +30,7 @@ class BorderStyleChars(Enum):
 type BorderStyle = Literal[
     "ascii", "none", "round", "solid", "double", "dashed", "heavy", "full"
 ]
+"""The character style to use for the border"""
 
 
 def draw_rectangle(
@@ -42,7 +43,18 @@ def draw_rectangle(
     title_alignment: HorizontalAlignment = "left",
     fill: str | Char = " ",
 ) -> list[list[Char]]:
-    """Draw a rectangle with the specified width, height, and border style."""
+    """Draw a rectangle with the specified width, height, and border style.
+
+    Args:
+        width: The width of the rectangle.
+        height: The height of the rectangle.
+        border_style: The style of the border (default: "solid").
+        border_color: The color of the border (default: white).
+        title_color: The color of the title text (default: white).
+        title: The title text to display (default: None).
+        title_alignment: The alignment of the title text (default: "left").
+        fill: The character or Char object to use for filling the rectangle (default: " ").
+    """
     if width < 2 or height < 2:
         raise DimensionError("Width and height must be at least 2.")
 

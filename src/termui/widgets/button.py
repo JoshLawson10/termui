@@ -10,32 +10,62 @@ from termui.widgets._widget import Widget
 
 
 type ButtonStyle = Literal["solid", "soft", "outline", "rounded", "dashed"]
+"""Defines the visual style of a button."""
 type ButtonColor = Literal[
     "default", "primary", "secondary", "accent", "info", "success", "warning", "error"
 ]
+"""Defines the color scheme of a button."""
 type ButtonSize = Literal["icon", "small", "medium", "large"]
+"""Defines the size of a button."""
 type ButtonState = Literal["default", "hovered", "pressed", "disabled"]
+"""Defines the state of a button."""
 
 
 @dataclass
 class ButtonVariant:
+    """Base class for button style variants."""
+
     name: ButtonStyle | ButtonColor | ButtonSize
 
 
 @dataclass
 class ButtonStyleVariant(ButtonVariant):
+    """Defines the visual style of a button (border and fill).
+
+    Args:
+        name: The style name identifier.
+        border_style: The border style to use for drawing.
+        fill_char: The character used to fill the button background.
+    """
+
     border_style: BorderStyle
     fill_char: str
 
 
 @dataclass
 class ButtonColorVariant(ButtonVariant):
+    """Defines the color scheme of a button.
+
+    Args:
+        name: The color scheme name identifier.
+        fg_color: The foreground color for text and borders.
+        bg_color: The background color for the button.
+    """
+
     fg_color: Color
     bg_color: Color
 
 
 @dataclass
 class ButtonSizeVariant(ButtonVariant):
+    """Defines the size and padding of a button.
+
+    Args:
+        name: The size variant name identifier.
+        padding_x: Horizontal padding inside the button.
+        padding_y: Vertical padding inside the button.
+    """
+
     padding_x: int
     padding_y: int
 
@@ -100,6 +130,12 @@ BUTTON_SIZES: dict[ButtonSize, ButtonSizeVariant] = {
 
 
 class Button(Widget):
+    """A clickable button widget with customizable appearance and behavior.
+
+    The Button widget supports various visual styles, colors, sizes, and states.
+    It can display text and respond to mouse clicks with configurable callbacks.
+    """
+
     def __init__(
         self,
         label: str,
@@ -111,37 +147,50 @@ class Button(Widget):
         state: ButtonState = "default",
         **kwargs,
     ) -> None:
-        """A simple button widget that can be clicked.
+        """Initialize a button with specified label and styling.
 
-        Parameters
-        ----------
-        label : str
-            The text displayed on the button.
-        styles : tuple[str, ...]
-            The styles applied to the button.
-        disabled: bool = False
-            Whether the button is disabled.
-        padding: tuple[int, int, int, int] = (0, 0, 0, 0)
-            Padding around the button content.
-        on_click: Optional[Callable[[], None]] = None
-            The callback function to be called when the button is clicked.
-        state: ButtonState = "default"
-            The state of the button.
+        Args:
+            label: The text displayed on the button.
+            style: Space-separated style string combining style, color, and size
+                  (e.g., "solid primary medium"). Available options:
+                  - Styles: "solid", "soft", "outline", "rounded", "dashed"
+                  - Colors: "default", "primary", "secondary", "accent", "info",
+                           "success", "warning", "error"
+                  - Sizes: "icon", "small", "medium", "large"
+            disabled: Whether the button is disabled and non-interactive.
+            padding: Additional padding around the button as (top, right, bottom, left).
+            on_click: Callback function executed when the button is clicked.
+            state: Current visual state of the button.
+            **kwargs: Additional widget arguments passed to the parent constructor.
         """
         super().__init__(name=kwargs.get("name", f"Button-{label}"), **kwargs)
 
         self.label = label
+        """The text label displayed on the button."""
         self.padding = padding
+        """Padding to apply around the button's content."""
         self.disabled = disabled
+        """Whether the button is disabled and non-interactive."""
         self.on_click = on_click or (lambda: None)
+        """Callback function executed when the button is clicked."""
 
         self.style, self.color, self.size = self._get_styles(style)
+        """Visual style, color scheme, and size of the button."""
         self.state: ButtonState = state
+        """Current state of the button."""
 
     def _get_styles(
         self, style: str
     ) -> tuple[ButtonStyleVariant, ButtonColorVariant, ButtonSizeVariant]:
-        """Get the button styles."""
+        """Parse and return the button style variants from a style string.
+
+        Args:
+            style: Space-separated string of style keywords.
+
+        Returns:
+            A tuple containing (style_variant, color_variant, size_variant)
+            with defaults applied for any missing components.
+        """
         button_style = BUTTON_STYLES["solid"]
         button_color = BUTTON_COLORS["default"]
         button_size = BUTTON_SIZES["medium"]
@@ -155,7 +204,12 @@ class Button(Widget):
         return button_style, button_color, button_size
 
     def _get_colors(self) -> tuple[Color, Color, Color, Color | None]:
-        """Get the button colors."""
+        """Calculate the current colors based on style and state.
+
+        Returns:
+            A tuple (border_fg, border_bg, text_fg, text_bg) containing
+            the colors to use for rendering the button in its current state.
+        """
         fg = self.color.fg_color
         bg = self.color.bg_color
         text_fg = fg
@@ -200,7 +254,12 @@ class Button(Widget):
         return fg, bg, text_fg, text_bg
 
     def get_minimum_size(self) -> tuple[int, int]:
-        """Get the minimum size of the button."""
+        """Calculate the minimum size needed to display the button.
+
+        Returns:
+            A tuple (min_width, min_height) representing the minimum space
+            required for the button including padding and borders.
+        """
         min_width = (
             len(self.label)
             + self.size.padding_x * 2
@@ -212,7 +271,12 @@ class Button(Widget):
         return max(min_width, 1), max(min_height, 1)
 
     def render(self) -> list[list[Char]]:
-        """Render the button."""
+        """Render the button to a 2D character array.
+
+        Returns:
+            A 2D list of Char objects representing the button's appearance
+            with proper colors, borders, text, and visual effects.
+        """
 
         fg, bg, text_fg, text_bg = self._get_colors()
 
@@ -261,17 +325,27 @@ class Button(Widget):
         return content
 
     def click(self) -> None:
-        """Simulate a button click."""
+        """Programmatically trigger a button click.
+
+        Executes the button's click callback if the button is not disabled.
+        """
         if self.disabled:
             return
         self.on_click()
 
     def _on_mouse_enter(self) -> None:
+        """Handle mouse enter events by changing to hovered state."""
         self.state = "hovered"
 
     def _on_mouse_exit(self) -> None:
+        """Handle mouse exit events by returning to default state."""
         self.state = "default"
 
     def _on_click(self, event: MouseEvent) -> None:
+        """Handle mouse click events.
+
+        Args:
+            event: The mouse event that triggered the click.
+        """
         self.state = "pressed"
         self.click()

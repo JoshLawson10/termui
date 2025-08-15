@@ -13,16 +13,26 @@ from termui.screen import Screen
 
 
 class App(ABC):
+    """The base class for all Termui applications."""
+
     def __init__(self) -> None:
+        """Initialize the application with default settings."""
         self.screens: dict[str, Screen] = {}
+        """A stack of screens registered to the current app"""
         self.current_screen: Optional[Screen] = None
+        """The currently rendered screen"""
         self.input_handler = InputHandler()
+        """An instance of the InputHandler class used for keyboard and mouse input."""
         self.renderer = Renderer(self)
+        """An instance of the Renderer class used for rendering the application."""
         self._running = True
+        """Whether the app is running"""
         self._default_keybinds: list[Keybind] = [
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
+        """The default key bindings for all applications."""
         self._logger = Logger("logs/log.txt")
+        """An instance of the internal logger. All stderr are routed to this logger."""
 
     @property
     def log(self) -> Logger:
@@ -30,7 +40,11 @@ class App(ABC):
         return self._logger
 
     def _register_decorated_keybinds(self):
-        """Finds and registers all methods decorated with @keybind."""
+        """Find and register all methods decorated with @keybind.
+
+        Scans all methods of the app instance for keybind decorations and
+        registers them with the input handler, along with default keybinds.
+        """
         for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
             info = getattr(method, "_keybind_info", None)
             if info is not None:
@@ -46,7 +60,14 @@ class App(ABC):
             self.input_handler.register_keybind(keybind)
 
     def register_screen(self, screen: Screen) -> None:
-        """Register a new screen."""
+        """Register a new screen with the application.
+
+        Args:
+            screen: The screen instance to register.
+
+        Raises:
+            ScreenError: If the provided object is not a Screen instance.
+        """
         if not isinstance(screen, Screen):
             raise ScreenError("Expected a Screen instance.")
         screen.setup()
@@ -60,7 +81,14 @@ class App(ABC):
         pass
 
     def show_screen(self, screen_name: str) -> None:
-        """Switch to a different screen by name."""
+        """Switch to a different screen by name.
+
+        Args:
+            screen_name: The name of the screen to switch to.
+
+        Raises:
+            ScreenError: If the screen name is not found in registered screens.
+        """
         if screen_name not in self.screens:
             raise ScreenError(
                 f"Screen '{screen_name}' not found. \n Available screens: {list(self.screens.keys())}"
@@ -73,7 +101,11 @@ class App(ABC):
         self.current_screen.mount(self)
 
     async def _input_loop(self):
-        """Run the input handler in an asynchronous loop."""
+        """Run the input handler in an asynchronous loop.
+
+        Continuously processes input events and forwards them to the current
+        screen while the application is running.
+        """
         while self._running:
             event = await self.input_handler.process_input()
             if self.current_screen and event:
@@ -82,14 +114,22 @@ class App(ABC):
             await asyncio.sleep(0.001)
 
     async def _update_loop(self):
-        """Run the update loop for the current screen."""
+        """Run the update loop for the current screen.
+
+        Continuously calls the update method on the current screen while
+        the application is running.
+        """
         while self._running:
             if self.current_screen:
                 self.current_screen.update()
             await asyncio.sleep(0.001)
 
     async def _render_loop(self):
-        """Run the renderer in an asynchronous loop."""
+        """Run the renderer in an asynchronous loop.
+
+        Continuously renders the current screen while the application is
+        running. If no current screen is set, defaults to the first screen.
+        """
         while self._running:
             if not self.current_screen:
                 self.current_screen = self.screens[next(iter(self.screens))]
@@ -98,8 +138,15 @@ class App(ABC):
             self.renderer.render()
             await asyncio.sleep(0.001)
 
-    async def run_async(self) -> None:
-        """Run the application asynchronously."""
+    async def _run_async(self) -> None:
+        """Run the application asynchronously.
+
+        Sets up the application, registers keybinds, enables mouse input,
+        and starts the main application loops (input, update, render).
+
+        Raises:
+            AsyncError: If the application loop is cancelled.
+        """
         self.build()
         self._register_decorated_keybinds()
         self._running = True
@@ -128,9 +175,13 @@ class App(ABC):
             self.quit()
 
     def run(self) -> None:
-        """Run the application."""
+        """Run the application synchronously.
+
+        A convenience method that wraps run_async() with asyncio.run().
+        Handles keyboard interrupts and other exceptions gracefully.
+        """
         try:
-            asyncio.run(self.run_async())
+            asyncio.run(self._run_async())
         except KeyboardInterrupt:
             self._running = False
             self.quit()
@@ -140,6 +191,7 @@ class App(ABC):
             self.quit()
 
     def quit(self) -> None:
+        """Safely handle application termination."""
         self.input_handler.stop()
         self.renderer.clear()
         os._exit(0)

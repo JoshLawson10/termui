@@ -10,13 +10,26 @@ from .keybind import Keybind
 
 
 class InputHandler:
-    def __init__(self):
+    """Handles terminal input including keyboard and mouse events.
+
+    The InputHandler manages raw terminal input, processes escape sequences,
+    handles keybindings, and provides mouse tracking functionality.
+    """
+
+    def __init__(self) -> None:
+        """Initialize the input handler with default settings and mappings."""
         self._keybinds: list[Keybind] = []
+        """A list of all registered keybinds."""
         self._current_keys: set[str] = set()
+        """A set of currently pressed keys. Used for multi-key keybinds."""
         self._should_exit = False
+        """Flag indicating whether the application should exit."""
         self._mouse_enabled = False
+        """Flag indicating whether mouse tracking is enabled."""
         self._current_mouse_x: int = 0
         self._current_mouse_y: int = 0
+        """The current position of the mouse cursor."""
+
         self._escape_sequences: dict[str, str] = {
             "\x1b[A": "up",
             "\x1b[B": "down",
@@ -54,11 +67,19 @@ class InputHandler:
         self._set_raw_mode(True)
 
     def register_keybind(self, keybind: Keybind) -> None:
-        """Register a new keybind with its associated action."""
+        """Register a new keybind with its associated action.
+
+        Args:
+            keybind: The keybind to register.
+        """
         self._keybinds.append(keybind)
 
     def unregister_keybind(self, keybind: Keybind) -> None:
-        """Unregister a keybind."""
+        """Unregister a keybind.
+
+        Args:
+            keybind: The keybind to remove from the registered keybinds.
+        """
         self._keybinds.remove(keybind)
 
     def clear_keybinds(self) -> None:
@@ -66,18 +87,28 @@ class InputHandler:
         self._keybinds.clear()
 
     def get_keybinds(self) -> list[Keybind]:
-        """Get a list of all registered keybinds."""
+        """Get a list of all registered keybinds.
+
+        Returns:
+            A list of all currently registered keybinds.
+        """
         return self._keybinds
 
     def enable_mouse(self) -> None:
-        """Enable mouse tracking in the terminal."""
+        """Enable mouse tracking in the terminal.
+
+        Enables SGR mouse reporting mode for precise mouse event handling.
+        """
         if not self._mouse_enabled:
             sys.stdout.write("\033[?1003h\033[?1006h")
             sys.stdout.flush()
             self._mouse_enabled = True
 
     def disable_mouse(self) -> None:
-        """Disable mouse tracking in the terminal."""
+        """Disable mouse tracking in the terminal.
+
+        Disables SGR mouse reporting mode.
+        """
         if self._mouse_enabled:
             sys.stdout.write("\033[?1003l\033[?1006l")
             sys.stdout.flush()
@@ -86,8 +117,12 @@ class InputHandler:
     def get_mouse_position(self) -> Optional[tuple[int, int]]:
         """Get the current mouse position by requesting it from the terminal.
 
-        Note: This is a blocking call that waits for the user to move or click the mouse.
+        This is a blocking call that waits for the user to move or click the mouse.
         For non-blocking mouse handling, use enable_mouse() and register callbacks instead.
+
+        Returns:
+            A tuple (column, row) of the mouse position, or None if unable
+            to retrieve the position.
         """
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
@@ -123,7 +158,14 @@ class InputHandler:
                 sys.stdout.flush()
 
     def _parse_mouse_event(self, sequence: str) -> Optional[MouseEvent]:
-        """Parse a mouse escape sequence into a MouseEvent."""
+        """Parse a mouse escape sequence into a MouseEvent.
+
+        Args:
+            sequence: The escape sequence to parse.
+
+        Returns:
+            A MouseEvent object if parsing successful, None otherwise.
+        """
         # SGR mode: \x1b[<button;col;rowM (press) or \x1b[<button;col;rowm (release)
         match = re.search(r"\x1b\[<(\d+);(\d+);(\d+)([mM])", sequence)
         if not match:
@@ -151,7 +193,12 @@ class InputHandler:
         return MouseEvent(col, row, button, event_type)
 
     async def _get_input_event_async(self) -> Optional[InputEvent]:
-        """Get a single key press, handling escape sequences and mouse events."""
+        """Get a single input event, handling escape sequences and mouse events.
+
+        Returns:
+            An InputEvent (KeyEvent or MouseEvent) if input is available,
+            None if no input is ready.
+        """
         fd = sys.stdin.fileno()
         old_settings = termios.tcgetattr(fd)
         try:
@@ -198,7 +245,11 @@ class InputHandler:
         return None
 
     async def process_input(self) -> Optional[InputEvent]:
-        """Process input and trigger appropriate actions."""
+        """Process input and trigger appropriate keybind actions.
+
+        Returns:
+            The input event that was processed, or None if no input was available.
+        """
         event = await self._get_input_event_async()
         if event is None:
             return None
@@ -224,6 +275,11 @@ class InputHandler:
         return event
 
     def _set_raw_mode(self, enable: bool):
+        """Set or unset raw mode for the terminal.
+
+        Args:
+            enable: True to enable raw mode, False to restore normal mode.
+        """
         fd = sys.stdin.fileno()
         if enable:
             self._original_term_settings = termios.tcgetattr(fd)
@@ -232,7 +288,11 @@ class InputHandler:
             termios.tcsetattr(fd, termios.TCSADRAIN, self._original_term_settings)
 
     def stop(self) -> None:
-        """Stop the input handler and clean up."""
+        """Stop the input handler and clean up terminal settings.
+
+        Disables mouse tracking, restores normal terminal mode, and sets
+        the exit flag.
+        """
         self.disable_mouse()
         self._set_raw_mode(False)
         self._should_exit = True
