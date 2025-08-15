@@ -8,12 +8,12 @@ from termui.errors import ScreenError
 from termui.events import InputEvent, KeyEvent, MouseEvent
 from termui.input import Keybind
 from termui.utils.terminal_utils import get_terminal_size
-from termui.widgets._widget import Widget
+from termui.widget import Widget
 
 
 if TYPE_CHECKING:
     from termui.app import App
-    from termui.layouts._layout import Layout
+    from termui.layout import Layout
 
 
 class Screen(ABC):

@@ -1,5 +1,5 @@
-from termui.layouts._layout import Layout
-from termui.widgets._widget import Widget
+from termui.layout import Layout
+from termui.widget import Widget
 
 
 class GridLayout(Layout):

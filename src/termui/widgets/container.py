@@ -2,7 +2,7 @@ from termui.char import Char
 from termui.color import Color
 from termui.utils.align import HorizontalAlignment, VerticalAlignment
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
-from ._widget import Widget
+from ..widget import Widget
 
 
 class Container(Widget):

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Optional
 
-from termui.widgets._widget import Widget
+from termui.widget import Widget
 
 
 class Layout(Widget):

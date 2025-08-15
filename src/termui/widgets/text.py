@@ -1,7 +1,7 @@
 from termui.char import Char
 from termui.color import Color
 
-from termui.widgets._widget import Widget
+from termui.widget import Widget
 
 
 class Text(Widget):

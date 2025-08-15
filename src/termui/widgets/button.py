@@ -6,7 +6,7 @@ from termui.color import Color
 from termui.events import MouseEvent
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
-from termui.widgets._widget import Widget
+from termui.widget import Widget
 
 
 type ButtonStyle = Literal["solid", "soft", "outline", "rounded", "dashed"]
