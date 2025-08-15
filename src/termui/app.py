@@ -1,3 +1,5 @@
+"""This is the base class for all TermUI applications"""
+
 import asyncio
 import inspect
 import os
@@ -13,7 +15,7 @@ from termui.screen import Screen
 
 
 class App(ABC):
-    """The base class for all Termui applications."""
+    """The base class for all TermUI applications."""
 
     def __init__(self) -> None:
         """Initialize the application with default settings."""
