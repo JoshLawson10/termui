@@ -1,3 +1,5 @@
+# This should replace the content of src/termui/layouts/grid.py
+
 from termui.layout import Layout
 from termui.widget import Widget
 
@@ -34,23 +36,35 @@ class GridLayout(Layout):
 
         for child in children:
             child_row, child_col = child.pos
-            row = child_row[0] if isinstance(child_row, tuple) else child_row
-            col = child_col[0] if isinstance(child_col, tuple) else child_col
-            row_span = (
-                child_row[1] - child_row[0] + 1 if isinstance(child_row, tuple) else 1
-            )
-            col_span = (
-                child_col[1] - child_col[0] + 1 if isinstance(child_col, tuple) else 1
-            )
 
+            # Handle row specification
+            if isinstance(child_row, tuple):
+                row = child_row[0]
+                row_span = child_row[1] - child_row[0] + 1
+            else:
+                row = child_row
+                row_span = 1
+
+            # Handle column specification
+            if isinstance(child_col, tuple):
+                col = child_col[0]
+                col_span = child_col[1] - child_col[0] + 1
+            else:
+                col = child_col
+                col_span = 1
+
+            # Convert to 0-based indexing
             row_0_index = row - 1
             col_0_index = col - 1
 
+            # Check for overlaps and populate grid_map
             for r in range(row_0_index, row_0_index + row_span):
                 for c in range(col_0_index, col_0_index + col_span):
                     if (r, c) in self.grid_map:
                         raise ValueError(
-                            f"Trying to place widget {child.name} at grid position ({r}, {c}). Already occupied by {self.grid_map[(r, c)].name}. Row: {row}, Col: {col}, Row Span: {row_span}, Col Span: {col_span}"
+                            f"Trying to place widget {child.name} at grid position ({r}, {c}). "
+                            f"Already occupied by {self.grid_map[(r, c)].name}. "
+                            f"Row: {row}, Col: {col}, Row Span: {row_span}, Col Span: {col_span}"
                         )
                     self.grid_map[(r, c)] = child
 
