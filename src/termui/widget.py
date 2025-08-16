@@ -48,7 +48,7 @@ class Widget(DOMNode, ABC):
         """Grid position of the widget in the layout grid."""
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(id={self.id}, name={self.name})"
+        return f"{self.__class__.__name__}(id={self.id}, name={self.name}): Pos({self.pos})"
 
     def set_position(self, x: int, y: int) -> None:
         """Set the widget's position.

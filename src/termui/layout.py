@@ -39,6 +39,17 @@ class Layout(Widget):
         """
         raise NotImplementedError("Subclasses must implement the arrange method.")
 
+    def calculate_minimum_size(self) -> tuple[int, int]:
+        """Calculate the minimum size required for the layout.
+
+        Returns:
+            A tuple (min_width, min_height) representing the minimum space
+            required for the layout including padding and borders.
+        """
+        raise NotImplementedError(
+            "Subclasses must implement the calculate_minimum_size method."
+        )
+
     def render(self) -> list[list[str]]:
         """Render the layout by arranging its children.
 
