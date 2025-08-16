@@ -58,10 +58,18 @@ nav:
   - API:
       - "api/index.md"
       - Core:
-          - "api/app.md"
-          - "api/screen.md"
-          - DOM: "api/dom.md"
-          - "api/renderer.md"
+          - termui.app: "api/app.md"
+          - termui.char: "api/char.md"
+          - termui.color: "api/color.md"
+          - termui.cursor: "api/cursor.md"
+          - termui.dom: "api/dom.md"
+          - termui.errors: "api/errors.md"
+          - termui.events: "api/events.md"
+          - termui.layout: "api/layout.md"
+          - termui.logger: "api/logger.md"
+          - termui.renderer: "api/renderer.md"
+          - termui.screen: "api/screen.md"
+          - termui.widget: "api/widget.md"
       - Layouts:
           - "api/layouts/vertical.md"
           - "api/layouts/horizontal.md"

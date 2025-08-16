@@ -151,12 +151,7 @@ class Button(Widget):
 
         Args:
             label: The text displayed on the button.
-            style: Space-separated style string combining style, color, and size
-                  (e.g., "solid primary medium"). Available options:
-                  - Styles: "solid", "soft", "outline", "rounded", "dashed"
-                  - Colors: "default", "primary", "secondary", "accent", "info",
-                           "success", "warning", "error"
-                  - Sizes: "icon", "small", "medium", "large"
+            style: Space-separated style string combining ButtonStyle, ButtonColor, and ButtonSize
             disabled: Whether the button is disabled and non-interactive.
             padding: Additional padding around the button as (top, right, bottom, left).
             on_click: Callback function executed when the button is clicked.
