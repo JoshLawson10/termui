@@ -46,7 +46,7 @@ class Text(Widget):
         if not self.content:
             return 1, 1
         width = max(len(line) for line in self.content)
-        height = len(self.content)
+        height = max(len(self.content), 1)
         return width, height
 
     def set_content(self, content: str | list[str]) -> None:
