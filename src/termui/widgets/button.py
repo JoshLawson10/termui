@@ -174,6 +174,8 @@ class Button(Widget):
         self.state: ButtonState = state
         """Current state of the button."""
 
+        self.set_size(*self.get_minimum_size())
+
     def _get_styles(
         self, style: str
     ) -> tuple[ButtonStyleVariant, ButtonColorVariant, ButtonSizeVariant]:
