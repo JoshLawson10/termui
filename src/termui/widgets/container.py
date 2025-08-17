@@ -13,57 +13,75 @@ from termui.widget import Widget
 class Container(Widget):
     """A container widget that can hold and organize child widgets."""
 
-    def __init__(self, root_layout: Optional[Layout] = None, **kwargs) -> None:
+    def __init__(
+        self,
+        *children: Widget,
+        title: Optional[str] = None,
+        title_color: Color = Color(255, 255, 255),
+        title_alignment: HorizontalAlignment = "left",
+        border_style: BorderStyle = "solid",
+        border_color: Color = Color(255, 255, 255),
+        padding: tuple[int, int, int, int] = (0, 0, 0, 0),
+        **kwargs,
+    ) -> None:
         """Initialize a container with optional child widgets.
 
         Args:
-            root_layout (Layout): The root layout to manage child widgets.
-                All widgets to be contained in this should be added to this layout.
-                If None, creates a VerticalLayout by default.
-            **kwargs: Additional widget configuration options:
-                - title: The title displayed at the top of the container.
-                - title_color: The color of the title text.
-                - title_alignment: The alignment of the title text.
-                - border_style: The style of the container's border.
-                - border_color: The color of the container's border.
-                - padding: The padding inside the container.
+            *children: Child widgets to add to this container.
+            title (str, optional): The title displayed at the top of the container.
+            title_color (Color, optional): The color of the title text.
+            title_alignment (HorizontalAlignment, optional): The alignment of the title text.
+            border_style (BorderStyle, optional): The style of the container's border.
+            border_color (Color, optional): The color of the container's border.
+            padding (tuple[int, int, int, int], optional): The padding inside the container.
+            **kwargs: Additional container configuration options.
         """
         super().__init__(
             name=kwargs.get("name", f"Container-{kwargs.get('title', 'Unnamed')}"),
             **kwargs,
         )
 
-        self.title = kwargs.get("title", None)
+        self.title = title
         """The title displayed at the top of the container."""
-        self.title_color = kwargs.get("title_color", Color(255, 255, 255))
+        self.title_color: Color = title_color
         """The color of the title text."""
-        self.title_alignment: HorizontalAlignment = kwargs.get(
-            "title_alignment", "left"
-        )
+        self.title_alignment: HorizontalAlignment = title_alignment
         """The alignment of the title text."""
-        self.border_style: BorderStyle = kwargs.get("border_style", "solid")
+        self.border_style: BorderStyle = border_style
         """The style of the container's border."""
-        self.border_color = kwargs.get("border_color", Color(255, 255, 255))
+        self.border_color: Color = border_color
         """The color of the container's border."""
-        self.padding = kwargs.get("padding", (0, 0, 0, 0))
+        self.padding: tuple[int, int, int, int] = padding
         """The padding inside the container."""
 
-        self.root_layout = root_layout if root_layout else VerticalLayout()
-        """The root layout to manage child widgets."""
+        self._root_layout: Layout = VerticalLayout()
 
-        self._sizing_in_progress = False
-        """Flag to prevent infinite sizing loops."""
+        if len(children) == 1 and isinstance(children[0], Layout):
+            self._root_layout = children[0]
+        else:
+            for child in children:
+                self._root_layout.add_child(child)
 
-        self.add_child(self.root_layout)
+        self.add_child(self._root_layout)
+
+        self.set_size(*self.get_minimum_size())
 
     def __call__(self, *children: Widget) -> "Container":
         """Make the container callable to accept children.
 
         This allows syntax like:
-        container = Container(title="My Container")(
+        ```python
+        container1 = Container(
+            title="My Container",
+            title_color=Color(220, 184, 90),
+            title_alignment="center",
+        )
+
+        return container1(
             Text("Child 1"),
             Text("Child 2")
         )
+        ```
 
         Args:
             *children: Child widgets to add to this container.
@@ -72,9 +90,16 @@ class Container(Widget):
             Self, to allow method chaining and use in layouts.
         """
 
-        for child in children:
-            self.root_layout.add_child(child)
+        for child in self._root_layout.children:
+            self._root_layout.remove_child(child)
 
+        if len(children) == 1 and isinstance(children[0], Layout):
+            self._root_layout = children[0]
+        else:
+            for child in children:
+                self._root_layout.add_child(child)
+
+        self.add_child(self._root_layout)
         return self
 
     def get_content_region(self) -> Region:
@@ -99,15 +124,15 @@ class Container(Widget):
 
     def _arrange_content(self) -> None:
         """Arrange the content layout within the container."""
-        if not self.root_layout:
+        if not self._root_layout:
             return
 
         content_region = self.get_content_region()
 
         if content_region.width > 0 and content_region.height > 0:
-            self.root_layout.set_position(content_region.x, content_region.y)
-            self.root_layout.set_size(content_region.width, content_region.height)
-            self.root_layout.arrange()
+            self._root_layout.set_position(content_region.x, content_region.y)
+            self._root_layout.set_size(content_region.width, content_region.height)
+            self._root_layout.arrange()
 
     def set_size(self, width: int, height: int) -> None:
         """Set the size of the container and rearrange content.
@@ -163,8 +188,8 @@ class Container(Widget):
             title_alignment=self.title_alignment,
         )
 
-        if self.root_layout and self.root_layout.children:
-            for child_node in self.root_layout.children:
+        if self._root_layout and self._root_layout.children:
+            for child_node in self._root_layout.children:
                 child = (
                     child_node.widget if hasattr(child_node, "widget") else child_node
                 )
@@ -231,16 +256,16 @@ class Container(Widget):
         Args:
             layout: The new layout to use for arranging children.
         """
-        if self.root_layout and self.root_layout.children:
-            old_children = list(self.root_layout.children)
-            self.root_layout.children.clear()
+        if self._root_layout and self._root_layout.children:
+            old_children = list(self._root_layout.children)
+            self._root_layout.children.clear()
 
             for child in old_children:
                 layout.add_child(child)
 
-        if self.root_layout:
-            self.remove_child(self.root_layout)
+        if self._root_layout:
+            self.remove_child(self._root_layout)
 
-        self.root_layout = layout
-        self.add_child(self.root_layout)
+        self._root_layout = layout
+        self.add_child(self._root_layout)
         self._arrange_content()
