@@ -1,8 +1,10 @@
+from typing import Optional
+
 from termui.char import Char
 from termui.color import Color
 from termui.layout import Layout
 from termui.layouts import VerticalLayout
-from termui.utils.align import HorizontalAlignment, VerticalAlignment
+from termui.utils.align import HorizontalAlignment
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from termui.utils.geometry import Region
 from termui.widget import Widget
@@ -11,22 +13,24 @@ from termui.widget import Widget
 class Container(Widget):
     """A container widget that can hold and organize child widgets."""
 
-    def __init__(self, *children, **kwargs) -> None:
+    def __init__(self, root_layout: Optional[Layout] = None, **kwargs) -> None:
         """Initialize a container with optional child widgets.
 
         Args:
-            *children: Child widgets to add to the container.
+            root_layout (Layout): The root layout to manage child widgets.
+                All widgets to be contained in this should be added to this layout.
+                If None, creates a VerticalLayout by default.
             border_style: Style of the border, by default "solid".
             border_color: Color of the border, by default white.
             padding: Padding (top, right, bottom, left), by default (0, 0, 0, 0).
             title: Title to display on the border, by default None.
             title_color: Color of the title text, by default white.
             title_alignment: Alignment of the title, by default "left".
-            layout: Custom layout for arranging children, by default VerticalLayout.
             **kwargs: Additional widget parameters.
         """
         super().__init__(
-            name=kwargs.get("name", f"Container-{kwargs.get('title', None)}"), **kwargs
+            name=kwargs.get("name", f"Container-{kwargs.get('title', 'Unnamed')}"),
+            **kwargs,
         )
 
         self.title = kwargs.get("title", None)
@@ -44,53 +48,34 @@ class Container(Widget):
         self.padding = kwargs.get("padding", (0, 0, 0, 0))
         """The padding inside the container."""
 
-        self.children: list[Widget] = []
-        """A list of child widgets contained within this container."""
-        self._content_layout: Layout = kwargs.get("layout", VerticalLayout)
-        """The layout direction for the container's content."""
+        self.root_layout = root_layout if root_layout else VerticalLayout()
+        """The root layout to manage child widgets."""
+
+        self._sizing_in_progress = False
+        """Flag to prevent infinite sizing loops."""
+
+        self.add_child(self.root_layout)
+
+    def __call__(self, *children: Widget) -> "Container":
+        """Make the container callable to accept children.
+
+        This allows syntax like:
+        container = Container(title="My Container")(
+            Text("Child 1"),
+            Text("Child 2")
+        )
+
+        Args:
+            *children: Child widgets to add to this container.
+
+        Returns:
+            Self, to allow method chaining and use in layouts.
+        """
 
         for child in children:
-            self.add_child(child)
+            self.root_layout.add_child(child)
 
-        min_width, min_height = self.get_minimum_size()
-        self.set_size(kwargs.get("width", min_width), kwargs.get("height", min_height))
-
-    def add_child(self, child: Widget) -> None:
-        """Add a child widget to the container.
-
-        Overrides Widget.add_child to locally manage children within the container.
-
-        Args:
-            child (Widget): The child widget to add.
-        """
-        if child not in self.children:
-            self.children.append(child)
-            super().add_child(child)
-            if child not in self._content_layout.children:
-                self._content_layout.children.append(child)
-            self._arrange_content()
-            self.mark_dirty()
-
-    def remove_child(self, child: Widget) -> None:
-        """Remove a child widget from the container.
-
-        Overrides Widget.remove_child to locally manage children within the container.
-
-        Args:
-            child (Widget): The child widget to remove.
-        """
-        if child in self.children:
-            self.children.remove(child)
-            super().remove_child(child)
-            if child in self._content_layout.children:
-                self._content_layout.children.remove(child)
-            self._arrange_content()
-            self.mark_dirty()
-
-    def clear_children(self) -> None:
-        """Remove all child widgets from the container."""
-        for child in self.children.copy():
-            self.remove_child(child)
+        return self
 
     def get_content_region(self) -> Region:
         """Get the region available for content (inside border and padding)."""
@@ -114,15 +99,15 @@ class Container(Widget):
 
     def _arrange_content(self) -> None:
         """Arrange the content layout within the container."""
-        if not self.children:
+        if not self.root_layout:
             return
 
         content_region = self.get_content_region()
 
-        self._content_layout.set_position(content_region.x, content_region.y)
-        self._content_layout.set_size(content_region.width, content_region.height)
-
-        self._content_layout.arrange()
+        if content_region.width > 0 and content_region.height > 0:
+            self.root_layout.set_position(content_region.x, content_region.y)
+            self.root_layout.set_size(content_region.width, content_region.height)
+            self.root_layout.arrange()
 
     def set_size(self, width: int, height: int) -> None:
         """Set the size of the container and rearrange content.
@@ -156,27 +141,15 @@ class Container(Widget):
         padding_width = self.padding[1] + self.padding[3]
         padding_height = self.padding[0] + self.padding[2]
 
-        content_min_width, content_min_height = 0, 0
-        if self.children:
-            if hasattr(self._content_layout, "calculate_minimum_size"):
-                content_min_width, content_min_height = (
-                    self._content_layout.calculate_minimum_size()
-                )
-            else:
-                content_min_width = max(child.region.width for child in self.children)
-                content_min_height = sum(child.region.height for child in self.children)
+        min_width = border_size + padding_width + 10
+        min_height = border_size + padding_height + 3
 
-        min_width = border_size + padding_width + content_min_width
-        min_height = border_size + padding_height + content_min_height
-
-        if self.border_style != "none" or self.title:
-            min_width = max(min_width, 3)
-            min_height = max(min_height, 3)
-
-        return max(min_width, 1), max(min_height, 1)
+        return min_width, min_height
 
     def render(self) -> list[list[Char]]:
         """Render the container with its border and children."""
+        self._arrange_content()
+
         content = draw_rectangle(
             self.region.width,
             self.region.height,
@@ -187,21 +160,28 @@ class Container(Widget):
             title_alignment=self.title_alignment,
         )
 
-        if self.children:
-            for child in self.children:
-                if child.region.width > 0 and child.region.height > 0:
-                    child_content = child.render()
+        if self.root_layout and self.root_layout.children:
+            for child_node in self.root_layout.children:
+                child = (
+                    child_node.widget if hasattr(child_node, "widget") else child_node
+                )
 
-                    rel_x = child.region.x - self.region.x
-                    rel_y = child.region.y - self.region.y
+                if child and child.region.width > 0 and child.region.height > 0:
+                    try:
+                        child_content = child.render()
 
-                    for row_idx, row in enumerate(child_content):
-                        y_pos = rel_y + row_idx
-                        if 0 <= y_pos < len(content):
-                            for col_idx, char in enumerate(row):
-                                x_pos = rel_x + col_idx
-                                if 0 <= x_pos < len(content[y_pos]):
-                                    content[y_pos][x_pos] = char
+                        rel_x = child.region.x - self.region.x
+                        rel_y = child.region.y - self.region.y
+
+                        for row_idx, row in enumerate(child_content):
+                            y_pos = rel_y + row_idx
+                            if 0 <= y_pos < len(content):
+                                for col_idx, char in enumerate(row):
+                                    x_pos = rel_x + col_idx
+                                    if 0 <= x_pos < len(content[y_pos]):
+                                        content[y_pos][x_pos] = char
+                    except Exception as e:
+                        pass
 
         return content
 
@@ -241,3 +221,23 @@ class Container(Widget):
         self.padding = padding
         self._arrange_content()
         self.mark_dirty()
+
+    def set_layout(self, layout: Layout) -> None:
+        """Replace the current layout with a new one.
+
+        Args:
+            layout: The new layout to use for arranging children.
+        """
+        if self.root_layout and self.root_layout.children:
+            old_children = list(self.root_layout.children)
+            self.root_layout.children.clear()
+
+            for child in old_children:
+                layout.add_child(child)
+
+        if self.root_layout:
+            self.remove_child(self.root_layout)
+
+        self.root_layout = layout
+        self.add_child(self.root_layout)
+        self._arrange_content()
