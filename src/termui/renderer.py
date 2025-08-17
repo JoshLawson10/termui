@@ -272,6 +272,7 @@ class Renderer:
 
         screen_root = screen.build()
         screen_root.set_size(screen.width, screen.height)
+        screen_root.arrange()
         self.dom_tree.set_root(screen_root)
         self.clear()
 
