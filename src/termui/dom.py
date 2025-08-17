@@ -38,6 +38,22 @@ class DOMNode:
     def __repr__(self):
         return f"DOMNode(id={self.id!r}, children={len(self.children)})"
 
+    def set_widget(self, widget: "Widget") -> None:
+        """Set the widget associated with this node.
+
+        Args:
+            widget: The widget to associate with this node.
+        """
+        self.widget = widget
+
+    def set_parent(self, parent: "DOMNode") -> None:
+        """Set the parent node for this node.
+
+        Args:
+            parent: The parent node to set.
+        """
+        self.parent = parent
+
     def add_child(self, child: "DOMNode") -> None:
         """Add a child node to this node.
 
@@ -46,6 +62,16 @@ class DOMNode:
         """
         child.parent = self
         self.children.append(child)
+
+    def add_children(self, *children: "DOMNode") -> None:
+        """Add multiple child nodes to this node.
+
+        Args:
+            *children: The child nodes to add. Their parent will be set to this node.
+        """
+        for child in children:
+            child.parent = self
+            self.children.append(child)
 
     def remove_child(self, child: "DOMNode") -> None:
         """Remove a child node from this node.
