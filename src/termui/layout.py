@@ -27,8 +27,6 @@ class Layout(Widget):
         self.spacing = kwargs.get("spacing", 0)
         """The space between child widgets."""
 
-        self.arrange()
-
     @abstractmethod
     def arrange(self) -> None:
         """Arrange the child widgets according to the layout's rules.
