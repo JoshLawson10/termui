@@ -54,10 +54,14 @@ class Widget(DOMNode, ABC):
         """Make the widget callable to accept children.
 
         This allows syntax like:
-        container = Container(title="My Container")(
+        ```python
+        container = Container(title="My Container")
+
+        return container(
             Text("Child 1"),
             Text("Child 2")
         )
+        ```
 
         Args:
             *children: Child widgets to add to this widget.
