@@ -12,26 +12,37 @@ class Text(Widget):
         content: str | list[str],
         **kwargs,
     ) -> None:
+        """Initialize the Text widget with content and styling options.
+
+        Args:
+            content: The text content to display. Single strings become one line,
+                    lists of strings become multiple lines.
+            **kwargs: Widget configuration options:
+                - name (str): Widget identifier, defaults to "Text"
+                - fg_color (Color): Text color, defaults to white
+                - bg_color (Color | None): Background color, defaults to None
+                - width (int): Override automatic width calculation
+                - height (int): Override automatic height calculation
+                - Other widget properties (id, pos, etc.)
+        """
         super().__init__(name=kwargs.get("name", "Text"), **kwargs)
+
         self.content: list[str] = content if isinstance(content, list) else [content]
+        """The text content to display."""
         self.fg_color = kwargs.get("fg_color", Color(255, 255, 255))
+        """The foreground color of the text."""
         self.bg_color = kwargs.get("bg_color", None)
-
-        if "width" not in kwargs or "height" not in kwargs:
-            self._calculate_size()
-
-    def _calculate_size(self) -> None:
-        """Calculate the size based on content."""
-        if not self.content:
-            self.set_size(1, 1)
-            return
-
-        width = max(len(line) for line in self.content) if self.content else 1
-        height = len(self.content)
-        self.set_size(width, height)
+        """The background color of the text."""
 
     def get_minimum_size(self) -> tuple[int, int]:
-        """Get minimum size needed for the text content."""
+        """Get the minimum size required to display the text content.
+
+        Calculates the smallest possible dimensions that can accommodate all
+        text without truncation.
+
+        Returns:
+            tuple[int, int]: Minimum (width, height) in characters.
+        """
         if not self.content:
             return 1, 1
         width = max(len(line) for line in self.content)
@@ -39,12 +50,24 @@ class Text(Widget):
         return width, height
 
     def set_content(self, content: str | list[str]) -> None:
-        """Update the text content."""
+        """Update the text content and recalculate widget size.
+
+        Changes the displayed text content and automatically adjusts the widget
+        dimensions to fit the new content. Marks the widget as dirty to trigger
+        re-rendering.
+
+        Args:
+            content: The new text content to display.
+        """
         self.content = content if isinstance(content, list) else [content]
-        self._calculate_size()
         self.mark_dirty()
 
     def render(self) -> list[list[Char]]:
+        """Render the text with its border and children.
+
+        Returns:
+            list[list[Char]]: The rendered content of the text widget.
+        """
         rendered_content: list[list[Char]] = []
 
         for i in range(self.region.height):

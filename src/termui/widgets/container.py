@@ -20,13 +20,13 @@ class Container(Widget):
             root_layout (Layout): The root layout to manage child widgets.
                 All widgets to be contained in this should be added to this layout.
                 If None, creates a VerticalLayout by default.
-            border_style: Style of the border, by default "solid".
-            border_color: Color of the border, by default white.
-            padding: Padding (top, right, bottom, left), by default (0, 0, 0, 0).
-            title: Title to display on the border, by default None.
-            title_color: Color of the title text, by default white.
-            title_alignment: Alignment of the title, by default "left".
-            **kwargs: Additional widget parameters.
+            **kwargs: Additional widget configuration options:
+                - title: The title displayed at the top of the container.
+                - title_color: The color of the title text.
+                - title_alignment: The alignment of the title text.
+                - border_style: The style of the container's border.
+                - border_color: The color of the container's border.
+                - padding: The padding inside the container.
         """
         super().__init__(
             name=kwargs.get("name", f"Container-{kwargs.get('title', 'Unnamed')}"),
@@ -133,8 +133,7 @@ class Container(Widget):
         """Calculate the minimum size needed to display the container and its contents.
 
         Returns:
-            A tuple (min_width, min_height) representing the minimum space
-            required for the container including padding and borders.
+            tuple[int, int]: The minimum (width, height) in characters.
         """
         border_size = 2 if self.border_style != "none" else 0
 
@@ -147,7 +146,11 @@ class Container(Widget):
         return min_width, min_height
 
     def render(self) -> list[list[Char]]:
-        """Render the container with its border and children."""
+        """Render the container with its border and children.
+
+        Returns:
+            list[list[Char]]: The rendered content of the container.
+        """
         self._arrange_content()
 
         content = draw_rectangle(

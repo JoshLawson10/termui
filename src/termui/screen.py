@@ -5,8 +5,9 @@ from typing import Any, Optional, TYPE_CHECKING
 from termui.color import Color
 from termui.dom import DOMNode
 from termui.errors import ScreenError
-from termui.events import InputEvent, KeyEvent, MouseEvent
+from termui.events import InputEvent, MouseEvent
 from termui.input import Keybind
+from termui.logger import Logger
 from termui.utils.terminal_utils import get_terminal_size
 from termui.widget import Widget
 
@@ -62,7 +63,7 @@ class Screen(ABC):
         return self._app
 
     @property
-    def log(self):
+    def log(self) -> "Logger":
         """Get the logger instance from the mounted application.
 
         Returns:
@@ -84,7 +85,7 @@ class Screen(ABC):
         """
         return self._local_keybinds
 
-    def _setup_local_keybinds(self):
+    def _setup_local_keybinds(self) -> None:
         """Find and register all methods decorated with @keybind.
 
         Scans all methods of the screen instance for keybind decorations
