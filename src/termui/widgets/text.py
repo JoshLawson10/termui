@@ -34,6 +34,8 @@ class Text(Widget):
         self.bg_color = kwargs.get("bg_color", None)
         """The background color of the text."""
 
+        self.set_size(*self.get_minimum_size())
+
     def get_minimum_size(self) -> tuple[int, int]:
         """Get the minimum size required to display the text content.
 
