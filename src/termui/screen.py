@@ -1,6 +1,6 @@
 import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Optional, TYPE_CHECKING
+from typing import Optional, TYPE_CHECKING
 
 from termui.color import Color
 from termui.dom import DOMNode
@@ -102,24 +102,31 @@ class Screen(ABC):
                 )
                 self._local_keybinds.append(keybind_obj)
 
-    def screen_metadata(self, **kwargs: Any) -> None:
+    def screen_metadata(
+        self,
+        *,
+        name: str = "DefaultScreen",
+        width: Optional[int] = None,
+        height: Optional[int] = None,
+        inline: bool = True,
+        background_color: Optional[Color] = None,
+    ) -> None:
         """Initialize the screen with metadata and configuration.
 
         Args:
-            **kwargs: Screen configuration options:
-                name: The name of the screen.
-                width: The width of the screen. Defaults to terminal width.
-                height: The height of the screen. Defaults to terminal height.
-                inline: Whether the screen is inline (True) or should resize
-                       the terminal to fit (False).
-                background_color: Optional background color for the screen.
+            name: The name of the screen.
+            width: The width of the screen.
+            height: The height of the screen.
+            inline: Whether the screen is inline (True) or should resize
+                   the terminal to fit (False).
+            background_color: Optional background color for the screen.
         """
-        self.name = kwargs.get("name", "Default Screen")
+        self.name = name
         max_width, max_height = get_terminal_size()
-        self.width = kwargs.get("width", max_width)
-        self.height = kwargs.get("height", max_height)
-        self.inline = kwargs.get("inline", True)
-        self.background_color = kwargs.get("background_color", None)
+        self.width = width or max_width
+        self.height = height or max_height
+        self.inline = inline
+        self.background_color = background_color
 
     def set_background_color(self, color: Optional[Color]) -> None:
         """Set the background color of the screen.
