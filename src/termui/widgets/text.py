@@ -1,6 +1,8 @@
+from typing import Optional
+
 from termui.char import Char
 from termui.color import Color
-
+from termui.utils.align import get_aligned_start_x, HorizontalAlignment
 from termui.widget import Widget
 
 
@@ -10,6 +12,9 @@ class Text(Widget):
     def __init__(
         self,
         content: str | list[str],
+        fg_color: Color = Color(255, 255, 255),
+        bg_color: Optional[Color] = None,
+        align: HorizontalAlignment = "left",
         **kwargs,
     ) -> None:
         """Initialize the Text widget with content and styling options.
@@ -17,22 +22,22 @@ class Text(Widget):
         Args:
             content: The text content to display. Single strings become one line,
                     lists of strings become multiple lines.
-            **kwargs: Widget configuration options:
-                - name (str): Widget identifier, defaults to "Text"
-                - fg_color (Color): Text color, defaults to white
-                - bg_color (Color | None): Background color, defaults to None
-                - width (int): Override automatic width calculation
-                - height (int): Override automatic height calculation
-                - Other widget properties (id, pos, etc.)
+            fg_color: The foreground color of the text (default: white).
+            bg_color: The background color of the text (default: None).
+            align: The alignment of the text (default: left).
+            **kwargs: Additional widget configuration options.
         """
         super().__init__(name=kwargs.get("name", "Text"), **kwargs)
 
         self.content: list[str] = content if isinstance(content, list) else [content]
         """The text content to display."""
-        self.fg_color = kwargs.get("fg_color", Color(255, 255, 255))
+        self.fg_color: Color = fg_color
         """The foreground color of the text."""
-        self.bg_color = kwargs.get("bg_color", None)
+        self.bg_color: Optional[Color] = bg_color
         """The background color of the text."""
+
+        self.align: HorizontalAlignment = align
+        """How the content should be aligned horizontally."""
 
         self.set_size(*self.get_minimum_size())
 
@@ -50,6 +55,14 @@ class Text(Widget):
         width = max(len(line) for line in self.content)
         height = max(len(self.content), 1)
         return width, height
+
+    def get_content(self) -> list[str]:
+        """Get the current text content.
+
+        Returns:
+            list[str]: The current text content as a list of strings.
+        """
+        return self.content
 
     def set_content(self, content: str | list[str]) -> None:
         """Update the text content and recalculate widget size.
@@ -70,18 +83,20 @@ class Text(Widget):
         Returns:
             list[list[Char]]: The rendered content of the text widget.
         """
-        rendered_content: list[list[Char]] = []
+        rendered_content: list[list[Char]] = [[] for _ in range(self.region.height)]
 
         for i in range(self.region.height):
-            rendered_line: list[Char] = []
+            rendered_line: list[Char] = [Char("") for _ in range(self.region.width)]
 
             line = self.content[i] if i < len(self.content) else ""
 
-            for j in range(self.region.width):
+            start_x = get_aligned_start_x(line, self.region.width, self.align)
+
+            for j in range(self.region.width - start_x):
                 char = line[j] if j < len(line) else " "
                 rendered_char = Char(char, self.fg_color, self.bg_color)
-                rendered_line.append(rendered_char)
+                rendered_line[start_x + j] = rendered_char
 
-            rendered_content.append(rendered_line)
+            rendered_content[i] = rendered_line
 
         return rendered_content
