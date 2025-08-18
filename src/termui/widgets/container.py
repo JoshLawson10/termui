@@ -41,7 +41,7 @@ class Container(Widget):
             **kwargs,
         )
 
-        self.title = title
+        self.title: Optional[str] = title
         """The title displayed at the top of the container."""
         self.title_color: Color = title_color
         """The color of the title text."""
@@ -55,6 +55,7 @@ class Container(Widget):
         """The padding inside the container."""
 
         self._root_layout: Layout = VerticalLayout()
+        """The root layout object for the container"""
 
         if len(children) == 1 and isinstance(children[0], Layout):
             self._root_layout = children[0]
