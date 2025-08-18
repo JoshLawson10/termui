@@ -1,51 +1,108 @@
-<a name="readme-top"></a>
+# TermUI
 
-<!-- PROJECT LOGO AND TITLE -->
-<p align="center">
-  <a href="https://github.com/JoshLawson10/termui">
-    <img src="images/logo.png" alt="TermUI Logo" width="100" height="100">
-  </a>
+> A modern, declarative, and efficient Terminal UI library for Python.
 
-  <h2 align="center">TermUI</h2>
-  <p align="center">
-    Python terminal UI library with CSS Grid-like layout system
-    <br />
-    <a href="https://github.com/JoshLawson10/termui"><strong>Explore the docs »</strong></a>
-    <br />
-    <a href="https://github.com/JoshLawson10/termui/demo">View Demo</a>
-    •
-    <a href="https://github.com/JoshLawson10/termui/issues/new?template=bug_report.md">Report Bug</a>
-    •
-    <a href="https://github.com/JoshLawson10/termui/issues/new?template=feature_request.md">Request Feature</a>
-  </p>
-</p>
+TermUI makes it fast and simple to build good-looking terminal applications.  
+It combines a **declarative widget API**, **centralized theming with variants**, and an **async diff-based renderer** — so your apps look consistent and run efficiently.
 
-<!-- TABLE OF CONTENTS -->
-<details open>
-  <summary>Table of Contents</summary>
-  <ol>
-    <li><a href="#about">About TermUI</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+---
 
-## <a name="about"></a>About TermUI
+## ✨ Features
 
-TermUI is a Python library for building responsive terminal user interfaces using a CSS Grid-inspired layout system.
+- 🎨 **Centralized theming** — consistent look via theme tokens (`primary`, `secondary`, `accent`, etc.)
+- 🧩 **Composable widgets** — Button, Container, Checkbox, RadioBox, Input, ProgressBar
+- ⚡ **Diff-based rendering** — minimal redraws for performance
+- ⌨️🖱️ **Keyboard & mouse input** — interactive UIs with hover + click support
+- 📐 **Layout system** — vertical, horizontal, and grid layouts
+- 🔌 **Variants API** — shadcn-style `variant="primary"` customization
 
-Key features:
+---
 
-- Declarative grid-based layout system
-- Responsive terminal components
-- Simple API inspired by modern web development
-- Pure Python with no external dependencies
-- Cross-platform terminal support
+## 📦 Installation
 
-[🔝 Back to Top](#readme-top)
+```bash
+pip install termui
+```
 
-## <a name="contact"></a>Contact
+---
 
-Josh Lawson - joshlawson100@outlook.com
-Project Link: https://github.com/JoshLawson10/termui
+## 🚀 Quick Start
 
-[🔝 Back to Top](#readme-top)
+```python
+from termui import App, Button, Container, VerticalLayout
+
+def on_click():
+    print("Button clicked!")
+
+app = App(
+    VerticalLayout(
+        Container(
+            Button("Click Me", on_click=on_click, variant="primary")
+        )
+    )
+)
+
+app.run()
+```
+
+Run this, and you’ll get a themed button in the terminal that reacts to clicks.
+
+---
+
+## 🎨 Theming
+
+TermUI uses a centralized theme system with a familiar set of tokens:
+
+```python
+theme = {
+    "primary": "#1d4ed8",
+    "primary_content": "#ffffff",
+    "secondary": "#9333ea",
+    "secondary_content": "#ffffff",
+    "accent": "#f59e0b",
+    "accent_content": "#000000",
+    "neutral": "#374151",
+    "neutral_content": "#f3f4f6",
+    "base_100": "#111827",
+    "base_200": "#1f2937",
+    "base_300": "#4b5563",
+    "base_content": "#f9fafb",
+    "info": "#0ea5e9",
+    "info_content": "#ffffff",
+    "success": "#22c55e",
+    "success_content": "#ffffff",
+    "warning": "#facc15",
+    "warning_content": "#000000",
+    "error": "#ef4444",
+    "error_content": "#ffffff",
+}
+```
+
+Widgets can use **variants** to map directly to theme tokens:
+
+```python
+Button("Save", variant="primary")
+Button("Cancel", variant="secondary")
+Button("Delete", variant="error")
+```
+
+---
+
+## 📚 Documentation
+
+See the full docs at **[https://your-docs-site.com](https://your-docs-site.com)**
+(built with MkDocs + Material)
+
+---
+
+## 🛠️ Roadmap
+
+- [x] Core widgets (Button, Container, Checkbox, RadioBox, Input, ProgressBar)
+- [x] Diff-based async rendering engine
+- [x] Keyboard + mouse input
+- [ ] Advanced layouts
+- [ ] More widgets (Table, Modal, Dropdown, TextArea)
+- [ ] Animations + transitions
+- [ ] Plugin system for custom widgets
+
+---
