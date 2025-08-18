@@ -1,4 +1,5 @@
-site_name: TermUI Docs
+site_name: TermUI
+site_description: A modern, declarative, and efficient Terminal UI library for Python
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -21,8 +22,12 @@ theme:
     - navigation.tabs
     - navigation.indexes
     - navigation.footer
+    - navigation.instant
+    - navigation.sections
     - content.code.annotate
     - content.code.copy
+    - search.highlight
+    - search.suggest
 
 plugins:
   - mkdocstrings:
@@ -52,9 +57,16 @@ plugins:
 
 nav:
   - Home: "index.md"
-  - Getting Started: "getting_started.md"
-  - Examples:
-      - "examples/index.md"
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quickstart.md
+      - Concepts: getting-started/concepts.md
+  - Guides:
+      - Layouts: guides/layouts.md
+      - Widgets: guides/widgets.md
+      - Theming: guides/theming.md
+      - Input Handling: guides/input.md
+      - Rendering Model: guides/rendering.md
   - API:
       - "api/index.md"
       - Core:
@@ -78,6 +90,8 @@ nav:
           - "api/widgets/button.md"
           - "api/widgets/container.md"
           - "api/widgets/text.md"
-  - FAQ: faq.md
+  - Roadmap: roadmap.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
 
 copyright: Copyright &copy; Josh Lawson 2025

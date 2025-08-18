@@ -1,176 +1,114 @@
 # TermUI
 
-A modern, asynchronous terminal user interface library for Python that makes building beautiful terminal applications simple and intuitive.
+> A modern, declarative, and efficient Terminal UI library for Python.
 
-## Overview
+---
 
-TermUI is a Python library designed to create rich, interactive terminal applications with ease. Built on modern async/await patterns, it provides a widget-based architecture similar to modern GUI frameworks but optimized for terminal environments.
+## 🎯 Why TermUI?
 
-### Key Features
+Most terminal UI libraries fall into one of two extremes:
 
-- **Asynchronous Architecture**: Built from the ground up with async/await for responsive, non-blocking applications
-- **Widget-Based Design**: Compose complex UIs from simple, reusable widget components
-- **Flexible Layout System**: Multiple layout options including vertical, horizontal, and grid layouts
-- **Rich Styling**: Support for colors, borders, and visual effects using modern terminal capabilities
-- **Event Handling**: Comprehensive keyboard and mouse input handling with customizable keybinds
-- **Screen Management**: Multi-screen applications with easy navigation and state management
-- **Efficient Rendering**: Differential rendering system that only updates changed content
+- **Low-level** (like `curses`) — powerful but verbose, every detail must be handled manually.
+- **High-level frameworks** (like `textual`) — full-featured but heavy, with steep learning curves.
 
-### Quick Example
+**TermUI** takes a different path:
 
-```python
-from termui import App
-from termui.widgets import Text, Button, Container
-from termui.layouts import VerticalLayout
-from termui.screen import Screen
-from termui.color import Color
+- **Declarative, React-like API** — build UIs by composing widgets, not redrawing text.
+- **Consistent by default** — centralized theming + variants mean your UI looks good with minimal effort.
+- **Efficient and async** — a diff-based renderer ensures only what changes is updated.
+- **Simple but powerful** — easy to start, flexible enough for full-screen apps.
 
-class MainScreen(Screen):
-    def setup(self):
-        self.screen_metadata(
-            name="Main Screen",
-            background_color=Color(20, 20, 30)
-        )
+The goal is to make terminal apps feel as natural to build as modern web apps, while staying fast, lean, and Pythonic.
 
-    def build(self):
-        return VerticalLayout(
-            Container(
-                title="Welcome to TermUI",
-                title_color=Color(100, 200, 255)
-            ),
-            Text("Hello, Terminal World!",
-                 fg_color=Color(255, 255, 255)),
-            Button("Click Me!",
-                   style="primary medium",
-                   on_click=self.handle_click),
-            spacing=1
-        )
+---
 
-    def handle_click(self):
-        print("Button clicked!")
+## ✨ Core Principles
 
-    def update(self):
-        pass
+- **Declarative** – UIs are defined as nested components, not imperative drawing calls.
+- **Themed** – colors and styles are centralized, ensuring consistency across widgets.
+- **Composable** – small widgets combine to build complex layouts.
+- **Efficient** – diff-based rendering avoids costly full-screen redraws.
+- **Accessible** – easy to get started, but extensible for advanced users.
 
-class MyApp(App):
-    def build(self):
-        main_screen = MainScreen()
-        self.register_screen(main_screen)
-        self.show_screen("Main Screen")
+---
 
-if __name__ == "__main__":
-    app = MyApp()
-    app.run()
-```
-
-## Architecture
-
-TermUI follows a component-based architecture with several key concepts:
-
-### Applications (`App`)
-
-The main entry point for your terminal application. Apps manage screens, handle the main event loop, and coordinate rendering.
-
-[Read More ->](api/index.md)
-
-### Screens (`Screen`)
-
-Individual views or pages in your application. Screens contain widgets and define the complete UI for a particular state or view.
-
-[Read More ->](api/index.md)
-
-### Widgets
-
-The building blocks of your UI. TermUI includes several built-in widgets.
-
-[Read More ->](api/widget.md)
-
-### Layouts
-
-Organize and position widgets automatically:
-
-- `VerticalLayout` - Stack widgets vertically
-- `HorizontalLayout` - Arrange widgets horizontally
-- `GridLayout` - Position widgets in a flexible grid
-
-[Read More ->](api/layout.md)
-
-### Event System
-
-Handle user input with:
-
-- Keyboard events and customizable keybinds
-- Mouse events (clicks, movement, hover)
-- Custom event handlers for widgets
-
-## Installation
-
-```bash
-pip install termui
-```
-
-## Core Concepts
-
-### Asyncronous by Design
-
-TermUI is built around Python's asyncio for handling input, updates, and rendering concurrently without blocking:
+## 🚀 Example
 
 ```python
-# The main app loop runs three concurrent tasks:
-# - Input processing
-# - Screen updates
-# - Rendering
-await asyncio.gather(
-    self._input_loop(),
-    self._update_loop(),
-    self._render_loop()
+from termui import App, Button, Container, VerticalLayout
+
+def on_click():
+    print("Button clicked!")
+
+app = App(
+    VerticalLayout(
+        Container(
+            Button("Click Me", on_click=on_click, variant="primary")
+        )
+    )
 )
+
+app.run()
 ```
 
-### DOM-like Structure
+---
 
-Widgets are organized in a tree structure similar to HTML DOM, making it easy to reason about layout and rendering:
+## 🎨 Theming & Variants
+
+TermUI ships with a familiar set of theme tokens:
 
 ```
-Screen
-└── VerticalLayout
-    ├── Container
-    │   └── Text
-    └── Button
+primary, primary_content
+secondary, secondary_content
+accent, accent_content
+neutral, neutral_content
+base_100, base_200, base_300, base_content
+info, info_content
+success, success_content
+warning, warning_content
+error, error_content
 ```
 
-### Differential Rendering
+Widgets map directly to these through **variants**:
 
-Only parts of the screen that have changed are redrawn, ensuring smooth performance even for complex UIs.
+```python
+Button("Save", variant="primary")
+Button("Cancel", variant="secondary")
+Button("Delete", variant="error")
+```
 
-## Why TermUI?
+---
 
-### Modern Python Patterns
+## 📚 Learn More
 
-- Async/await throughout for responsive UIs
-- Type hints for better development experience
-- Clean, intuitive API design
+- [Getting Started →](getting-started/installation.md)
+- [Quick Start →](getting-started/quickstart.md)
+- [Guides →](guides/layouts.md)
+- [API Reference →](api/app.md)
 
-### Developer Experience
+---
 
-- Hot-reloadable screens and widgets
-- Comprehensive error handling and logging
-- Extensive customization options
+## 🛠️ Roadmap
 
-### Terminal-Optimized
+- Core widgets (Button, Input, ProgressBar, Checkbox, RadioBox, Container)
+- Layout system (vertical, horizontal, grid)
+- Centralized theming + variants
+- Diff-based async rendering
+- Mouse & keyboard input
 
-- Efficient rendering with minimal flicker
-- Full mouse and keyboard support
-- Cross-platform compatibility
+Future goals: animations, advanced widgets (Table, Modal, Dropdown), and plugin support.
 
-### Extensible
+---
 
-- Create custom widgets easily
-- Plugin-friendly architecture
-- Composable design patterns
+## ❤️ Philosophy
 
-## Getting Started
+We believe terminal apps should be:
 
-Ready to build your first TermUI application? Check out our [Getting Started](getting_started.md) guide to learn the basics, or explore our [Examples](examples/index.md) to see TermUI in action.
+- **Fast to build** — no boilerplate, no fuss.
+- **Consistent by design** — theming and variants give a polished look out of the box.
+- **Efficient under the hood** — diff rendering ensures smooth performance.
+- **Familiar to modern developers** — inspired by the best ideas from web UI libraries.
 
-For detailed API documentation, visit the [API Reference](api/index.md).
+If building terminal apps feels like building for the web — **but simpler** — we’ve done our job.
+
+---
