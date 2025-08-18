@@ -226,7 +226,9 @@ class Screen(ABC):
             app.input_handler.register_keybind(keybind)
 
         app.renderer.pipe(self)
-        self.app.log.system(f"Mounted screen: {self.name}")
+        self.app.log.system(
+            f"Mounted screen: {self.name}. Is inline: {"True" if self.inline else "False"}"
+        )
 
     def unmount(self) -> None:
         """Unmount the screen from its application instance.

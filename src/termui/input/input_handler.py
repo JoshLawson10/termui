@@ -64,8 +64,6 @@ class InputHandler:
             " ": "space",
         }
 
-        self._set_raw_mode(True)
-
     def register_keybind(self, keybind: Keybind) -> None:
         """Register a new keybind with its associated action.
 
@@ -124,38 +122,24 @@ class InputHandler:
             A tuple (column, row) of the mouse position, or None if unable
             to retrieve the position.
         """
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        mouse_was_enabled = self._mouse_enabled
+        if not self._mouse_enabled:
+            sys.stdout.write("\033[?1003h\033[?1006h")
+            sys.stdout.flush()
 
-        try:
-            tty.setraw(fd)
-            if not self._mouse_enabled:
-                sys.stdout.write("\033[?1003h\033[?1006h")
-                sys.stdout.flush()
+        buf = ""
+        while True:
+            ch = sys.stdin.read(1)
+            buf += ch
+            if ch == "M" or ch == "m":
+                break
 
-            buf = ""
-            while True:
-                ch = sys.stdin.read(1)
-                buf += ch
-                if ch == "M" or ch == "m":
-                    break
-
-            match = re.search(r"\x1b\[<\d+;(\d+);(\d+)[mM]", buf)
-            if match:
-                col = int(match.group(1))
-                row = int(match.group(2))
-                return (col, row)
-            else:
-                return None
-
-        finally:
-            # Restore old terminal settings
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-            # Restore mouse tracking state
-            if not mouse_was_enabled:
-                sys.stdout.write("\033[?1003l\033[?1006l")
-                sys.stdout.flush()
+        match = re.search(r"\x1b\[<\d+;(\d+);(\d+)[mM]", buf)
+        if match:
+            col = int(match.group(1))
+            row = int(match.group(2))
+            return (col, row)
+        else:
+            return None
 
     def _parse_mouse_event(self, sequence: str) -> Optional[MouseEvent]:
         """Parse a mouse escape sequence into a MouseEvent.
@@ -199,49 +183,43 @@ class InputHandler:
             An InputEvent (KeyEvent or MouseEvent) if input is available,
             None if no input is ready.
         """
-        fd = sys.stdin.fileno()
-        old_settings = termios.tcgetattr(fd)
-        try:
-            tty.setraw(sys.stdin.fileno())
-            rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-            if rlist:
-                char = sys.stdin.read(1)
-                if char == "\x1b":
-                    next_char = sys.stdin.read(1)
-                    if next_char == "[":
-                        third_char = sys.stdin.read(1)
-                        if third_char == "<":
-                            mouse_buf = "\x1b[<"
-                            while True:
-                                ch = sys.stdin.read(1)
-                                mouse_buf += ch
-                                if ch == "M" or ch == "m":
-                                    break
+        rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
+        if rlist:
+            char = sys.stdin.read(1)
+            if char == "\x1b":
+                next_char = sys.stdin.read(1)
+                if next_char == "[":
+                    third_char = sys.stdin.read(1)
+                    if third_char == "<":
+                        mouse_buf = "\x1b[<"
+                        while True:
+                            ch = sys.stdin.read(1)
+                            mouse_buf += ch
+                            if ch == "M" or ch == "m":
+                                break
 
-                            if self._mouse_enabled:
-                                return self._parse_mouse_event(mouse_buf)
-                        else:
-                            seq = char + next_char + third_char
-                            if seq in self._escape_sequences:
-                                return KeyEvent(self._escape_sequences[seq])
-                            else:
-                                fourth_char = sys.stdin.read(1)
-                                longer_seq = seq + fourth_char
-                                if longer_seq in self._escape_sequences:
-                                    return KeyEvent(self._escape_sequences[longer_seq])
-                                return KeyEvent("escape")
+                        if self._mouse_enabled:
+                            return self._parse_mouse_event(mouse_buf)
                     else:
-                        # Two character escape sequence
-                        seq = char + next_char
+                        seq = char + next_char + third_char
                         if seq in self._escape_sequences:
                             return KeyEvent(self._escape_sequences[seq])
-                        return KeyEvent("escape")
-                elif char in self._special_keys:
-                    return KeyEvent(self._special_keys[char])
+                        else:
+                            fourth_char = sys.stdin.read(1)
+                            longer_seq = seq + fourth_char
+                            if longer_seq in self._escape_sequences:
+                                return KeyEvent(self._escape_sequences[longer_seq])
+                            return KeyEvent("escape")
                 else:
-                    return KeyEvent(char.lower())
-        finally:
-            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+                    # Two character escape sequence
+                    seq = char + next_char
+                    if seq in self._escape_sequences:
+                        return KeyEvent(self._escape_sequences[seq])
+                    return KeyEvent("escape")
+            elif char in self._special_keys:
+                return KeyEvent(self._special_keys[char])
+            else:
+                return KeyEvent(char.lower())
         return None
 
     async def process_input(self) -> Optional[InputEvent]:
@@ -274,19 +252,6 @@ class InputHandler:
 
         return event
 
-    def _set_raw_mode(self, enable: bool):
-        """Set or unset raw mode for the terminal.
-
-        Args:
-            enable: True to enable raw mode, False to restore normal mode.
-        """
-        fd = sys.stdin.fileno()
-        if enable:
-            self._original_term_settings = termios.tcgetattr(fd)
-            tty.setraw(fd)
-        elif self._original_term_settings:
-            termios.tcsetattr(fd, termios.TCSADRAIN, self._original_term_settings)
-
     def stop(self) -> None:
         """Stop the input handler and clean up terminal settings.
 
@@ -294,5 +259,4 @@ class InputHandler:
         the exit flag.
         """
         self.disable_mouse()
-        self._set_raw_mode(False)
         self._should_exit = True

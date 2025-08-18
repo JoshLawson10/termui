@@ -3,10 +3,14 @@
 import asyncio
 import inspect
 import os
+import sys
+import termios
 import traceback
+import tty
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
 from termui.input import InputHandler, Keybind
 from termui.logger import Logger
@@ -36,12 +40,15 @@ class App(ABC):
         self._logger = Logger("logs/log.txt")
         """An instance of the internal logger. All stderr are routed to this logger."""
 
+        self.fd = sys.stdin.fileno()
+        self.old_settings = termios.tcgetattr(self.fd)
+
     @property
     def log(self) -> Logger:
         """Logger instance for the application."""
         return self._logger
 
-    def _register_decorated_keybinds(self):
+    def _register_decorated_keybinds(self) -> None:
         """Find and register all methods decorated with @keybind.
 
         Scans all methods of the app instance for keybind decorations and
@@ -102,7 +109,7 @@ class App(ABC):
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount(self)
 
-    async def _input_loop(self):
+    async def _input_loop(self) -> None:
         """Run the input handler in an asynchronous loop.
 
         Continuously processes input events and forwards them to the current
@@ -115,7 +122,7 @@ class App(ABC):
 
             await asyncio.sleep(0.001)
 
-    async def _update_loop(self):
+    async def _update_loop(self) -> None:
         """Run the update loop for the current screen.
 
         Continuously calls the update method on the current screen while
@@ -124,9 +131,10 @@ class App(ABC):
         while self._running:
             if self.current_screen:
                 self.current_screen.update()
+
             await asyncio.sleep(0.001)
 
-    async def _render_loop(self):
+    async def _render_loop(self) -> None:
         """Run the renderer in an asynchronous loop.
 
         Continuously renders the current screen while the application is
@@ -134,8 +142,7 @@ class App(ABC):
         """
         while self._running:
             if not self.current_screen:
-                self.current_screen = self.screens[next(iter(self.screens))]
-                self.current_screen.mount(self)
+                self.show_screen(next(iter(self.screens)))
 
             self.renderer.render()
             await asyncio.sleep(0.001)
@@ -183,6 +190,8 @@ class App(ABC):
         Handles keyboard interrupts and other exceptions gracefully.
         """
         try:
+            self.old_settings = termios.tcgetattr(self.fd)
+            tty.setraw(self.fd)
             asyncio.run(self._run_async())
         except KeyboardInterrupt:
             self._running = False
@@ -191,9 +200,17 @@ class App(ABC):
             self.log.error(traceback.format_exc())
             self._running = False
             self.quit()
+        finally:
+            termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+            sys.stdout.write("\033[?1003l\033[?1006l")
+            sys.stdout.flush()
 
     def quit(self) -> None:
         """Safely handle application termination."""
         self.input_handler.stop()
         self.renderer.clear()
+        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
+        sys.stdout.write("\033[?1003l\033[?1006l")
+        sys.stdout.flush()
+        Cursor.show()
         os._exit(0)
