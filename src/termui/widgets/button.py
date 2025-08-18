@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable, Literal, Optional
+from typing import Any, Callable, Literal, Optional
 
 from termui.char import Char
 from termui.color import Color
@@ -175,6 +175,50 @@ class Button(Widget):
         """Current state of the button."""
 
         self.set_size(*self.get_minimum_size())
+
+    def __call__(
+        self,
+        *,
+        label: Optional[str] = None,
+        style: str = "solid default icon",
+        disabled: Optional[bool] = None,
+        padding: Optional[tuple[int, int, int, int]] = None,
+        on_click: Optional[Callable[[], None]] = None,
+        state: Optional[ButtonState] = None,
+    ) -> "Button":
+        """Make the widget callable to accept children.
+
+        This allows syntax like:
+        ```python
+        MyButton = Button(
+            "My Button",
+            "accent small",
+            disabled=True
+        )
+
+        return MyButton(label="My Custom Button")
+        ```
+
+        Args:
+            label: The text displayed on the button.
+            style: Space-separated style string combining ButtonStyle, ButtonColor, and ButtonSize
+            disabled: Whether the button is disabled and non-interactive.
+            padding: Additional padding around the button as (top, right, bottom, left).
+            on_click: Callback function executed when the button is clicked.
+            state: Current visual state of the button.
+
+        Returns:
+            Self, to allow method chaining and use in layouts.
+        """
+        self.label = label if label else self.label
+        self.style, self.color, self.size = (
+            self._get_styles(style) if style else (self.style, self.color, self.size)
+        )
+        self.disabled = disabled if disabled else self.disabled
+        self.padding = padding if padding else self.padding
+        self.on_click = on_click if on_click else self.on_click
+        self.state = state if state else self.state
+        return self
 
     def _get_styles(
         self, style: str

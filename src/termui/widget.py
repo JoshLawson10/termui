@@ -50,28 +50,6 @@ class Widget(DOMNode, ABC):
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(id={self.id}, name={self.name}): Pos({self.pos})"
 
-    def __call__(self, *children: "Widget") -> "Widget":
-        """Make the widget callable to accept children.
-
-        This allows syntax like:
-        ```python
-        container = Container(title="My Container")
-
-        return container(
-            Text("Child 1"),
-            Text("Child 2")
-        )
-        ```
-
-        Args:
-            *children: Child widgets to add to this widget.
-
-        Returns:
-            Self, to allow method chaining and use in layouts.
-        """
-        self.add_children(*children)
-        return self
-
     def set_position(self, x: int, y: int) -> None:
         """Set the widget's position.
 
