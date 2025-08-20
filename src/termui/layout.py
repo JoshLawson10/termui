@@ -60,3 +60,12 @@ class Layout(Widget):
         """
         self.arrange()
         return [[]]
+
+    def add_child(self, child: Widget) -> None:
+        """Add a child widget to the layout.
+
+        Args:
+            child: The child widget to add.
+        """
+        self.children.append(child)
+        self.arrange()
