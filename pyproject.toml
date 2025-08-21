@@ -31,3 +31,8 @@ update_changelog_on_bump = true
 version_files = [
     "pyproject.toml:^version"
 ]
+
+[tool.commitizen.bump_map]
+docs = "PATCH"
+ci = "PATCH"
+cd = "PATCH"
