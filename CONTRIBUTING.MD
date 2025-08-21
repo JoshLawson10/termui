@@ -82,14 +82,17 @@ Examples:
 - `refactor: simplify diffing algorithm`
 
 Common commit types:
-
-- `feat` – a new feature
-- `fix` – a bug fix
-- `docs` – documentation only changes
-- `style` – formatting, no logic changes
-- `refactor` – code change that neither fixes a bug nor adds a feature
-- `test` – adding or fixing tests
-- `chore` – build tasks, tooling, dependencies
+| Commit Type | Description | Version Impact |
+| ------------ | ------------------------------------------------------------- | --------------------------------------------- |
+| **feat** | A new feature | **Minor** |
+| **fix** | A bug fix | **Patch** |
+| **perf** | Performance improvement | **Patch** |
+| **refactor** | Code change that neither fixes a bug nor adds a feature | **No update** (usually) |
+| **docs** | Documentation only changes | **No update** |
+| **style** | Code style changes (formatting, whitespace, semicolons) | **No update** |
+| **test** | Adding or updating tests | **No update** |
+| **chore** | Routine tasks, build scripts, dependency updates | **No update** |
+| **ci** | Continuous Integration config changes | **No update** |
 
 ---
 
