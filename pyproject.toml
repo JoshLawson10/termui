@@ -3,18 +3,17 @@ name = "termui"
 version = "0.1.0"
 description = "A modern, declarative, and efficient Terminal UI library for Python."
 authors = [
-    {name = "Josh Lawson", email = "joshlawson100@outlook.com"}
+    { name = "Josh Lawson", email = "joshlawson100@outlook.com" }
 ]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.13"
 dependencies = [
     "mkdocs (>=1.6.1,<2.0.0)",
     "mkdocstrings[python] (>=0.30.0,<0.31.0)",
     "mkdocs-material (>=9.6.17,<10.0.0)",
-    "mkdocs-git-revision-date-localized-plugin (>=1.4.7,<2.0.0)"
+    "mkdocs-git-revision-date-localized-plugin (>=1.4.7,<2.0.0)",
+    "commitizen (>=4.8.3,<5.0.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
@@ -23,3 +22,12 @@ build-backend = "poetry.core.masonry.api"
 [project.urls]
 homepage = "https://python-poetry.org/"
 repository = "https://github.com/python-poetry/poetry"
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+tag_format = "v$version"
+update_changelog_on_bump = true
+version_files = [
+    "pyproject.toml:^version"
+]
