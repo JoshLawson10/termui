@@ -6,6 +6,7 @@ authors = [
     { name = "Josh Lawson", email = "joshlawson100@outlook.com" }
 ]
 readme = "README.md"
+requires-python = ">=3.10,<4.0"
 license = { text = "MIT" }
 dependencies = [
     "mkdocs (>=1.6.1,<2.0.0)",
@@ -36,3 +37,7 @@ version_files = [
 docs = "PATCH"
 ci = "PATCH"
 cd = "PATCH"
+
+[tool.poetry.group.dev.dependencies]
+commitizen = "^4.8.3"
+

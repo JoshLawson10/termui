@@ -1,21 +1,42 @@
-name: Bump version
+name: Bump Version
 
 on:
   push:
     branches:
-      - main
+      - main # or master, whichever you use
 
 jobs:
-  bump-version:
+  release:
     runs-on: ubuntu-latest
-    name: "Bump version and create changelog with commitizen"
+
+    permissions:
+      contents: write # needed to push version bump + changelog
+      id-token: write
+
     steps:
-      - name: Check out
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          token: "${{ secrets.PERSONAL_ACCESS_TOKEN }}"
-          fetch-depth: 0
-      - name: Create bump and changelog
-        uses: commitizen-tools/commitizen-action@master
+          fetch-depth: 0 # important! cz needs full history
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Bump version and generate changelog
+        run: poetry run cz bump --changelog || echo "No bump"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git push --follow-tags origin main
