@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Callable, Literal, Optional
+from typing import Callable, Literal, Optional
 
 from termui.char import Char
 from termui.color import Color

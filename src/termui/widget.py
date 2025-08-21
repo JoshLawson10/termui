@@ -1,6 +1,5 @@
 import uuid
 from abc import ABC, abstractmethod
-from typing import Optional
 
 from termui.char import Char
 from termui.dom import DOMNode
