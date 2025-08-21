@@ -36,10 +36,7 @@ class Container(Widget):
             padding (tuple[int, int, int, int], optional): The padding inside the container.
             **kwargs: Additional container configuration options.
         """
-        super().__init__(
-            name=kwargs.get("name", f"Container-{kwargs.get('title', 'Unnamed')}"),
-            **kwargs,
-        )
+        super().__init__(**kwargs)
 
         self.title: Optional[str] = title
         """The title displayed at the top of the container."""

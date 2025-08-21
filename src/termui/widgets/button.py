@@ -158,7 +158,7 @@ class Button(Widget):
             state: Current visual state of the button.
             **kwargs: Additional widget arguments passed to the parent constructor.
         """
-        super().__init__(name=kwargs.get("name", f"Button-{label}"), **kwargs)
+        super().__init__(**kwargs)
 
         self.label = label
         """The text label displayed on the button."""

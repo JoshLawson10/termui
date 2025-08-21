@@ -16,7 +16,7 @@ class Widget(DOMNode, ABC):
     and must implement the render() method to define their appearance.
     """
 
-    def __init__(self, name: Optional[str] = None, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initialize the widget with position, size, and identification.
 
         Args:
@@ -30,7 +30,7 @@ class Widget(DOMNode, ABC):
         """
         self.id = kwargs.get("id", str(uuid.uuid4()))
         """Unique identifier for the widget."""
-        self.name = name or f"Widget_{self.id[:8]}"
+        self.name = kwargs.get("name", f"{self.__class__.__name__}-{self.id[:8]}")
         """Name of the widget. Acts as its class name when used in the DOM with 'get_widget_by_name'"""
         super().__init__(id=self.id, name=self.name, widget=self)
 
