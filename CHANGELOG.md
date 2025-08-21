@@ -1,3 +1,9 @@
+## v0.2.1 (2025-08-22)
+
+### Refactor
+
+- remove GitHub Action
+
 ## v0.2.0 (2025-08-22)
 
 ### Feat
