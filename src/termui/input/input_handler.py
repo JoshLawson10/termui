@@ -1,8 +1,6 @@
 import re
 import select
 import sys
-import termios
-import tty
 from typing import Optional
 
 from termui.events import InputEvent, KeyEvent, MouseEvent
