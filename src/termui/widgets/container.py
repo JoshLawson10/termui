@@ -88,6 +88,9 @@ class Container(Widget):
             Self, to allow method chaining and use in layouts.
         """
 
+        if self._root_layout:
+            self.remove_child(self._root_layout)
+
         for child in self._root_layout.children:
             self._root_layout.remove_child(child)
 
