@@ -10,13 +10,11 @@ import tty
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui._context_manager import current_app, current_screen, log
+from termui._context_manager import _app, input_handler, log, renderer
 
 from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
-from termui.input import InputHandler, Keybind
-from termui.logger import Logger
-from termui.renderer import Renderer
+from termui.input import Keybind
 from termui.screen import Screen
 
 
@@ -29,10 +27,6 @@ class App(ABC):
         """A stack of screens registered to the current app"""
         self.current_screen: Optional[Screen] = None
         """The currently rendered screen"""
-        self.input_handler = InputHandler()
-        """An instance of the InputHandler class used for keyboard and mouse input."""
-        self.renderer = Renderer()
-        """An instance of the Renderer class used for rendering the application."""
         self._running = True
         """Whether the app is running"""
         self._default_keybinds: list[Keybind] = [
@@ -58,10 +52,10 @@ class App(ABC):
                     description=info["description"],
                     visible=info["visible"],
                 )
-                self.input_handler.register_keybind(keybind_obj)
+                input_handler.register_keybind(keybind_obj)
 
         for keybind in self._default_keybinds:
-            self.input_handler.register_keybind(keybind)
+            input_handler.register_keybind(keybind)
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen with the application.
@@ -105,9 +99,6 @@ class App(ABC):
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount()
 
-        # Set the current screen context
-        current_screen.set(self.current_screen)
-
     async def _input_loop(self) -> None:
         """Run the input handler in an asynchronous loop.
 
@@ -115,7 +106,7 @@ class App(ABC):
         screen while the application is running.
         """
         while self._running:
-            event = await self.input_handler.process_input()
+            event = await input_handler.process_input()
             if self.current_screen and event:
                 self.current_screen.handle_input_event(event)
 
@@ -143,7 +134,7 @@ class App(ABC):
             if not self.current_screen:
                 self.show_screen(next(iter(self.screens)))
 
-            self.renderer.render()
+            renderer.render()
             await asyncio.sleep(0.001)
 
     async def _run_async(self) -> None:
@@ -158,7 +149,7 @@ class App(ABC):
         self.build()
         self._register_decorated_keybinds()
         self._running = True
-        self.input_handler.enable_mouse()
+        input_handler.enable_mouse()
 
         try:
             await asyncio.gather(
@@ -178,7 +169,7 @@ class App(ABC):
         finally:
             if self.current_screen:
                 self.current_screen.unmount()
-            self.input_handler.stop()
+            input_handler.stop()
             self._running = False
             self.quit()
 
@@ -190,7 +181,7 @@ class App(ABC):
         """
         try:
             # Set the current application context
-            current_app.set(self)
+            _app.set(self)
 
             self.old_settings = termios.tcgetattr(self.fd)
             tty.setraw(self.fd)
@@ -209,8 +200,8 @@ class App(ABC):
 
     def quit(self) -> None:
         """Safely handle application termination."""
-        self.input_handler.stop()
-        self.renderer.clear()
+        input_handler.stop()
+        renderer.clear()
         termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
         sys.stdout.write("\033[?1003l\033[?1006l")
         sys.stdout.flush()

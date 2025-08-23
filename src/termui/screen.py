@@ -2,7 +2,7 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Optional, TYPE_CHECKING
 
-from termui._context_manager import current_app, log
+from termui._context_manager import input_handler, log, renderer
 
 from termui.color import Color
 from termui.dom import DOMNode
@@ -106,9 +106,7 @@ class Screen(ABC):
                   background color.
         """
         self.background_color = color
-        app = current_app.get()
-        if app and app.renderer:
-            app.renderer.clear()
+        renderer.clear()
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name.
@@ -188,10 +186,9 @@ class Screen(ABC):
     def mount(self) -> None:
         """Mount the screen to an application instance."""
         self._setup_local_keybinds()
-        app = current_app.get()
         for keybind in self.local_keybinds:
-            app.input_handler.register_keybind(keybind)
-            app.renderer.pipe(self)
+            input_handler.register_keybind(keybind)
+            renderer.pipe(self)
         log.system(
             f"Mounted screen: {self.name}. Is inline: {"True" if self.inline else "False"}"
         )
@@ -202,7 +199,6 @@ class Screen(ABC):
         Cleans up the renderer and removes local keybinds from the
         input handler.
         """
-        app = current_app.get()
-        app.renderer.clear()
+        renderer.clear()
         for keybind in self.local_keybinds:
-            app.input_handler.unregister_keybind(keybind)
+            input_handler.unregister_keybind(keybind)

@@ -1,7 +1,7 @@
 import sys
 from typing import Optional, TYPE_CHECKING
 
-from termui._context_manager import current_app, current_screen, log
+from termui._context_manager import app, log
 
 from termui.char import Char
 from termui.color import Color, colorize
@@ -243,11 +243,11 @@ class Renderer:
             self.frame_buffer = FrameBuffer(
                 new_width, new_height, self.frame_buffer.background_color
             )
-            if current_screen.get():
-                current_screen.get().width = new_width
-                current_screen.get().height = new_height
+            if app.current_screen:
+                app.current_screen.width = new_width
+                app.current_screen.height = new_height
 
-                self.pipe(current_screen.get())
+                self.pipe(app.current_screen)
 
             clear_terminal()
             self.frame_buffer.mark_entire_screen_dirty()
