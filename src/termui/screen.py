@@ -55,6 +55,11 @@ class Screen(ABC):
         """
         return self._local_keybinds
 
+    @property
+    def log(self):
+        """Get the application's logger."""
+        return log
+
     def _setup_local_keybinds(self) -> None:
         """Find and register all methods decorated with @keybind.
 

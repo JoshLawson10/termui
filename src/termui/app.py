@@ -57,6 +57,11 @@ class App(ABC):
         for keybind in self._default_keybinds:
             input_handler.register_keybind(keybind)
 
+    @property
+    def log(self):
+        """Get the application's logger."""
+        return log
+
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen with the application.
 
