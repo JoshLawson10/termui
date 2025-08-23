@@ -10,11 +10,21 @@ import tty
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui._context_manager import _app, input_handler, log, renderer
+from termui._context_manager import (
+    _app,
+    _input_handler,
+    _logger,
+    _renderer,
+    input_handler,
+    log,
+    renderer,
+)
 
 from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
-from termui.input import Keybind
+from termui.input import InputHandler, Keybind
+from termui.logger import Logger
+from termui.renderer import Renderer
 from termui.screen import Screen
 
 
@@ -33,6 +43,10 @@ class App(ABC):
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
+
+        _renderer.set(Renderer())
+        _input_handler.set(InputHandler())
+        _logger.set(Logger("logs/log.txt"))
 
         self.fd = sys.stdin.fileno()
         self.old_settings = termios.tcgetattr(self.fd)
