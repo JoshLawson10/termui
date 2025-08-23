@@ -10,6 +10,8 @@ import tty
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from termui._context_manager import current_app, current_screen, log
+
 from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
 from termui.input import InputHandler, Keybind
@@ -29,7 +31,7 @@ class App(ABC):
         """The currently rendered screen"""
         self.input_handler = InputHandler()
         """An instance of the InputHandler class used for keyboard and mouse input."""
-        self.renderer = Renderer(self)
+        self.renderer = Renderer()
         """An instance of the Renderer class used for rendering the application."""
         self._running = True
         """Whether the app is running"""
@@ -37,16 +39,9 @@ class App(ABC):
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
-        self._logger = Logger("logs/log.txt")
-        """An instance of the internal logger. All stderr are routed to this logger."""
 
         self.fd = sys.stdin.fileno()
         self.old_settings = termios.tcgetattr(self.fd)
-
-    @property
-    def log(self) -> Logger:
-        """Logger instance for the application."""
-        return self._logger
 
     def _register_decorated_keybinds(self) -> None:
         """Find and register all methods decorated with @keybind.
@@ -108,7 +103,10 @@ class App(ABC):
             self.current_screen.unmount()
 
         self.current_screen = self.screens[screen_name]
-        self.current_screen.mount(self)
+        self.current_screen.mount()
+
+        # Set the current screen context
+        current_screen.set(self.current_screen)
 
     async def _input_loop(self) -> None:
         """Run the input handler in an asynchronous loop.
@@ -174,7 +172,7 @@ class App(ABC):
         except asyncio.CancelledError:
             raise AsyncError("Application loop was cancelled.")
         except Exception:
-            self.log.error(traceback.format_exc())
+            log.error(traceback.format_exc())
             self._running = False
             self.quit()
         finally:
@@ -191,6 +189,9 @@ class App(ABC):
         Handles keyboard interrupts and other exceptions gracefully.
         """
         try:
+            # Set the current application context
+            current_app.set(self)
+
             self.old_settings = termios.tcgetattr(self.fd)
             tty.setraw(self.fd)
             asyncio.run(self._run_async())
@@ -198,7 +199,7 @@ class App(ABC):
             self._running = False
             self.quit()
         except Exception:
-            self.log.error(traceback.format_exc())
+            log.error(traceback.format_exc())
             self._running = False
             self.quit()
         finally:

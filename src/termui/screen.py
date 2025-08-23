@@ -2,12 +2,12 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import Optional, TYPE_CHECKING
 
+from termui._context_manager import current_app, log
+
 from termui.color import Color
 from termui.dom import DOMNode
-from termui.errors import ScreenError
 from termui.events import InputEvent, MouseEvent
 from termui.input import Keybind
-from termui.logger import Logger
 from termui.utils.terminal_utils import get_terminal_size
 from termui.widget import Widget
 
@@ -31,8 +31,6 @@ class Screen(ABC):
         """Name of the screen. Used by the application for identification."""
         self.width, self.height = get_terminal_size()
         """Width and height of the screen."""
-        self._app: Optional["App"] = None
-        """Reference to the app instance this screen belongs to."""
         self._local_keybinds: list[Keybind] = []
         """A list of local keybinds"""
         self.renderables: list[DOMNode] = []
@@ -47,34 +45,6 @@ class Screen(ABC):
 
     def __repr__(self) -> str:
         return self.__str__()
-
-    @property
-    def app(self) -> "App":
-        """Get the application instance.
-
-        Returns:
-            The App instance this screen is mounted to.
-
-        Raises:
-            ScreenError: If the screen is not mounted to an App instance.
-        """
-        if self._app is None:
-            raise ScreenError("Screen is not mounted to an App instance.")
-        return self._app
-
-    @property
-    def log(self) -> "Logger":
-        """Get the logger instance from the mounted application.
-
-        Returns:
-            The Logger instance from the App.
-
-        Raises:
-            ScreenError: If the screen is not mounted to an App instance.
-        """
-        if self._app is None:
-            raise ScreenError("Screen is not mounted to an App instance.")
-        return self._app.log
 
     @property
     def local_keybinds(self) -> list[Keybind]:
@@ -136,8 +106,9 @@ class Screen(ABC):
                   background color.
         """
         self.background_color = color
-        if self._app and self._app.renderer:
-            self._app.renderer.clear()
+        app = current_app.get()
+        if app and app.renderer:
+            app.renderer.clear()
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name.
@@ -214,19 +185,14 @@ class Screen(ABC):
         """
         pass
 
-    def mount(self, app: "App") -> None:
-        """Mount the screen to an application instance.
-
-        Args:
-            app: The application instance to mount to.
-        """
-        self._app = app
+    def mount(self) -> None:
+        """Mount the screen to an application instance."""
         self._setup_local_keybinds()
+        app = current_app.get()
         for keybind in self.local_keybinds:
             app.input_handler.register_keybind(keybind)
-
-        app.renderer.pipe(self)
-        self.app.log.system(
+            app.renderer.pipe(self)
+        log.system(
             f"Mounted screen: {self.name}. Is inline: {"True" if self.inline else "False"}"
         )
 
@@ -236,6 +202,7 @@ class Screen(ABC):
         Cleans up the renderer and removes local keybinds from the
         input handler.
         """
-        self.app.renderer.clear()
+        app = current_app.get()
+        app.renderer.clear()
         for keybind in self.local_keybinds:
-            self.app.input_handler.unregister_keybind(keybind)
+            app.input_handler.unregister_keybind(keybind)

@@ -1,6 +1,8 @@
 import sys
 from typing import Optional, TYPE_CHECKING
 
+from termui._context_manager import current_app, current_screen, log
+
 from termui.char import Char
 from termui.color import Color, colorize
 from termui.cursor import Cursor as cursor
@@ -12,9 +14,6 @@ from termui.utils.terminal_utils import (
     get_terminal_size,
     set_terminal_size,
 )
-
-if TYPE_CHECKING:
-    from termui.app import App
 
 
 class FrameBuffer:
@@ -218,14 +217,8 @@ class Renderer:
     handling frame buffering, screen changes, and terminal resizing.
     """
 
-    def __init__(self, app: "App") -> None:
-        """Initialize the renderer with an application instance.
-
-        Args:
-            app: The application instance this renderer belongs to.
-        """
-        self.app = app
-        """The application instance this renderer belongs to."""
+    def __init__(self) -> None:
+        """Initialize the renderer with an application instance."""
         self.initial_width, self.initial_height = get_terminal_size()
         """Initial terminal dimensions."""
         self.dom_tree = DOMTree()
@@ -250,11 +243,11 @@ class Renderer:
             self.frame_buffer = FrameBuffer(
                 new_width, new_height, self.frame_buffer.background_color
             )
-            if self.app.current_screen:
-                self.app.current_screen.width = new_width
-                self.app.current_screen.height = new_height
+            if current_screen.get():
+                current_screen.get().width = new_width
+                current_screen.get().height = new_height
 
-                self.pipe(self.app.current_screen)
+                self.pipe(current_screen.get())
 
             clear_terminal()
             self.frame_buffer.mark_entire_screen_dirty()
@@ -268,7 +261,7 @@ class Renderer:
         Args:
             screen: The screen to prepare for rendering.
         """
-        self.app.log.system(f"Piping screen: {screen.name} to renderer")
+        log.system(f"Piping screen: {screen.name} to renderer")
 
         screen_root = screen.build()
         screen_root.set_size(screen.width, screen.height)
@@ -282,7 +275,7 @@ class Renderer:
         self.frame_buffer.set_background_color(screen.background_color)
         self.frame_buffer.inline = screen.inline
 
-        self.app.log.system(f"DOM Tree: \n {self.dom_tree.get_tree_string()}")
+        log.system(f"DOM Tree: \n {self.dom_tree.get_tree_string()}")
 
     def render(self) -> None:
         """Render all widgets to the terminal.
