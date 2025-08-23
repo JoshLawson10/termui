@@ -30,13 +30,15 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Bump version and generate changelog
         run: poetry run cz bump --changelog || echo "No bump"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push changes
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git push --follow-tags origin main
+        run: git push --follow-tags origin main
