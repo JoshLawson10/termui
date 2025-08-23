@@ -1,3 +1,9 @@
+## v0.2.2 (2025-08-23)
+
+### Fix
+
+- Added support for legacy self.log in Screen and App classes
+
 ## v0.2.1 (2025-08-22)
 
 ### Refactor

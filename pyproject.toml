@@ -1,6 +1,6 @@
 [project]
 name = "termui"
-version = "0.2.1"
+version = "0.2.2"
 description = "A modern, declarative, and efficient Terminal UI library for Python."
 authors = [
     { name = "Josh Lawson", email = "joshlawson100@outlook.com" }
@@ -26,7 +26,7 @@ repository = "https://github.com/python-poetry/poetry"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.2.1"
+version = "0.2.2"
 tag_format = "v$version"
 update_changelog_on_bump = true
 version_files = [
