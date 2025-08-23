@@ -87,9 +87,9 @@ Common commit types:
 | **feat** | A new feature | **Minor** |
 | **fix** | A bug fix | **Patch** |
 | **perf** | Performance improvement | **Patch** |
-| **refactor** | Code change that neither fixes a bug nor adds a feature | **No update** (usually) |
+| **refactor** | Code change that neither fixes a bug nor adds a feature | **No update** |
 | **docs** | Documentation only changes | **No update** |
-| **style** | Code style changes (formatting, whitespace, semicolons) | **No update** |
+| **style** | Code style changes (formatting, whitespace, etc.) | **No update** |
 | **test** | Adding or updating tests | **No update** |
 | **chore** | Routine tasks, build scripts, dependency updates | **No update** |
 | **ci** | Continuous Integration config changes | **No update** |
