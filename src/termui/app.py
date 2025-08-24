@@ -51,6 +51,8 @@ class App(ABC):
         self.fd = sys.stdin.fileno()
         self.old_settings = termios.tcgetattr(self.fd)
 
+        _app.set(self)
+
     def _register_decorated_keybinds(self) -> None:
         """Find and register all methods decorated with @keybind.
 
@@ -95,7 +97,7 @@ class App(ABC):
         """Setup the application with initial screens.
 
         This method is intended to be overridden by the inheriting class."""
-        pass
+        raise NotImplementedError("Subclasses must implement the build method.")
 
     def show_screen(self, screen_name: str) -> None:
         """Switch to a different screen by name.
@@ -179,8 +181,8 @@ class App(ABC):
         except KeyboardInterrupt:
             self._running = False
             self.quit()
-        except asyncio.CancelledError:
-            raise AsyncError("Application loop was cancelled.")
+        except asyncio.CancelledError as e:
+            raise AsyncError("Application loop was cancelled.") from e
         except Exception:
             log.error(traceback.format_exc())
             self._running = False

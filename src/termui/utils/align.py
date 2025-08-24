@@ -21,14 +21,15 @@ def get_aligned_start_x(
         int: The starting x position for the content.
     """
     content_width = len(content)
-    if alignment == "left":
-        return 0
-    elif alignment == "center":
-        return (region_width - content_width) // 2
-    elif alignment == "right":
-        return region_width - content_width
-    else:
-        raise AlignmentError(f"Invalid alignment type: {alignment}")
+    match alignment:
+        case "left":
+            return 0
+        case "center":
+            return (region_width - content_width) // 2
+        case "right":
+            return region_width - content_width
+        case _:
+            raise AlignmentError(f"Invalid alignment type: {alignment}")
 
 
 def get_aligned_start_y(region_height: int, alignment: VerticalAlignment) -> int:
@@ -42,11 +43,12 @@ def get_aligned_start_y(region_height: int, alignment: VerticalAlignment) -> int
     Returns:
         int: The starting y position for the content.
     """
-    if alignment == "top":
-        return 0
-    elif alignment == "middle":
-        return (region_height - 1) // 2
-    elif alignment == "bottom":
-        return region_height - 1
-    else:
-        raise AlignmentError(f"Invalid alignment type: {alignment}")
+    match alignment:
+        case "top":
+            return 0
+        case "middle":
+            return (region_height - 1) // 2
+        case "bottom":
+            return region_height - 1
+        case _:
+            raise AlignmentError(f"Invalid alignment type: {alignment}")

@@ -85,10 +85,13 @@ class Widget(DOMNode, ABC):
             event: The mouse event to handle. Routes to specific handler
                   methods based on the event type.
         """
-        if event.event_type == "press":
-            self._on_click(event)
+        if self.region.contains(event.x, event.y):
+            if event.event_type == "press":
+                self._on_click(event)
+            else:
+                self._on_mouse_enter()
         else:
-            self._on_mouse_enter()
+            self._on_mouse_exit()
 
     def _on_mouse_enter(self) -> None:
         """Handle mouse enter events.
@@ -96,7 +99,6 @@ class Widget(DOMNode, ABC):
         Called when the mouse cursor enters the widget's region.
         Override in subclasses to implement hover effects.
         """
-        pass
 
     def _on_mouse_exit(self) -> None:
         """Handle mouse exit events.
@@ -104,7 +106,6 @@ class Widget(DOMNode, ABC):
         Called when the mouse cursor leaves the widget's region.
         Override in subclasses to clean up hover effects.
         """
-        pass
 
     def _on_click(self, event: MouseEvent) -> None:
         """Handle mouse click events.
@@ -114,7 +115,6 @@ class Widget(DOMNode, ABC):
         Args:
             event: The mouse click event with position and button information.
         """
-        pass
 
     @abstractmethod
     def render(self) -> list[list[Char]]:
@@ -125,4 +125,4 @@ class Widget(DOMNode, ABC):
             appearance. The dimensions should match the widget's region
             size (width x height).
         """
-        pass
+        raise NotImplementedError("Subclasses must implement the render method.")

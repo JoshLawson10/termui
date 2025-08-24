@@ -189,28 +189,36 @@ class Container(Widget):
             title_alignment=self.title_alignment,
         )
 
-        if self._root_layout and self._root_layout.children:
-            for child_node in self._root_layout.children:
-                child = (
-                    child_node.widget if hasattr(child_node, "widget") else child_node
-                )
+        if not self._root_layout and not self._root_layout.children:
+            return content
 
-                if child and child.region.width > 0 and child.region.height > 0:
-                    try:
-                        child_content = child.render()
+        for child_node in self._root_layout.children:
+            child = child_node.widget if hasattr(child_node, "widget") else child_node
 
-                        rel_x = child.region.x - self.region.x
-                        rel_y = child.region.y - self.region.y
+            if child is None or child.region.width <= 0 or child.region.height <= 0:
+                continue
 
-                        for row_idx, row in enumerate(child_content):
-                            y_pos = rel_y + row_idx
-                            if 0 <= y_pos < len(content):
-                                for col_idx, char in enumerate(row):
-                                    x_pos = rel_x + col_idx
-                                    if 0 <= x_pos < len(content[y_pos]):
-                                        content[y_pos][x_pos] = char
-                    except Exception as e:
-                        pass
+            try:
+                child_content = child.render()
+
+                rel_x = child.region.x - self.region.x
+                rel_y = child.region.y - self.region.y
+
+                for row_idx, row in enumerate(child_content):
+                    y_pos = rel_y + row_idx
+
+                    if y_pos < 0 or y_pos >= len(content):
+                        continue
+
+                    for col_idx, char in enumerate(row):
+                        x_pos = rel_x + col_idx
+
+                        if x_pos < 0 or x_pos >= len(content[y_pos]):
+                            continue
+
+                        content[y_pos][x_pos] = char
+            except Exception as e:
+                raise e
 
         return content
 

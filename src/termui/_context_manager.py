@@ -1,6 +1,5 @@
 from contextvars import ContextVar
-from typing import TYPE_CHECKING
-
+from typing import cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from termui.app import App
@@ -10,13 +9,34 @@ if TYPE_CHECKING:
 
 
 _app: ContextVar["App"] = ContextVar("app")
-app: "App" = _app.get()
-
 _input_handler: ContextVar["InputHandler"] = ContextVar("input_handler")
-input_handler: "InputHandler" = _input_handler.get()
-
 _renderer: ContextVar["Renderer"] = ContextVar("renderer")
-renderer: "Renderer" = _renderer.get()
-
 _logger: ContextVar["Logger"] = ContextVar("logger")
-log: "Logger" = _logger.get()
+
+
+class _ContextVarProxy:
+    """A simple proxy that defers .get() until accessed."""
+
+    def __init__(self, ctx: ContextVar, name: str):
+        self._ctx = ctx
+        self._name = name
+
+    def __getattr__(self, item):
+        return getattr(self._ctx.get(), item)
+
+    def __call__(self):
+        """Allow direct retrieval via function call, e.g., app()"""
+        return self._ctx.get()
+
+    def __repr__(self):
+        try:
+            value = self._ctx.get()
+        except LookupError:
+            return f"<Unbound ContextVarProxy {self._name}>"
+        return f"<ContextVarProxy {self._name} -> {value!r}>"
+
+
+app = cast("App", _ContextVarProxy(_app, "app"))
+input_handler = cast("InputHandler", _ContextVarProxy(_input_handler, "input_handler"))
+renderer = cast("Renderer", _ContextVarProxy(_renderer, "renderer"))
+log = cast("Logger", _ContextVarProxy(_logger, "logger"))

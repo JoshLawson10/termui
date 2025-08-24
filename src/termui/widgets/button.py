@@ -235,13 +235,13 @@ class Button(Widget):
         button_style = BUTTON_STYLES["solid"]
         button_color = BUTTON_COLORS["default"]
         button_size = BUTTON_SIZES["medium"]
-        for style in style.split(" "):
-            if style in BUTTON_STYLES:
-                button_style = BUTTON_STYLES[style]
-            if style in BUTTON_COLORS:
-                button_color = BUTTON_COLORS[style]
-            if style in BUTTON_SIZES:
-                button_size = BUTTON_SIZES[style]
+        for style_attr in style.split(" "):
+            if BUTTON_STYLES.get(style_attr):  # type: ignore
+                button_style = BUTTON_STYLES[style_attr]  # type: ignore
+            if BUTTON_COLORS.get(style_attr):  # type: ignore
+                button_color = BUTTON_COLORS[style_attr]  # type: ignore
+            if BUTTON_SIZES.get(style_attr):  # type: ignore
+                button_size = BUTTON_SIZES[style_attr]  # type: ignore
         return button_style, button_color, button_size
 
     def _get_colors(self) -> tuple[Color, Color, Color, Color | None]:
@@ -319,7 +319,7 @@ class Button(Widget):
             with proper colors, borders, text, and visual effects.
         """
 
-        fg, bg, text_fg, text_bg = self._get_colors()
+        _, bg, text_fg, text_bg = self._get_colors()
 
         content: list[list[Char]] = draw_rectangle(
             self.region.width,
@@ -329,7 +329,7 @@ class Button(Widget):
             fill=Char(self.style.fill_char, bg, None),
         )
 
-        if self.style.name == "solid" or self.style.name == "soft":
+        if self.style.name in ["solid", "soft"]:
             match self.size.name:
                 case "icon":
                     depth_char_top = "█"

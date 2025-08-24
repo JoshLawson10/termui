@@ -12,7 +12,7 @@ class Layout(Widget):
     and spacing of their children.
     """
 
-    def __init__(self, name: Optional[str] = None, *children: Widget, **kwargs) -> None:
+    def __init__(self, *children: Widget, name: Optional[str] = None, **kwargs) -> None:
         """Initialize the layout with child widgets.
 
         Args:

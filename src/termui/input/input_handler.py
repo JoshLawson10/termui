@@ -1,10 +1,26 @@
 import re
 import select
 import sys
+from dataclasses import dataclass
 from typing import Optional
 
 from termui.events import InputEvent, KeyEvent, MouseEvent
 from .keybind import Keybind
+
+
+@dataclass
+class MouseState:
+    """Represents the state of the mouse.
+
+    Args:
+        enabled: Whether mouse tracking is enabled.
+        x: The current x-coordinate of the mouse.
+        y: The current y-coordinate of the mouse.
+    """
+
+    enabled: bool = False
+    x: int = 0
+    y: int = 0
 
 
 class InputHandler:
@@ -22,11 +38,8 @@ class InputHandler:
         """A set of currently pressed keys. Used for multi-key keybinds."""
         self._should_exit = False
         """Flag indicating whether the application should exit."""
-        self._mouse_enabled = False
-        """Flag indicating whether mouse tracking is enabled."""
-        self._current_mouse_x: int = 0
-        self._current_mouse_y: int = 0
-        """The current position of the mouse cursor."""
+        self._mouse = MouseState()
+        """The current state of the mouse."""
 
         self._escape_sequences: dict[str, str] = {
             "\x1b[A": "up",
@@ -95,20 +108,20 @@ class InputHandler:
 
         Enables SGR mouse reporting mode for precise mouse event handling.
         """
-        if not self._mouse_enabled:
+        if not self._mouse.enabled:
             sys.stdout.write("\033[?1003h\033[?1006h")
             sys.stdout.flush()
-            self._mouse_enabled = True
+            self._mouse.enabled = True
 
     def disable_mouse(self) -> None:
         """Disable mouse tracking in the terminal.
 
         Disables SGR mouse reporting mode.
         """
-        if self._mouse_enabled:
+        if self._mouse.enabled:
             sys.stdout.write("\033[?1003l\033[?1006l")
             sys.stdout.flush()
-            self._mouse_enabled = False
+            self._mouse.enabled = False
 
     def get_mouse_position(self) -> Optional[tuple[int, int]]:
         """Get the current mouse position by requesting it from the terminal.
@@ -120,7 +133,7 @@ class InputHandler:
             A tuple (column, row) of the mouse position, or None if unable
             to retrieve the position.
         """
-        if not self._mouse_enabled:
+        if not self._mouse.enabled:
             sys.stdout.write("\033[?1003h\033[?1006h")
             sys.stdout.flush()
 
@@ -128,7 +141,7 @@ class InputHandler:
         while True:
             ch = sys.stdin.read(1)
             buf += ch
-            if ch == "M" or ch == "m":
+            if ch in ("M", "m"):
                 break
 
         match = re.search(r"\x1b\[<\d+;(\d+);(\d+)[mM]", buf)
@@ -136,8 +149,8 @@ class InputHandler:
             col = int(match.group(1))
             row = int(match.group(2))
             return (col, row)
-        else:
-            return None
+
+        return None
 
     def _parse_mouse_event(self, sequence: str) -> Optional[MouseEvent]:
         """Parse a mouse escape sequence into a MouseEvent.
@@ -174,51 +187,61 @@ class InputHandler:
 
         return MouseEvent(col, row, button, event_type)
 
+    def _read_char(self) -> str:
+        """Read a single character from stdin (blocking)."""
+        return sys.stdin.read(1)
+
+    def _parse_mouse_event_sequence(self) -> Optional[MouseEvent]:
+        """Read and parse a mouse escape sequence into a MouseEvent."""
+        mouse_buf = "\x1b[<"
+        while True:
+            ch = self._read_char()
+            mouse_buf += ch
+            if ch in {"M", "m"}:
+                break
+        return self._parse_mouse_event(mouse_buf) if self._mouse.enabled else None
+
+    def _parse_escape_sequence(self) -> Optional[InputEvent]:
+        """Parse an escape sequence into a KeyEvent or MouseEvent."""
+        next_char = self._read_char()
+        if next_char != "[":
+            # Two-char escape (like ESC + something)
+            seq = "\x1b" + next_char
+            return KeyEvent(self._escape_sequences.get(seq, "escape"))
+
+        third_char = self._read_char()
+        if third_char == "<":
+            return self._parse_mouse_event_sequence()
+
+        seq = "\x1b[" + third_char
+        if seq in self._escape_sequences:
+            return KeyEvent(self._escape_sequences[seq])
+
+        # try longer sequence
+        fourth_char = self._read_char()
+        longer_seq = seq + fourth_char
+        if longer_seq in self._escape_sequences:
+            return KeyEvent(self._escape_sequences[longer_seq])
+
+        return KeyEvent("escape")
+
     async def _get_input_event_async(self) -> Optional[InputEvent]:
-        """Get a single input event, handling escape sequences and mouse events.
-
-        Returns:
-            An InputEvent (KeyEvent or MouseEvent) if input is available,
-            None if no input is ready.
-        """
+        """Get a single input event, handling escape sequences and mouse events."""
         rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
-        if rlist:
-            char = sys.stdin.read(1)
-            if char == "\x1b":
-                next_char = sys.stdin.read(1)
-                if next_char == "[":
-                    third_char = sys.stdin.read(1)
-                    if third_char == "<":
-                        mouse_buf = "\x1b[<"
-                        while True:
-                            ch = sys.stdin.read(1)
-                            mouse_buf += ch
-                            if ch == "M" or ch == "m":
-                                break
+        if not rlist:
+            return None
 
-                        if self._mouse_enabled:
-                            return self._parse_mouse_event(mouse_buf)
-                    else:
-                        seq = char + next_char + third_char
-                        if seq in self._escape_sequences:
-                            return KeyEvent(self._escape_sequences[seq])
-                        else:
-                            fourth_char = sys.stdin.read(1)
-                            longer_seq = seq + fourth_char
-                            if longer_seq in self._escape_sequences:
-                                return KeyEvent(self._escape_sequences[longer_seq])
-                            return KeyEvent("escape")
-                else:
-                    # Two character escape sequence
-                    seq = char + next_char
-                    if seq in self._escape_sequences:
-                        return KeyEvent(self._escape_sequences[seq])
-                    return KeyEvent("escape")
-            elif char in self._special_keys:
-                return KeyEvent(self._special_keys[char])
-            else:
-                return KeyEvent(char.lower())
-        return None
+        char = self._read_char()
+        event: Optional[InputEvent] = None
+
+        if char == "\x1b":
+            event = self._parse_escape_sequence()
+        elif char in self._special_keys:
+            event = KeyEvent(self._special_keys[char])
+        else:
+            event = KeyEvent(char.lower())
+
+        return event
 
     async def process_input(self) -> Optional[InputEvent]:
         """Process input and trigger appropriate keybind actions.
@@ -238,8 +261,8 @@ class InputHandler:
             self._current_keys.add(event.key)
 
         elif isinstance(event, MouseEvent):
-            self._current_mouse_x = event.x
-            self._current_mouse_y = event.y
+            self._mouse.x = event.x
+            self._mouse.y = event.y
             # Handle mouse events here if needed
 
         for keybind in self._keybinds:

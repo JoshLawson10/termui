@@ -33,10 +33,10 @@ class Logger:
         if self.log_file:
             if not os.path.exists(os.path.dirname(self.log_file)):
                 os.makedirs(os.path.dirname(self.log_file))
-            with open(self.log_file, "a") as f:
+            with open(self.log_file, "a", encoding="utf-8") as f:
                 f.seek(0)
                 f.truncate()
-                f.write(f"[TermUI Logger Initialized]\n")
+                f.write("[TermUI Logger Initialized]\n")
 
     def system(self, message: str) -> None:
         """Log a system message.
@@ -46,7 +46,7 @@ class Logger:
         """
         if self.stdout:
             if self.log_file:
-                with open(self.log_file, "a") as f:
+                with open(self.log_file, "a", encoding="utf-8") as f:
                     f.write(f"[TermUI Log] {message}\n")
             else:
                 print(f"[TermUI Log] {message}")
@@ -59,7 +59,7 @@ class Logger:
         """
         if self.stdout:
             if self.log_file:
-                with open(self.log_file, "a") as f:
+                with open(self.log_file, "a", encoding="utf-8") as f:
                     f.write(f"[TermUI Warning] {message}\n")
             else:
                 print(f"[TermUI Warning] {message}")
@@ -73,7 +73,7 @@ class Logger:
         """
         if self.stderr:
             if self.log_file:
-                with open(self.log_file, "a") as f:
+                with open(self.log_file, "a", encoding="utf-8") as f:
                     f.write(f"[TermUI Error] {message}\n")
             else:
                 print(f"[TermUI Error] {message}")

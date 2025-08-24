@@ -70,7 +70,7 @@ class GridLayout(Layout):
 
             self.span_map[child] = (row_0_index, col_0_index, row_span, col_span)
 
-        super().__init__("GridLayout", *children, **kwargs)
+        super().__init__(name="GridLayout", *children, **kwargs)
 
     def calculate_grid_dimensions(self) -> tuple[int, int]:
         """Calculate the required grid dimensions based on widget positions.
@@ -82,8 +82,8 @@ class GridLayout(Layout):
         if not self.grid_map:
             return 1, 1
 
-        max_row = max(pos[0] for pos in self.grid_map.keys()) + 1
-        max_col = max(pos[1] for pos in self.grid_map.keys()) + 1
+        max_row = max(pos[0] for pos in self.grid_map) + 1
+        max_col = max(pos[1] for pos in self.grid_map) + 1
 
         return max_row, max_col
 
@@ -158,10 +158,8 @@ class GridLayout(Layout):
         min_width, min_height = self.calculate_minimum_size()
 
         # Ensure grid is at least minimum size
-        if self.region.width < min_width:
-            self.region.width = min_width
-        if self.region.height < min_height:
-            self.region.height = min_height
+        self.region.width = max(self.region.width, min_width)
+        self.region.height = max(self.region.height, min_height)
 
         # Distribute extra space
         total_spacing_width = self.spacing * max(0, max_cols - 1)

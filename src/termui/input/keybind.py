@@ -76,7 +76,7 @@ def keybind(
     """
 
     def decorator(func: Callable) -> Callable:
-        func._keybind_info = {
+        func.keybind_info = {
             "key": key,
             "description": description,
             "visible": visible,

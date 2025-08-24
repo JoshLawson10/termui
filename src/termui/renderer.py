@@ -1,5 +1,6 @@
 import sys
-from typing import Optional, TYPE_CHECKING
+from os import get_terminal_size
+from typing import Optional
 
 from termui._context_manager import app, log
 
@@ -9,11 +10,7 @@ from termui.cursor import Cursor as cursor
 from termui.dom import DOMTree
 from termui.screen import Screen
 from termui.utils.geometry import Region
-from termui.utils.terminal_utils import (
-    clear_terminal,
-    get_terminal_size,
-    set_terminal_size,
-)
+from termui.utils.terminal_utils import clear_terminal, set_terminal_size
 
 
 class FrameBuffer:
@@ -123,7 +120,7 @@ class FrameBuffer:
     def clear(self) -> None:
         """Clear the current frame buffer to empty characters."""
         for row in self.current_frame:
-            for i in range(len(row)):
+            for i, _ in enumerate(row):
                 row[i] = self._get_empty_char()
         self.mark_entire_screen_dirty()
 
@@ -287,7 +284,7 @@ class Renderer:
             pass
 
         for node in self.dom_tree.get_node_list():
-            if node.widget is None or node.dirty == False:
+            if node.widget is None or node.dirty is False:
                 continue
 
             self.frame_buffer.draw_content(node.widget.region, node.widget.render())

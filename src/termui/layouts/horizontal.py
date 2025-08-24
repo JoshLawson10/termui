@@ -6,7 +6,7 @@ class HorizontalLayout(Layout):
     """A layout that arranges widgets horizontally."""
 
     def __init__(self, *children: Widget | Layout, **kwargs) -> None:
-        super().__init__("HorizontalLayout", *children, **kwargs)
+        super().__init__(name="HorizontalLayout", *children, **kwargs)
 
     def calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate minimum size needed for horizontal layout."""
@@ -28,10 +28,8 @@ class HorizontalLayout(Layout):
 
         min_width, min_height = self.calculate_minimum_size()
 
-        if self.region.width < min_width:
-            self.region.width = min_width
-        if self.region.height < min_height:
-            self.region.height = min_height
+        self.region.width = max(self.region.width, min_width)
+        self.region.height = max(self.region.height, min_height)
 
         x_offset = 0
         for child in self.children:

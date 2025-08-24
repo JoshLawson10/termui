@@ -208,7 +208,7 @@ class DOMTree:
 
         lines = [
             " " * indent
-            + f"{node.name} ({node.id}) (Dimensions: {node_width}x{node_height}) (Pos: {node_x}, {node_y})"
+            + f"{node.name} ({node.id}) ({node_width}x{node_height}) (Pos: {node_x}, {node_y})"
         ]
         for child in node.children:
             lines.append(self.get_tree_string(child, indent + 2))

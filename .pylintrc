@@ -1,0 +1,8 @@
+[MASTER]
+disable=C0114, W0718, R0912, C0301, R0917, R0913, R0914, R0801
+
+[DESIGN]
+min-public-methods=0
+max-attributes=10
+max-locals=32
+max-args=10

@@ -5,6 +5,15 @@ from termui.errors import DimensionError
 
 @dataclass
 class Region:
+    """Represents a rectangular region in 2D space.
+
+    Args:
+        x: The x-coordinate of the region.
+        y: The y-coordinate of the region.
+        width: The width of the region.
+        height: The height of the region.
+    """
+
     x: int
     y: int
     """Position of the region"""

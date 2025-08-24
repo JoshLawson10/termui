@@ -1,5 +1,6 @@
 import inspect
 from abc import ABC, abstractmethod
+from os import get_terminal_size
 from typing import Optional, TYPE_CHECKING
 
 from termui._context_manager import input_handler, log, renderer
@@ -8,7 +9,6 @@ from termui.color import Color
 from termui.dom import DOMNode
 from termui.events import InputEvent, MouseEvent
 from termui.input import Keybind
-from termui.utils.terminal_utils import get_terminal_size
 from termui.widget import Widget
 
 
@@ -151,10 +151,7 @@ class Screen(ABC):
         if isinstance(event, MouseEvent):
             for widget in self.renderables:
                 if isinstance(widget, Widget):
-                    if widget.region.contains(event.x, event.y):
-                        widget.handle_mouse_event(event)
-                    else:
-                        widget._on_mouse_exit()
+                    widget.handle_mouse_event(event)
 
     @abstractmethod
     def setup(self) -> None:
@@ -163,7 +160,7 @@ class Screen(ABC):
         This method is called once when the screen is registered with
         the application. Use this for one-time initialization.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement the setup method.")
 
     @abstractmethod
     def build(self) -> "Layout":
@@ -176,7 +173,7 @@ class Screen(ABC):
         Returns:
             The root layout widget that contains all screen content.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement the build method.")
 
     @abstractmethod
     def update(self) -> None:
@@ -186,7 +183,7 @@ class Screen(ABC):
         can be used to update screen content, animations, or state
         based on time or other factors.
         """
-        pass
+        raise NotImplementedError("Subclasses must implement the update method.")
 
     def mount(self) -> None:
         """Mount the screen to an application instance."""

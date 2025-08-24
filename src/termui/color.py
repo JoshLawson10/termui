@@ -74,7 +74,7 @@ class Color:
         Raises:
             ValueError: If percent is not between 0 and 1.
         """
-        if not (0 <= percent <= 1):
+        if not 0 <= percent <= 1:
             raise ValueError("Percent must be between 0 and 1.")
         return Color(
             r=min(255, int(self.r + self.r * percent)),
@@ -96,7 +96,7 @@ class Color:
         Raises:
             ValueError: If percent is not between 0 and 1.
         """
-        if not (0 <= percent <= 1):
+        if not 0 <= percent <= 1:
             raise ValueError("Percent must be between 0 and 1.")
         return Color(
             r=max(0, int(self.r - self.r * percent)),

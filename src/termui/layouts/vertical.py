@@ -6,7 +6,7 @@ class VerticalLayout(Layout):
     """A layout that arranges widgets vertically."""
 
     def __init__(self, *children: Widget, **kwargs) -> None:
-        super().__init__("VerticalLayout", *children, **kwargs)
+        super().__init__(name="VerticalLayout", *children, **kwargs)
 
     def calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate minimum size needed for vertical layout."""
@@ -28,10 +28,8 @@ class VerticalLayout(Layout):
 
         min_width, min_height = self.calculate_minimum_size()
 
-        if self.region.width < min_width:
-            self.region.width = min_width
-        if self.region.height < min_height:
-            self.region.height = min_height
+        self.region.width = max(self.region.width, min_width)
+        self.region.height = max(self.region.height, min_height)
 
         y_offset = 0
         for child in self.children:

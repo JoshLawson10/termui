@@ -8,6 +8,10 @@ LabelPosition = Literal["left", "right"]
 
 
 class ProgressBar(Widget):
+    """
+    A widget that displays a progress bar.
+    """
+
     def __init__(
         self,
         value: int = 0,
@@ -19,6 +23,17 @@ class ProgressBar(Widget):
         bg_color: Optional[Color] = None,
         **kwargs,
     ):
+        """Initialize the progress bar.
+
+        Args:
+            value (int): The initial value of the progress bar.
+            max_value (int): The maximum value of the progress bar.
+            label (str, optional): The label displayed on the progress bar.
+            label_pos (LabelPosition, optional): The position of the label on the progress bar.
+            label_color (Color, optional): The color of the label text.
+            fg_color (Color, optional): The foreground color of the progress bar.
+            bg_color (Color, optional): The background color of the progress bar.
+        """
         super().__init__(**kwargs)
 
         self.label = label
@@ -86,7 +101,7 @@ class ProgressBar(Widget):
         """
         bar_length = 40
         filled_length = int(bar_length * self.current_value // self.max_value)
-        bar = (
+        bar_string = (
             [Char("█", self.fg_color, self.bg_color)] * filled_length
             + [Char("─", Color(255, 255, 255), self.bg_color)]
             * (bar_length - filled_length - 1)
@@ -108,8 +123,8 @@ class ProgressBar(Widget):
 
         match self.label_pos:
             case "left":
-                return [bar_label + bar + space + bar_amount]
+                return [bar_label + bar_string + space + bar_amount]
             case "right":
-                return [bar + space + bar_amount + bar_label]
+                return [bar_string + space + bar_amount + bar_label]
             case _:
-                return [bar_label + bar + space + bar_amount]
+                return [bar_label + bar_string + space + bar_amount]
