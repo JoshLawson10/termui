@@ -27,7 +27,8 @@ class GridLayout(Layout):
         super().__init__(name="GridLayout", **kwargs)
 
     def calculate_minimum_size(self) -> tuple[int, int]:
-        return super().calculate_minimum_size()
+        """Calculate minimum size needed for the grid layout."""
+        return self._calculate_minimum_size()
 
     def _add_child_to_span_map(self, child: Widget) -> None:
         """
