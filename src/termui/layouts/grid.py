@@ -76,6 +76,11 @@ class GridLayout(Layout):
         child.set_position(0, 0)  # Initial position; will be updated in arrange()
 
     def _add_children_to_span_map(self, *children: Widget) -> None:
+        """Recursively adds child widgets to the span map.
+
+        Args:
+            *children: The child widgets to add.
+        """
         for child in children:
             self._add_child_to_span_map(child)
 
