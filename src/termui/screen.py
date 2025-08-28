@@ -13,7 +13,6 @@ from termui.widget import Widget
 
 
 if TYPE_CHECKING:
-    from termui.app import App
     from termui.layout import Layout
 
 
@@ -190,7 +189,8 @@ class Screen(ABC):
         self._setup_local_keybinds()
         for keybind in self.local_keybinds:
             input_handler.register_keybind(keybind)
-            renderer.pipe(self)
+
+        renderer.pipe(self)
         log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")
 
     def unmount(self) -> None:

@@ -1,5 +1,4 @@
-# This should replace the content of src/termui/layouts/grid.py
-
+from termui.errors import LayoutError
 from termui.layout import Layout
 from termui.widget import Widget
 
@@ -12,20 +11,11 @@ class GridLayout(Layout):
     automatically calculates cell sizes and distributes available space.
     """
 
-    def __init__(self, *children: Widget | Layout, **kwargs) -> None:
+    def __init__(self, **kwargs) -> None:
         """Initialize the grid layout with child widgets.
 
         Args:
-            *children: Child widgets to arrange in the grid. Each child's 'pos'
-                      attribute determines its grid position and span:
-                      - pos=(row, col): Single cell at (row, col)
-                      - pos=((start_row, end_row), col): Row span from start to end
-                      - pos=(row, (start_col, end_col)): Column span from start to end
-                      - pos=((start_row, end_row), (start_col, end_col)): Both spans
             **kwargs: Additional layout options including spacing.
-
-        Raises:
-            ValueError: If widgets overlap in the grid or have conflicting positions.
         """
         self.grid_map: dict[tuple[int, int], Widget] = {}
         """A mapping of grid positions to their corresponding widgets."""
@@ -34,45 +24,62 @@ class GridLayout(Layout):
         )  # widget -> (row, col, row_span, col_span)
         """A mapping of widgets to their grid positions and spans."""
 
+        super().__init__(name="GridLayout", **kwargs)
+
+    def _add_child_to_span_map(self, child: Widget) -> None:
+        """
+        Add a child widget to the span map for grid positioning.
+
+        Args:
+            child: The child widget to add.
+
+        Raises:
+            LayoutError: If the child widget's position overlaps with existing widgets.
+        """
+        if child in self.grid_map or child in self.span_map:
+            return
+
+        child_row, child_col = child.pos
+
+        # Handle row specification
+        if isinstance(child_row, tuple):
+            row = child_row[0]
+            row_span = child_row[1] - child_row[0] + 1
+        else:
+            row = child_row
+            row_span = 1
+
+        # Handle column specification
+        if isinstance(child_col, tuple):
+            col = child_col[0]
+            col_span = child_col[1] - child_col[0] + 1
+        else:
+            col = child_col
+            col_span = 1
+
+        # Convert to 0-based indexing
+        row_0_index = row - 1
+        col_0_index = col - 1
+
+        # Check for overlaps and populate grid_map
+        for r in range(row_0_index, row_0_index + row_span):
+            for c in range(col_0_index, col_0_index + col_span):
+                if (r, c) in self.grid_map:
+                    raise LayoutError(
+                        f"Trying to place widget {child.name} at grid position ({r}, {c}). "
+                        f"Already occupied by {self.grid_map[(r, c)].name}. "
+                        f"Row: {row}, Col: {col}, Row Span: {row_span}, Col Span: {col_span}"
+                    )
+                self.grid_map[(r, c)] = child
+
+        self.span_map[child] = (row_0_index, col_0_index, row_span, col_span)
+        child.set_position(0, 0)  # Initial position; will be updated in arrange()
+
+    def _add_children_to_span_map(self, *children: Widget) -> None:
         for child in children:
-            child_row, child_col = child.pos
+            self._add_child_to_span_map(child)
 
-            # Handle row specification
-            if isinstance(child_row, tuple):
-                row = child_row[0]
-                row_span = child_row[1] - child_row[0] + 1
-            else:
-                row = child_row
-                row_span = 1
-
-            # Handle column specification
-            if isinstance(child_col, tuple):
-                col = child_col[0]
-                col_span = child_col[1] - child_col[0] + 1
-            else:
-                col = child_col
-                col_span = 1
-
-            # Convert to 0-based indexing
-            row_0_index = row - 1
-            col_0_index = col - 1
-
-            # Check for overlaps and populate grid_map
-            for r in range(row_0_index, row_0_index + row_span):
-                for c in range(col_0_index, col_0_index + col_span):
-                    if (r, c) in self.grid_map:
-                        raise ValueError(
-                            f"Trying to place widget {child.name} at grid position ({r}, {c}). "
-                            f"Already occupied by {self.grid_map[(r, c)].name}. "
-                            f"Row: {row}, Col: {col}, Row Span: {row_span}, Col Span: {col_span}"
-                        )
-                    self.grid_map[(r, c)] = child
-
-            self.span_map[child] = (row_0_index, col_0_index, row_span, col_span)
-
-        super().__init__(name="GridLayout", *children, **kwargs)
-
-    def calculate_grid_dimensions(self) -> tuple[int, int]:
+    def _calculate_grid_dimensions(self) -> tuple[int, int]:
         """Calculate the required grid dimensions based on widget positions.
 
         Returns:
@@ -87,7 +94,7 @@ class GridLayout(Layout):
 
         return max_row, max_col
 
-    def calculate_cell_sizes(
+    def _calculate_cell_sizes(
         self, max_rows: int, max_cols: int
     ) -> tuple[list[int], list[int]]:
         """Calculate the size of each row and column based on content.
@@ -131,15 +138,15 @@ class GridLayout(Layout):
 
         return row_heights, col_widths
 
-    def calculate_minimum_size(self) -> tuple[int, int]:
+    def _calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate minimum size needed for the grid layout.
 
         Returns:
             A tuple (min_width, min_height) representing the minimum space
             required to display all widgets with proper spacing.
         """
-        max_rows, max_cols = self.calculate_grid_dimensions()
-        row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
+        max_rows, max_cols = self._calculate_grid_dimensions()
+        row_heights, col_widths = self._calculate_cell_sizes(max_rows, max_cols)
 
         total_width = sum(col_widths) + (self.spacing * max(0, max_cols - 1))
         total_height = sum(row_heights) + (self.spacing * max(0, max_rows - 1))
@@ -151,11 +158,13 @@ class GridLayout(Layout):
         if not self.children:
             return
 
-        max_rows, max_cols = self.calculate_grid_dimensions()
-        row_heights, col_widths = self.calculate_cell_sizes(max_rows, max_cols)
+        self._add_children_to_span_map(*self.children)
+
+        max_rows, max_cols = self._calculate_grid_dimensions()
+        row_heights, col_widths = self._calculate_cell_sizes(max_rows, max_cols)
 
         # Calculate minimum size
-        min_width, min_height = self.calculate_minimum_size()
+        min_width, min_height = self._calculate_minimum_size()
 
         # Ensure grid is at least minimum size
         self.region.width = max(self.region.width, min_width)

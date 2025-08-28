@@ -1,12 +1,16 @@
 from termui.layout import Layout
-from termui.widget import Widget
 
 
 class VerticalLayout(Layout):
     """A layout that arranges widgets vertically."""
 
-    def __init__(self, *children: Widget, **kwargs) -> None:
-        super().__init__(name="VerticalLayout", *children, **kwargs)
+    def __init__(self, **kwargs) -> None:
+        """Initialize the vertical layout.
+
+        Args:
+            **kwargs: Additional layout options.
+        """
+        super().__init__(name="VerticalLayout", **kwargs)
 
     def calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate minimum size needed for vertical layout."""

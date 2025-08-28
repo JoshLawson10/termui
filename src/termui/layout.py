@@ -12,7 +12,7 @@ class Layout(Widget):
     and spacing of their children.
     """
 
-    def __init__(self, *children: Widget, name: Optional[str] = None, **kwargs) -> None:
+    def __init__(self, *, name: Optional[str] = None, **kwargs) -> None:
         """Initialize the layout with child widgets.
 
         Args:
@@ -22,10 +22,19 @@ class Layout(Widget):
                 spacing: Space between child widgets (default: 0).
         """
         super().__init__(name=name or "Layout")
-        self.children: list[Widget] = list(children)
+        self.children: list[Widget] = []
         """A list of child widgets contained in the layout."""
         self.spacing = kwargs.get("spacing", 0)
         """The space between child widgets."""
+
+    def __call__(self, *children: Widget) -> "Layout":
+        """Make the layout callable to accept child widgets.
+
+        Args:
+            *children: Variable number of child widgets to include in the layout.
+        """
+        self.children.extend(children)
+        return self
 
     @abstractmethod
     def arrange(self) -> None:

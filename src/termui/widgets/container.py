@@ -15,7 +15,7 @@ class Container(Widget):
 
     def __init__(
         self,
-        *children: Widget,
+        *,
         title: Optional[str] = None,
         title_color: Color = Color(255, 255, 255),
         title_alignment: HorizontalAlignment = "left",
@@ -27,7 +27,6 @@ class Container(Widget):
         """Initialize a container with optional child widgets.
 
         Args:
-            *children: Child widgets to add to this container.
             title (str, optional): The title displayed at the top of the container.
             title_color (Color, optional): The color of the title text.
             title_alignment (HorizontalAlignment, optional): The alignment of the title text.
@@ -54,32 +53,10 @@ class Container(Widget):
         self._root_layout: Layout = VerticalLayout()
         """The root layout object for the container"""
 
-        if len(children) == 1 and isinstance(children[0], Layout):
-            self._root_layout = children[0]
-        else:
-            for child in children:
-                self._root_layout.add_child(child)
-
-        self.add_child(self._root_layout)
-
         self.set_size(*self.get_minimum_size())
 
     def __call__(self, *children: Widget) -> "Container":
         """Make the container callable to accept children.
-
-        This allows syntax like:
-        ```python
-        container1 = Container(
-            title="My Container",
-            title_color=Color(220, 184, 90),
-            title_alignment="center",
-        )
-
-        return container1(
-            Text("Child 1"),
-            Text("Child 2")
-        )
-        ```
 
         Args:
             *children: Child widgets to add to this container.
