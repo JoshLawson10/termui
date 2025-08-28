@@ -38,42 +38,50 @@ class Logger:
                 f.truncate()
                 f.write("[TermUI Logger Initialized]\n")
 
+    def _write_to_file(self, message: str) -> None:
+        """Write a log message to the log file.
+
+        Args:
+            message: The message to log.
+        """
+        if self.log_file:
+            with open(self.log_file, "a", encoding="utf-8") as f:
+                f.write(f"{message}\n")
+        else:
+            print(message)
+
     def system(self, message: str) -> None:
         """Log a system message.
 
         Args:
-            message: The message to log with a "[TermUI Log]" prefix.
+            message: The message to log with a "[Log]" prefix.
         """
         if self.stdout:
-            if self.log_file:
-                with open(self.log_file, "a", encoding="utf-8") as f:
-                    f.write(f"[TermUI Log] {message}\n")
-            else:
-                print(f"[TermUI Log] {message}")
+            self._write_to_file(f"[Log] {message}")
+
+    def debug(self, message: str) -> None:
+        """Log a debug message.
+
+        Args:
+            message: The message to log with a "[Debug]" prefix.
+        """
+        if self.stdout:
+            self._write_to_file(f"[Debug] {message}")
 
     def warning(self, message: str) -> None:
         """Log a warning message.
 
         Args:
-            message: The warning message to log with a "[TermUI Warning]" prefix.
+            message: The warning message to log with a "[Warning]" prefix.
         """
         if self.stdout:
-            if self.log_file:
-                with open(self.log_file, "a", encoding="utf-8") as f:
-                    f.write(f"[TermUI Warning] {message}\n")
-            else:
-                print(f"[TermUI Warning] {message}")
+            self._write_to_file(f"[Warning] {message}")
 
     def error(self, message: str | Exception) -> None:
         """Log an error message.
 
         Args:
-            message: The error message or exception to log with a
-                    "[TermUI Error]" prefix.
+            message: The error message or exception to log with a "[Error]" prefix.
         """
         if self.stderr:
-            if self.log_file:
-                with open(self.log_file, "a", encoding="utf-8") as f:
-                    f.write(f"[TermUI Error] {message}\n")
-            else:
-                print(f"[TermUI Error] {message}")
+            self._write_to_file(f"[Error] {message}")
