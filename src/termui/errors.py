@@ -24,3 +24,7 @@ class RenderError(Exception):
 
 class AsyncError(Exception):
     """Base class for all asynchronous operation errors."""
+
+
+class LayoutError(Exception):
+    """Base class for all layout-related errors."""
