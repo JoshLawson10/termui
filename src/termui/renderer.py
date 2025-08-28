@@ -262,17 +262,21 @@ class Renderer:
 
         screen_root = screen.build()
         screen_root.set_size(screen.width, screen.height)
-        screen_root.arrange()
-        self.dom_tree.set_root(screen_root)
-        self.clear()
 
-        screen.renderables = self.dom_tree.get_node_list()
+        self.dom_tree.set_root(screen_root)
+        self.dom_tree.mark_layout_dirty()
 
         self.frame_buffer.set_size(screen.width, screen.height)
         self.frame_buffer.set_background_color(screen.background_color)
         self.frame_buffer.inline = screen.inline
 
+        self.clear()
+
+        self.dom_tree.arrange_all_widgets()
+        screen.renderables = self.dom_tree.get_node_list()
+
         log.system(f"DOM Tree: \n {self.dom_tree.get_tree_string()}")
+        log.system(f"Screen Renderables: \n {screen.renderables}")
 
     def render(self) -> None:
         """Render all widgets to the terminal.
@@ -281,13 +285,16 @@ class Renderer:
         then outputs the changes to the terminal.
         """
         if self.check_resize():
-            pass
+            return
+
+        self.dom_tree.arrange_all_widgets()
 
         for node in self.dom_tree.get_node_list():
             if node.widget is None or node.dirty is False:
                 continue
 
             self.frame_buffer.draw_content(node.widget.region, node.widget.render())
+            node.dirty = False
 
         self.frame_buffer.render_to_terminal()
 

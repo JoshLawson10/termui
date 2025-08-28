@@ -7,7 +7,7 @@ class GridLayout(Layout):
     """A grid layout that arranges widgets in a grid format.
 
     The GridLayout positions widgets in a two-dimensional grid based on their
-    'pos' attribute. Widgets can span multiple rows and/or columns. The grid
+    'grid_pos' attribute. Widgets can span multiple rows and/or columns. The grid
     automatically calculates cell sizes and distributes available space.
     """
 
@@ -26,6 +26,9 @@ class GridLayout(Layout):
 
         super().__init__(name="GridLayout", **kwargs)
 
+    def calculate_minimum_size(self) -> tuple[int, int]:
+        return super().calculate_minimum_size()
+
     def _add_child_to_span_map(self, child: Widget) -> None:
         """
         Add a child widget to the span map for grid positioning.
@@ -39,7 +42,7 @@ class GridLayout(Layout):
         if child in self.grid_map or child in self.span_map:
             return
 
-        child_row, child_col = child.pos
+        child_row, child_col = child.grid_pos
 
         # Handle row specification
         if isinstance(child_row, tuple):

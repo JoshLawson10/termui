@@ -27,6 +27,9 @@ class Layout(Widget):
         self.spacing = kwargs.get("spacing", 0)
         """The space between child widgets."""
 
+        self._arrangement_needed = True
+        """Whether the layout needs to be arranged."""
+
     def __call__(self, *children: Widget) -> "Layout":
         """Make the layout callable to accept child widgets.
 
@@ -36,6 +39,11 @@ class Layout(Widget):
         self.children.extend(children)
         return self
 
+    def _mark_arrangement_needed(self) -> None:
+        """Mark this layout as needing arrangement."""
+        self._arrangement_needed = True
+        self.mark_dirty_cascade_up()
+
     @abstractmethod
     def arrange(self) -> None:
         """Arrange the child widgets according to the layout's rules.
@@ -44,8 +52,9 @@ class Layout(Widget):
         are positioned and sized within the layout. It should set the position
         and size of all child widgets based on the layout's algorithm.
         """
-        raise NotImplementedError("Subclasses must implement the arrange method.")
+        self._arrangement_needed = False
 
+    @abstractmethod
     def calculate_minimum_size(self) -> tuple[int, int]:
         """Calculate the minimum size required for the layout.
 
@@ -53,21 +62,14 @@ class Layout(Widget):
             A tuple (min_width, min_height) representing the minimum space
             required for the layout including padding and borders.
         """
-        raise NotImplementedError(
-            "Subclasses must implement the calculate_minimum_size method."
-        )
 
     def render(self) -> list[list[str]]:
-        """Render the layout by arranging its children.
-
-        This is a placeholder implementation that calls arrange() to ensure
-        child widgets are properly positioned before rendering.
+        """Render the layout.
 
         Returns:
             An empty 2D list as layouts typically don't render content themselves,
             only arrange their children.
         """
-        self.arrange()
         return [[]]
 
     def add_child(self, child: Widget) -> None:
@@ -77,4 +79,13 @@ class Layout(Widget):
             child: The child widget to add.
         """
         self.children.append(child)
-        self.arrange()
+        self._mark_arrangement_needed()
+
+    def remove_child(self, child: Widget) -> None:
+        """Remove a child widget from the layout.
+
+        Args:
+            child: The child widget to remove.
+        """
+        self.children.remove(child)
+        self._mark_arrangement_needed()

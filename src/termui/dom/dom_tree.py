@@ -2,6 +2,7 @@ from collections import deque
 from typing import Optional
 
 from termui.dom import DOMNode
+from termui.layout import Layout
 
 
 class DOMTree:
@@ -14,8 +15,13 @@ class DOMTree:
     def __init__(self):
         """Initialize an empty DOM tree."""
         self.root: Optional[DOMNode] = None
+        """The root node of the DOM tree."""
         self.nodes: set[DOMNode] = set()
+        """A set of all nodes in the DOM tree. Used for quick lookups."""
         self.nodes_by_id: dict[str, DOMNode] = {}
+        """A dictionary mapping node IDs to their corresponding DOM nodes."""
+        self._layout_dirty = False
+        """Whether the layout needs to be recalculated."""
 
     def set_root(self, root: DOMNode) -> None:
         """Set the root of the DOM tree.
@@ -104,8 +110,39 @@ class DOMTree:
 
         lines = [
             " " * indent
-            + f"{node.name} ({node.id}) ({node_width}x{node_height}) (Pos: {node_x}, {node_y})"
+            + f"{node.name} ({node.id}) ({node_width}x{node_height}) (Coords: {node_x}, {node_y})"
         ]
         for child in node.children:
             lines.append(self.get_tree_string(child, indent + 2))
         return "\n".join(line for line in lines if line)
+
+    def arrange_all_widgets(self) -> None:
+        """Arrange all widgets using BFS traversal."""
+        if not self._layout_dirty or not self.root:
+            return
+
+        queue = deque([self.root])
+
+        while queue:
+            current = queue.popleft()
+
+            if current.widget and isinstance(current.widget, Layout):
+                current.widget.arrange()
+
+            for child in current.children:
+                queue.append(child)
+
+        self._layout_dirty = False
+
+    def mark_layout_dirty(self) -> None:
+        """Mark the entire layout as needing recalculation."""
+        self._layout_dirty = True
+
+    def mark_subtree_dirty(self, node: DOMNode) -> None:
+        """Mark a subtree as needing layout recalculation.
+
+        Args:
+            node: The root node of the subtree to mark as dirty.
+        """
+        self._layout_dirty = True
+        node.mark_dirty_cascade_down()
