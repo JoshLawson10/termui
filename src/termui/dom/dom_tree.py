@@ -3,6 +3,7 @@ from typing import Optional
 
 from termui.dom import DOMNode
 from termui.layout import Layout
+from termui.widget import Widget
 
 
 class DOMTree:
@@ -20,6 +21,8 @@ class DOMTree:
         """A set of all nodes in the DOM tree. Used for quick lookups."""
         self.nodes_by_id: dict[str, DOMNode] = {}
         """A dictionary mapping node IDs to their corresponding DOM nodes."""
+        self.nodes_by_name: dict[str, DOMNode] = {}
+        """A dictionary mapping node names to their corresponding DOM nodes."""
         self._layout_dirty = False
         """Whether the layout needs to be recalculated."""
 
@@ -32,6 +35,7 @@ class DOMTree:
         self.root = root
         self.nodes.add(root)
         self.nodes_by_id[root.id] = root
+        self.nodes_by_name[root.name if root.name else root.id] = root
 
     def add_node(self, parent: DOMNode, child: DOMNode) -> None:
         """Add a node to the DOM tree.
@@ -52,6 +56,7 @@ class DOMTree:
         parent.add_child(child)
         self.nodes.add(parent)
         self.nodes_by_id[parent.id] = parent
+        self.nodes_by_name[parent.name if parent.name else parent.id] = parent
 
     def remove_node(self, node: DOMNode) -> None:
         """Remove a node from the DOM tree.
@@ -63,8 +68,31 @@ class DOMTree:
         if node in self.nodes:
             self.nodes.remove(node)
             self.nodes_by_id.pop(node.id, None)
+            self.nodes_by_name.pop(node.name if node.name else node.id, None)
             if node.parent:
                 node.parent.remove_child(node)
+
+    def get_node_by_id(self, widget_id: str) -> Optional[DOMNode]:
+        """Get a node by its widget ID.
+
+        Args:
+            widget_id: The ID of the widget to find.
+
+        Returns:
+            The DOMNode with the matching ID, or None if not found.
+        """
+        return self.nodes_by_id.get(widget_id)
+
+    def get_node_by_name(self, name: str) -> Optional[DOMNode]:
+        """Get a node by its name.
+
+        Args:
+            name: The name of the widget to find.
+
+        Returns:
+            The DOMNode with the matching name, or None if not found.
+        """
+        return self.nodes_by_name.get(name)
 
     def get_node_list(self) -> list[DOMNode]:
         """Get a list of nodes in breadth-first tree order.
@@ -86,6 +114,40 @@ class DOMTree:
                 queue.append(child)
 
         return node_list
+
+    def get_node_at_coordinate(self, x: int, y: int) -> Optional[DOMNode]:
+        """Get a node at the specified position.
+
+        Args:
+            x: The x-coordinate to check.
+            y: The y-coordinate to check.
+
+        Returns:
+            The DOMNode at the specified position, or None if not found.
+        """
+        for node in self.get_node_list():
+            if node.widget and node.widget.region.contains(x, y):
+                return node
+        return None
+
+    def get_widget_at_coordinate(self, x: int, y: int) -> Optional["Widget"]:
+        """Get a widget at the specified position.
+
+        Args:
+            x: The x-coordinate to check.
+            y: The y-coordinate to check.
+
+        Returns:
+            The Widget at the specified position, or None if not found.
+        """
+        for node in self.get_node_list():
+            if (
+                node.widget
+                and node.widget.region.contains(x, y)
+                and not isinstance(node.widget, Layout)
+            ):
+                return node.widget
+        return None
 
     def get_tree_string(self, node: Optional[DOMNode] = None, indent: int = 0) -> str:
         """Get a string representation of the DOM tree for debugging.
