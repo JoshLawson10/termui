@@ -6,14 +6,14 @@ from typing import Optional, TYPE_CHECKING
 from termui._context_manager import input_handler, log, renderer
 
 from termui.color import Color
-from termui.dom import DOMNode
+from termui.dom import DOMTree
 from termui.events import InputEvent, MouseEvent
 from termui.input import Keybind
-from termui.widget import Widget
 
 
 if TYPE_CHECKING:
     from termui.layout import Layout
+    from termui.widget import Widget
 
 
 class Screen(ABC):
@@ -32,8 +32,8 @@ class Screen(ABC):
         """Width and height of the screen."""
         self._local_keybinds: list[Keybind] = []
         """A list of local keybinds"""
-        self.renderables: list[DOMNode] = []
-        """A list of renderable DOM nodes for the screen."""
+        self.dom_tree = DOMTree()
+        """A DOM tree for managing widget hierarchies and rendering order."""
         self.inline: bool = True
         """Whether the screen is inline (True) or should resize the terminal to fit (False)."""
         self.background_color: Optional[Color] = None
@@ -121,10 +121,8 @@ class Screen(ABC):
         Returns:
             The widget with the matching name, or None if not found.
         """
-        for widget in self.renderables:
-            if widget.name == name and isinstance(widget, Widget):
-                return widget
-        return None
+        node = self.dom_tree.get_node_by_name(name)
+        return node.widget if node else None
 
     def get_widget_by_id(self, widget_id: str) -> "Widget | None":
         """Get a widget by its ID.
@@ -135,10 +133,8 @@ class Screen(ABC):
         Returns:
             The widget with the matching ID, or None if not found.
         """
-        for widget in self.renderables:
-            if widget.id == widget_id and isinstance(widget, Widget):
-                return widget
-        return None
+        node = self.dom_tree.get_node_by_id(widget_id)
+        return node.widget if node else None
 
     def handle_input_event(self, event: InputEvent) -> None:
         """Handle an input event by forwarding it to appropriate widgets.
@@ -148,9 +144,12 @@ class Screen(ABC):
                   to widgets that contain the mouse position.
         """
         if isinstance(event, MouseEvent):
-            for widget in self.renderables:
-                if isinstance(widget, Widget):
-                    widget.handle_mouse_event(event)
+            widget = self.dom_tree.get_widget_at_coordinate(event.x, event.y)
+            log.debug(
+                f"Mouse event at ({event.x}, {event.y}) in widget: {widget if widget else None}"
+            )
+            if widget:
+                widget.handle_mouse_event(event)
 
     @abstractmethod
     def setup(self) -> None:
@@ -189,6 +188,13 @@ class Screen(ABC):
         self._setup_local_keybinds()
         for keybind in self.local_keybinds:
             input_handler.register_keybind(keybind)
+
+        root = self.build()
+        root.set_size(self.width, self.height)
+
+        self.dom_tree.set_root(root)
+        self.dom_tree.mark_layout_dirty()
+        self.dom_tree.arrange_all_widgets()
 
         renderer.pipe(self)
         log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")

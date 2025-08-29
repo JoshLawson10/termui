@@ -260,11 +260,7 @@ class Renderer:
         """
         log.system(f"Piping screen: {screen.name} to renderer")
 
-        screen_root = screen.build()
-        screen_root.set_size(screen.width, screen.height)
-
-        self.dom_tree.set_root(screen_root)
-        self.dom_tree.mark_layout_dirty()
+        self.dom_tree = screen.dom_tree
 
         self.frame_buffer.set_size(screen.width, screen.height)
         self.frame_buffer.set_background_color(screen.background_color)
@@ -272,11 +268,7 @@ class Renderer:
 
         self.clear()
 
-        self.dom_tree.arrange_all_widgets()
-        screen.renderables = self.dom_tree.get_node_list()
-
         log.system(f"DOM Tree: \n {self.dom_tree.get_tree_string()}")
-        log.system(f"Screen Renderables: \n {screen.renderables}")
 
     def render(self) -> None:
         """Render all widgets to the terminal.
