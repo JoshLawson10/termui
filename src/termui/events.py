@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 
+from termui.dom import DOMNode
 from termui.utils.geometry import Size
 from termui.widget import Widget
-
-from .dom.dom_node import DOMNode
 
 
 class Event:
