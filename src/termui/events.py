@@ -1,35 +1,52 @@
 from dataclasses import dataclass
 
+from termui.utils.geometry import Size
+from termui.widget import Widget
 
-class InputEvent:
-    """Base class for all input events."""
+from .dom.dom_node import DOMNode
+
+
+class Event:
+    """Base class for all events."""
 
 
 @dataclass
-class MouseEvent(InputEvent):
-    """Represents a mouse event with position and button information.
+class CursorPosition(Event):
+    """Represents the position of the cursor in the terminal.
 
     Args:
-        x: The x-coordinate of the mouse event.
-        y: The y-coordinate of the mouse event.
-        button: The mouse button involved (0=left, 1=middle, 2=right).
-        event_type: The type of mouse event ('press', 'release', 'move', 'drag').
+        x: The x-coordinate of the cursor.
+        y: The y-coordinate of the cursor.
     """
 
     x: int
     y: int
-    """Coordinates of the mouse event."""
-    button: int  # 0=left, 1=middle, 2=right
-    """The mouse button involved in the event."""
-    event_type: str  # 'press', 'release', 'move', 'drag'
-    """The type of mouse event."""
 
-    def __repr__(self):
-        return f"MouseEvent(x={self.x}, y={self.y}, button={self.button}, type={self.event_type})"
+
+class Resize(Event):
+    """Represents a resize event in the terminal.
+
+    Args:
+        size: The new size of the terminal.
+    """
+
+    size: Size
+
+
+class Mount(Event):
+    """Sent when a widget or screen is mounted."""
+
+
+class Unmount(Event):
+    """Sent when a widget or screen is unmounted."""
+
+
+class InputEvent(Event):
+    """Base class for all input events."""
 
 
 @dataclass
-class KeyEvent(InputEvent):
+class Key(InputEvent):
     """Represents a keyboard event with key information.
 
     Args:
@@ -41,3 +58,90 @@ class KeyEvent(InputEvent):
 
     def __repr__(self):
         return f"KeyEvent(key={self.key})"
+
+
+@dataclass
+class MouseEvent(InputEvent):
+    """Represents a mouse event with position and button information.
+
+    Args:
+        widget: The widget under the mouse pointer.
+        x: The x-coordinate of the mouse event.
+        y: The y-coordinate of the mouse event.
+        button: The mouse button involved (0=left, 1=middle, 2=right).
+    """
+
+    widget: Widget | None
+    """The widget under the mouse pointer."""
+    x: int
+    y: int
+    """Coordinates of the mouse event."""
+    button: int  # 0=left, 1=middle, 2=right
+    """The mouse button involved in the event."""
+
+    def __repr__(self):
+        return f"MouseEvent(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+
+
+class MouseMove(MouseEvent):
+    """Sent when the mouse is moved."""
+
+
+class MouseDown(MouseEvent):
+    """Sent when a mouse button is pressed down."""
+
+
+class MouseUp(MouseEvent):
+    """Sent when a mouse button is released."""
+
+
+class MouseScrollDown(MouseEvent):
+    """Sent when the mouse is scrolled down."""
+
+
+class MouseScrollUp(MouseEvent):
+    """Sent when the mouse is scrolled up."""
+
+
+class MouseScrollLeft(MouseEvent):
+    """Sent when the mouse is scrolled left."""
+
+
+class MouseScrollRight(MouseEvent):
+    """Sent when the mouse is scrolled right."""
+
+
+class Click(MouseEvent):
+    """Sent when the mouse is clicked.
+
+    Args:
+        amount: The amount of the click (1 for single click, 2 for double click, etc.).
+    """
+
+    def __init__(self, widget: Widget | None, x: int, y: int, button: int, amount: int):
+        super().__init__(widget, x, y, button)
+        self.amount = amount
+
+
+class Enter(Event):
+    """Sent when the mouse enters a widget.
+
+    Args:
+        node: The DOM node that was entered.
+    """
+
+    def __init__(self, node: DOMNode) -> None:
+        super().__init__()
+        self.node = node
+
+
+class Leave(Event):
+    """Sent when the mouse leaves a widget.
+
+    Args:
+        node: The DOM node that was left.
+    """
+
+    def __init__(self, node: DOMNode) -> None:
+        super().__init__()
+        self.node = node
