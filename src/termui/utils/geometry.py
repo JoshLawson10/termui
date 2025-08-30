@@ -4,6 +4,28 @@ from termui.errors import DimensionError
 
 
 @dataclass
+class Size:
+    """Represents the size of a 2D area.
+
+    Args:
+        width: The width of the area.
+        height: The height of the area.
+    """
+
+    width: int
+    height: int
+
+    def __post_init__(self):
+        if self.width < 0 or self.height < 0:
+            raise DimensionError(
+                f"Size dimensions ({self.width}, {self.height}) are non-positive. Size must have positive dimensions."
+            )
+
+    def __str__(self):
+        return f"Size(width={self.width}, height={self.height})"
+
+
+@dataclass
 class Region:
     """Represents a rectangular region in 2D space.
 
