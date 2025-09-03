@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass
 from typing import Optional
 
-from termui.events import InputEvent, KeyEvent, MouseEvent
+from termui import events
 from .keybind import Keybind
 
 
@@ -152,7 +152,7 @@ class InputHandler:
 
         return None
 
-    def _parse_mouse_event(self, sequence: str) -> Optional[MouseEvent]:
+    def _parse_mouse_event(self, sequence: str) -> Optional[events.MouseEvent]:
         """Parse a mouse escape sequence into a MouseEvent.
 
         Args:
@@ -177,21 +177,21 @@ class InputHandler:
         is_move = bool(button_code & 64)  # Bit 6 indicates mouse move
 
         if is_move and not is_press:
-            event_type = "move"
-        elif is_drag:
-            event_type = "drag"
-        elif is_press:
-            event_type = "press"
-        else:
-            event_type = "release"
+            return events.MouseMove(None, col, row, button)
 
-        return MouseEvent(col, row, button, event_type)
+        if is_drag:
+            return events.MouseDrag(None, col, row, button)
+
+        if is_press:
+            return events.Click(None, col, row, button)
+
+        return events.MouseUp(None, col, row, button)
 
     def _read_char(self) -> str:
         """Read a single character from stdin (blocking)."""
         return sys.stdin.read(1)
 
-    def _parse_mouse_event_sequence(self) -> Optional[MouseEvent]:
+    def _parse_mouse_event_sequence(self) -> Optional[events.MouseEvent]:
         """Read and parse a mouse escape sequence into a MouseEvent."""
         mouse_buf = "\x1b[<"
         while True:
@@ -201,13 +201,13 @@ class InputHandler:
                 break
         return self._parse_mouse_event(mouse_buf) if self._mouse.enabled else None
 
-    def _parse_escape_sequence(self) -> Optional[InputEvent]:
+    def _parse_escape_sequence(self) -> Optional[events.InputEvent]:
         """Parse an escape sequence into a KeyEvent or MouseEvent."""
         next_char = self._read_char()
         if next_char != "[":
             # Two-char escape (like ESC + something)
             seq = "\x1b" + next_char
-            return KeyEvent(self._escape_sequences.get(seq, "escape"))
+            return events.Key(self._escape_sequences.get(seq, "escape"))
 
         third_char = self._read_char()
         if third_char == "<":
@@ -215,35 +215,35 @@ class InputHandler:
 
         seq = "\x1b[" + third_char
         if seq in self._escape_sequences:
-            return KeyEvent(self._escape_sequences[seq])
+            return events.Key(self._escape_sequences[seq])
 
         # try longer sequence
         fourth_char = self._read_char()
         longer_seq = seq + fourth_char
         if longer_seq in self._escape_sequences:
-            return KeyEvent(self._escape_sequences[longer_seq])
+            return events.Key(self._escape_sequences[longer_seq])
 
-        return KeyEvent("escape")
+        return events.Key("escape")
 
-    async def _get_input_event_async(self) -> Optional[InputEvent]:
+    async def _get_input_event_async(self) -> Optional[events.InputEvent]:
         """Get a single input event, handling escape sequences and mouse events."""
         rlist, _, _ = select.select([sys.stdin], [], [], 0.1)
         if not rlist:
             return None
 
         char = self._read_char()
-        event: Optional[InputEvent] = None
+        event: Optional[events.InputEvent] = None
 
         if char == "\x1b":
             event = self._parse_escape_sequence()
         elif char in self._special_keys:
-            event = KeyEvent(self._special_keys[char])
+            event = events.Key(self._special_keys[char])
         else:
-            event = KeyEvent(char.lower())
+            event = events.Key(char.lower())
 
         return event
 
-    async def process_input(self) -> Optional[InputEvent]:
+    async def process_input(self) -> Optional[events.InputEvent]:
         """Process input and trigger appropriate keybind actions.
 
         Returns:
@@ -253,14 +253,14 @@ class InputHandler:
         if event is None:
             return None
 
-        if isinstance(event, KeyEvent):
+        if isinstance(event, events.Key):
             if event.key == "escape":
                 self._current_keys.clear()
                 return event
 
             self._current_keys.add(event.key)
 
-        elif isinstance(event, MouseEvent):
+        elif isinstance(event, events.MouseEvent):
             self._mouse.x = event.x
             self._mouse.y = event.y
             # Handle mouse events here if needed

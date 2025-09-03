@@ -86,6 +86,10 @@ class MouseMove(MouseEvent):
     """Sent when the mouse is moved."""
 
 
+class MouseDrag(MouseEvent):
+    """Sent when the mouse is dragged."""
+
+
 class MouseDown(MouseEvent):
     """Sent when a mouse button is pressed down."""
 
@@ -111,15 +115,7 @@ class MouseScrollRight(MouseEvent):
 
 
 class Click(MouseEvent):
-    """Sent when the mouse is clicked.
-
-    Args:
-        amount: The amount of the click (1 for single click, 2 for double click, etc.).
-    """
-
-    def __init__(self, widget: Widget | None, x: int, y: int, button: int, amount: int):
-        super().__init__(widget, x, y, button)
-        self.amount = amount
+    """Sent when the mouse is clicked."""
 
 
 class Enter(Event):
