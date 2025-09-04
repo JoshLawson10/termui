@@ -22,6 +22,7 @@ class CursorPosition(Event):
     y: int
 
 
+@dataclass
 class Resize(Event):
     """Represents a resize event in the terminal.
 
@@ -118,6 +119,7 @@ class Click(MouseEvent):
     """Sent when the mouse is clicked."""
 
 
+@dataclass
 class Enter(Event):
     """Sent when the mouse enters a widget.
 
@@ -125,11 +127,10 @@ class Enter(Event):
         node: The DOM node that was entered.
     """
 
-    def __init__(self, node: DOMNode) -> None:
-        super().__init__()
-        self.node = node
+    node: DOMNode
 
 
+@dataclass
 class Leave(Event):
     """Sent when the mouse leaves a widget.
 
@@ -137,6 +138,4 @@ class Leave(Event):
         node: The DOM node that was left.
     """
 
-    def __init__(self, node: DOMNode) -> None:
-        super().__init__()
-        self.node = node
+    node: DOMNode
