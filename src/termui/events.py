@@ -32,6 +32,17 @@ class Resize(Event):
 
     size: Size
 
+    @classmethod
+    def from_dimensions(cls, cells: tuple[int, int]) -> "Resize":
+        """Construct from basic dimensions.
+
+        Args:
+            cells: tuple of (<width>, <height>) in cells.
+
+        """
+        size = Size(*cells)
+        return Resize(size)
+
 
 class Mount(Event):
     """Sent when a widget or screen is mounted."""
@@ -55,9 +66,11 @@ class Key(InputEvent):
 
     key: str
     """The key that was pressed, as a string identifier."""
+    character: str | None = None
+    """Printable character, or none if non-printable."""
 
     def __repr__(self):
-        return f"KeyEvent(key={self.key})"
+        return f"KeyEvent(key={self.key}, character={self.character})"
 
 
 @dataclass
@@ -139,3 +152,14 @@ class Leave(Event):
     """
 
     node: DOMNode
+
+
+@dataclass
+class Paste(Event):
+    """Sent when a paste event occurs.
+
+    Args:
+        content: The pasted content.
+    """
+
+    content: str
