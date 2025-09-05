@@ -18,8 +18,8 @@ class CursorPosition(Event):
         y: The y-coordinate of the cursor.
     """
 
-    x: int
-    y: int
+    x: float
+    y: float
 
 
 @dataclass
@@ -73,8 +73,8 @@ class MouseEvent(InputEvent):
 
     widget: Widget | None
     """The widget under the mouse pointer."""
-    x: int
-    y: int
+    x: float
+    y: float
     """Coordinates of the mouse event."""
     button: int  # 0=left, 1=middle, 2=right
     """The mouse button involved in the event."""
