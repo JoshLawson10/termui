@@ -137,6 +137,8 @@ class Keys(str, Enum):  # type: ignore[no-redef]
     strings.
     """
 
+    # pylint: disable=invalid-overridden-method
+    @property
     def value(self) -> str:
         return super().value
 

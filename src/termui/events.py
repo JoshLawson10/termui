@@ -35,6 +35,7 @@ class Resize(Event):
     """
 
     size: Size
+    pixel_size: Size | None = None
 
     @classmethod
     def from_dimensions(cls, cells: tuple[int, int]) -> "Resize":
