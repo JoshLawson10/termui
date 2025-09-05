@@ -1,11 +1,15 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from termui.dom import DOMNode
-from termui.utils.geometry import Size
-from termui.widget import Widget
+from termui.message import Message
+
+if TYPE_CHECKING:
+    from termui.dom import DOMNode
+    from termui.utils.geometry import Size
+    from termui.widget import Widget
 
 
-class Event:
+class Event(Message):
     """Base class for all events."""
 
 
