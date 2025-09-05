@@ -24,6 +24,10 @@ class Size:
     def __str__(self):
         return f"Size(width={self.width}, height={self.height})"
 
+    def __iter__(self):
+        yield self.width
+        yield self.height
+
 
 @dataclass
 class Region:
