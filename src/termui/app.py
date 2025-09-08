@@ -93,13 +93,12 @@ class App(ABC):
         Continuously processes input events and forwards them to the current
         screen while the application is running.
         """
-        while self._running:
-            event = await self.driver.get_event()
-            log.debug(f"Input event: {event}")
-            if self.current_screen and event:
-                self.current_screen.handle_input_event(event)
+        event = await self.driver.get_event()
+        log.debug(f"Input event: {event}")
+        if self.current_screen and event:
+            self.current_screen.handle_input_event(event)
 
-            await asyncio.sleep(0.001)
+        await asyncio.sleep(0.001)
 
     async def _update_loop(self) -> None:
         """Run the update loop for the current screen.
@@ -107,11 +106,10 @@ class App(ABC):
         Continuously calls the update method on the current screen while
         the application is running.
         """
-        while self._running:
-            if self.current_screen:
-                self.current_screen.update()
+        if self.current_screen:
+            self.current_screen.update()
 
-            await asyncio.sleep(0.001)
+        await asyncio.sleep(0.001)
 
     async def _render_loop(self) -> None:
         """Run the renderer in an asynchronous loop.
@@ -119,12 +117,11 @@ class App(ABC):
         Continuously renders the current screen while the application is
         running. If no current screen is set, defaults to the first screen.
         """
-        while self._running:
-            if not self.current_screen:
-                self.show_screen(next(iter(self.screens)))
+        if not self.current_screen:
+            self.show_screen(next(iter(self.screens)))
 
-            self.renderer.render()
-            await asyncio.sleep(0.001)
+        self.renderer.render()
+        await asyncio.sleep(0.001)
 
     async def _run_async(self) -> None:
         """Run the application asynchronously.
@@ -137,7 +134,8 @@ class App(ABC):
         """
         self.build()
         self.driver.start()
-        self.driver.keybind_manager.keybinds.extend(self._default_keybinds)
+        for kb in self._default_keybinds:
+            self.driver.register_keybind(kb)
         self.driver.register_keybinds_from_object(self)
         self._running = True
 
