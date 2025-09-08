@@ -19,17 +19,26 @@ class Driver(ABC):
 
     def __init__(self):
         self.event_queue: asyncio.Queue[events.InputEvent] = asyncio.Queue()
+        """Queue for input events."""
         self._running: bool = False
+        """Whether the driver is running."""
         self._loop: Optional[asyncio.AbstractEventLoop] = None
+        """Reference to the async loop."""
         self._thread: Optional[threading.Thread] = None
+        """Thread to start the input manager in."""
         self._file = sys.stdout
+        """Reference to STDOUT."""
         self._writer_thread: Optional[WriterThread] = None
+        """Reference to the file writing thread."""
         self.keybind_manager: KeybindManager = KeybindManager()
+        """Manager for handling key bindings."""
 
         # Mouse state tracking
         self._mouse_pressed: bool = False
         self._last_mouse_x: int = -1
         self._last_mouse_y: int = -1
+
+        log.system("I/O Driver Initialised")
 
     def register_keybind(self, keybind: Keybind) -> None:
         """Register a keybind with the input manager.
@@ -79,6 +88,8 @@ class Driver(ABC):
         self._writer_thread.start()
         self.setup()
 
+        log.system("I/O Driver Started")
+
     def stop(self) -> None:
         """Stops the input manager."""
         if not self._running:
@@ -89,6 +100,8 @@ class Driver(ABC):
             self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread:
             self._thread.join()
+
+        log.system("I/O Driver Terminated")
 
     def write(self, data: str) -> None:
         """Writes text to the output.
