@@ -13,8 +13,8 @@ from threading import Event, Thread
 from typing import Any, TYPE_CHECKING
 
 from termui import events
+from termui._driver import Driver
 from termui._xterm_parser import XTermParser
-from termui.driver import Driver
 from termui.input._writer_thread import WriterThread
 from termui.message import Message
 from termui.messages import InBandWindowResize

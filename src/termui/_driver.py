@@ -72,7 +72,6 @@ class Driver(ABC):
         """
         self.start_application_mode()
 
-    @abstractmethod
     def enable_input(self) -> None:
         """Enable input for the terminal."""
 

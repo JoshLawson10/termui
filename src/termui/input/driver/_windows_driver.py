@@ -11,8 +11,9 @@ from ctypes.wintypes import BOOL, CHAR, DWORD, HANDLE, SHORT, UINT, WCHAR, WORD
 from threading import Event, Thread
 from typing import Callable, IO, List, Optional, TYPE_CHECKING
 
+from termui._driver import Driver
+
 from termui._xterm_parser import XTermParser
-from termui.driver import Driver
 from termui.events import Resize
 from termui.input._writer_thread import WriterThread
 from termui.message import Message

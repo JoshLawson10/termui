@@ -8,7 +8,7 @@ import termios
 import traceback
 import tty
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from termui._context_manager import (
     _app,
@@ -23,10 +23,14 @@ from termui._context_manager import (
 from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
 from termui.input import InputHandler, Keybind
+from termui.input.driver import Driver
 from termui.logger import Logger
 from termui.message import Message
 from termui.renderer import Renderer
 from termui.screen import Screen
+
+if TYPE_CHECKING:
+    from termui._driver import Driver as DriverType
 
 
 class App(ABC):
@@ -44,6 +48,8 @@ class App(ABC):
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
+        self.driver: DriverType = Driver(self)
+        """The driver instance for handling input and output."""
 
         _renderer.set(Renderer())
         _input_handler.set(InputHandler())
