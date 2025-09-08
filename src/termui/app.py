@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
 from typing import Optional
 
 from termui._context_manager import _app
-from termui.drivers import Driver
 
+from termui.drivers import Driver
 from termui.errors import AsyncError, ScreenError
 from termui.keybind import Keybind
 from termui.logger import log
@@ -141,10 +141,10 @@ class App(ABC):
 
         try:
             await asyncio.gather(
-                self._input_loop(),
                 self._update_loop(),
                 self._render_loop(),
             )
+            log.system("=========== App Started ===========")
         except KeyboardInterrupt:
             self.quit()
         except asyncio.CancelledError as e:
