@@ -3,7 +3,6 @@ from __future__ import annotations
 import unicodedata
 from enum import Enum
 
-# https://sw.kovidgoyal.net/kitty/keyboard-protocol/#functional-key-definitions
 FUNCTIONAL_KEYS = {
     "27u": "escape",
     "13u": "enter",
@@ -128,7 +127,6 @@ FUNCTIONAL_KEYS = {
 }
 
 
-# Adapted from prompt toolkit https://github.com/prompt-toolkit/python-prompt-toolkit/blob/master/prompt_toolkit/keys.py
 class Keys(str, Enum):  # type: ignore[no-redef]
     """
     List of keys for use in key bindings.
@@ -142,11 +140,11 @@ class Keys(str, Enum):  # type: ignore[no-redef]
     def value(self) -> str:
         return super().value
 
-    Escape = "escape"  # Also Control-[
+    Escape = "escape"
     ShiftEscape = "shift+escape"
     Return = "return"
 
-    ControlAt = "ctrl+@"  # Also Control-Space.
+    ControlAt = "ctrl+@"
 
     ControlA = "ctrl+a"
     ControlB = "ctrl+b"
@@ -160,7 +158,7 @@ class Keys(str, Enum):  # type: ignore[no-redef]
     ControlJ = "ctrl+j"  # Newline
     ControlK = "ctrl+k"
     ControlL = "ctrl+l"
-    ControlM = "ctrl+m"  # Carriage return
+    ControlM = "ctrl+m"
     ControlN = "ctrl+n"
     ControlO = "ctrl+o"
     ControlP = "ctrl+p"
@@ -246,7 +244,7 @@ class Keys(str, Enum):  # type: ignore[no-redef]
     ControlShiftPageUp = "ctrl+shift+pageup"
     ControlShiftPageDown = "ctrl+shift+pagedown"
 
-    BackTab = "shift+tab"  # shift + tab
+    BackTab = "shift+tab"
 
     F1 = "f1"
     F2 = "f2"
@@ -298,34 +296,22 @@ class Keys(str, Enum):  # type: ignore[no-redef]
     ControlF23 = "ctrl+f23"
     ControlF24 = "ctrl+f24"
 
-    # Matches any key.
     Any = "<any>"
-
-    # Special.
     ScrollUp = "<scroll-up>"
     ScrollDown = "<scroll-down>"
-
-    # For internal use: key which is ignored.
-    # (The key binding for this key should not do anything.)
     Ignore = "<ignore>"
-
-    # Some 'Key' aliases (for backwardshift+compatibility).
     ControlSpace = "ctrl-at"
     Tab = "tab"
     Space = "space"
     Enter = "enter"
     Backspace = "backspace"
 
-    # ShiftControl was renamed to ControlShift in
-    # 888fcb6fa4efea0de8333177e1bbc792f3ff3c24 (20 Feb 2020).
     ShiftControlLeft = ControlShiftLeft
     ShiftControlRight = ControlShiftRight
     ShiftControlHome = ControlShiftHome
     ShiftControlEnd = ControlShiftEnd
 
 
-# Unicode db contains some obscure names
-# This mapping replaces them with more common terms
 KEY_NAME_REPLACEMENTS = {
     "solidus": "slash",
     "reverse_solidus": "backslash",
@@ -336,10 +322,6 @@ KEY_NAME_REPLACEMENTS = {
 }
 REPLACED_KEYS = {value: key for key, value in KEY_NAME_REPLACEMENTS.items()}
 
-# Convert the friendly versions of character key Unicode names
-# back to their original names.
-# This is because we go from Unicode to friendly by replacing spaces and dashes
-# with underscores, which cannot be undone by replacing underscores with spaces/dashes.
 KEY_TO_UNICODE_NAME = {
     "exclamation_mark": "EXCLAMATION MARK",
     "quotation_mark": "QUOTATION MARK",
@@ -367,9 +349,6 @@ KEY_TO_UNICODE_NAME = {
     "right_curly_bracket": "RIGHT CURLY BRACKET",
 }
 
-# Some keys have aliases. For example, if you press `ctrl+m` on your keyboard,
-# it's treated the same way as if you press `enter`. Key handlers `key_ctrl_m` and
-# `key_enter` are both valid in this case.
 KEY_ALIASES = {
     "tab": ["ctrl+i"],
     "enter": ["ctrl+m"],
@@ -442,21 +421,21 @@ def key_to_character(key: str) -> str | None:
     """
     _, separator, key = key.rpartition("+")
     if separator:
-        # If there is a separator, then it means a modifier (other than shift) is applied.
-        # Keys with modifiers, don't come from printable keys.
         return None
+
     if len(key) == 1:
-        # Key identifiers with a length of one, are also characters.
         return key
+
     try:
         return unicodedata.lookup(KEY_TO_UNICODE_NAME[key])
     except KeyError:
         pass
+
     try:
         return unicodedata.lookup(key.replace("_", " ").upper())
     except KeyError:
         pass
-    # Return None if we couldn't identify the key.
+
     return None
 
 

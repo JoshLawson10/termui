@@ -13,7 +13,6 @@ IGNORE_SEQUENCE: Final[IgnoredSequence] = IgnoredSequence()
 """Constant to indicate that a sequence should be ignored."""
 
 
-# Mapping of vt100 escape codes to Keys.
 ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     # Control keys.
     " ": (Keys.Space,),
@@ -31,7 +30,6 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x0a": (Keys.ControlJ,),  # Control-J (10) (Identical to '\n')
     "\x0b": (Keys.ControlK,),  # Control-K (delete until end of line; vertical tab)
     "\x0c": (Keys.ControlL,),  # Control-L (clear; form feed)
-    # "\x0d": (Keys.ControlM,),  # Control-M (13) (Identical to '\r')
     "\x0e": (Keys.ControlN,),  # Control-N (14) (history forward)
     "\x0f": (Keys.ControlO,),  # Control-O (15)
     "\x10": (Keys.ControlP,),  # Control-P (16) (history back)
@@ -54,13 +52,6 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x1d": (Keys.ControlSquareClose,),  # Control-]
     "\x1e": (Keys.ControlCircumflex,),  # Control-^
     "\x1f": (Keys.ControlUnderscore,),  # Control-underscore (Also for Ctrl-hyphen.)
-    # ASCII Delete (0x7f)
-    # Vt220 (and Linux terminal) send this when pressing backspace. We map this
-    # to ControlH, because that will make it easier to create key bindings that
-    # work everywhere, with the trade-off that it's no longer possible to
-    # handle backspace and control-h individually for the few terminals that
-    # support it. (Most terminals send ControlH when backspace is pressed.)
-    # See: http://www.ibb.net/~anne/keyboard.html
     "\x7f": (Keys.Backspace,),
     "\x1b\x7f": (Keys.ControlW,),
     # Various
@@ -109,9 +100,7 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     # Xterm
     "\x1b[1;2P": (Keys.F13,),
     "\x1b[1;2Q": (Keys.F14,),
-    "\x1b[1;2R": (
-        Keys.F15,
-    ),  # Conflicts with CPR response; enabled after https://github.com/Textualize/textual/issues/3440.
+    "\x1b[1;2R": (Keys.F15,),
     "\x1b[1;2S": (Keys.F16,),
     "\x1b[15;2~": (Keys.F17,),
     "\x1b[17;2~": (Keys.F18,),
@@ -127,9 +116,7 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     # Control + function keys.
     "\x1b[1;5P": (Keys.ControlF1,),
     "\x1b[1;5Q": (Keys.ControlF2,),
-    "\x1b[1;5R": (
-        Keys.ControlF3,
-    ),  # Conflicts with CPR response; enabled after https://github.com/Textualize/textual/issues/3440.
+    "\x1b[1;5R": (Keys.ControlF3,),
     "\x1b[1;5S": (Keys.ControlF4,),
     "\x1b[15;5~": (Keys.ControlF5,),
     "\x1b[17;5~": (Keys.ControlF6,),
@@ -141,9 +128,7 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x1b[24;5~": (Keys.ControlF12,),
     "\x1b[1;6P": (Keys.ControlF13,),
     "\x1b[1;6Q": (Keys.ControlF14,),
-    "\x1b[1;6R": (
-        Keys.ControlF15,
-    ),  # Conflicts with CPR response; enabled after https://github.com/Textualize/textual/issues/3440.
+    "\x1b[1;6R": (Keys.ControlF15,),
     "\x1b[1;6S": (Keys.ControlF16,),
     "\x1b[15;6~": (Keys.ControlF17,),
     "\x1b[17;6~": (Keys.ControlF18,),
@@ -357,8 +342,6 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x1b[1;8w": (Keys.Escape, Keys.ControlShift7),
     "\x1b[1;8x": (Keys.Escape, Keys.ControlShift8),
     "\x1b[1;8y": (Keys.Escape, Keys.ControlShift9),
-    # Simplify some sequences that appear to be unique to rxvt; see
-    # https://github.com/Textualize/textual/issues/3741 for context.
     "\x1bOj": "*",
     "\x1bOk": "+",
     "\x1bOm": "-",
@@ -375,10 +358,6 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x1bOx": "8",
     "\x1bOy": "9",
     "\x1bOM": (Keys.Enter,),
-    # WezTerm on macOS emits sequences for Opt and keys on the top numeric
-    # row; whereas other terminals provide various characters. The following
-    # swallow up those sequences and turns them into characters the same as
-    # the other terminals.
     "\x1b§": "§",
     "\x1b1": "¡",
     "\x1b2": "™",
@@ -430,6 +409,5 @@ ANSI_SEQUENCES_KEYS: Mapping[str, Tuple[Keys, ...] | str | IgnoredSequence] = {
     "\x1b[46;13u": IGNORE_SEQUENCE,  # ctrl-cmd-.
 }
 
-# https://gist.github.com/christianparpart/d8a62cc1ab659194337d73e399004036
 SYNC_START = "\x1b[?2026h"
 SYNC_END = "\x1b[?2026l"
