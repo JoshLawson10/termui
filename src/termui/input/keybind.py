@@ -51,7 +51,7 @@ def keybind(
     key: str,
     description: str = "",
     visible: bool = True,
-):
+) -> Callable:
     """Decorator to create a keybind for a method.
 
     This decorator marks a method as a keybind handler. The decorated method
