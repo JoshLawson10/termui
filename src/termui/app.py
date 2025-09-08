@@ -24,6 +24,7 @@ from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
 from termui.input import InputHandler, Keybind
 from termui.logger import Logger
+from termui.message import Message
 from termui.renderer import Renderer
 from termui.screen import Screen
 
@@ -228,3 +229,6 @@ class App(ABC):
         sys.stdout.flush()
         Cursor.show()
         os._exit(0)
+
+    def post_message(self, message: Message) -> None:
+        """Process a message received from the input handler."""
