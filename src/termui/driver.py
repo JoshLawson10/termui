@@ -35,6 +35,7 @@ class Driver(ABC):
         self._down_buttons: list[int] = []
         self._last_move_event: events.MouseMove | None = None
         self._cursor_origin: tuple[int, int] | None = None
+        self._auto_restart: bool = True
 
     @property
     def inline(self) -> bool:
