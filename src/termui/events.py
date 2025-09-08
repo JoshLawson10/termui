@@ -54,9 +54,11 @@ class Key(InputEvent):
 
     key: str
     """The key that was pressed, as a string identifier."""
+    character: str | None = None
+    """The character representation of the key, if applicable."""
 
     def __repr__(self):
-        return f"KeyEvent(key={self.key})"
+        return f"KeyEvent(key={self.key}, char={self.character})"
 
 
 @dataclass
@@ -64,19 +66,19 @@ class MouseEvent(InputEvent):
     """Represents a mouse event with position and button information.
 
     Args:
-        widget: The widget under the mouse pointer.
         x: The x-coordinate of the mouse event.
         y: The y-coordinate of the mouse event.
         button: The mouse button involved (0=left, 1=middle, 2=right).
+        widget: The widget under the mouse pointer.
     """
 
-    widget: Widget | None
-    """The widget under the mouse pointer."""
     x: int
     y: int
     """Coordinates of the mouse event."""
-    button: int  # 0=left, 1=middle, 2=right
+    button: int | None = None  # 0=left, 1=middle, 2=right, else None if a scroll event
     """The mouse button involved in the event."""
+    widget: Widget | None = None
+    """The widget under the mouse pointer."""
 
     def __repr__(self):
         return f"MouseEvent(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
