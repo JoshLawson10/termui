@@ -5,7 +5,7 @@ from ctypes.wintypes import BOOL, CHAR, DWORD, SHORT, UINT, WCHAR, WORD
 from typing import Optional
 
 from termui._keys import Keys
-from termui.input.driver._input_driver import InputDriver
+from termui.drivers._driver import Driver
 
 
 class COORD(Structure):
@@ -117,8 +117,8 @@ WINDOWS_KEY_MAP: dict[int, Keys] = {
 }
 
 
-class WindowsInputDriver(InputDriver):
-    """Input manager for Windows systems."""
+class WindowsDriver(Driver):
+    """I/O manager for Windows systems."""
 
     def __init__(self):
         super().__init__()

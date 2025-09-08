@@ -2,7 +2,7 @@ import inspect
 from typing import Any
 
 from termui import events
-from termui.input import Keybind
+from termui.keybind import Keybind
 
 
 class KeybindManager:

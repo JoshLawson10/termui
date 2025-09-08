@@ -1,113 +1,9 @@
 from collections import deque
-from dataclasses import dataclass, field
-from typing import Optional, TYPE_CHECKING
+from typing import cast, Optional
 
+from termui.dom_node import DOMNode
 from termui.layout import Layout
-
-if TYPE_CHECKING:
-    from termui.widget import Widget
-
-
-@dataclass
-class DOMNode:
-    """A node in the DOM tree representing a widget hierarchy.
-
-    Args:
-        id: Unique identifier for the node.
-        name: Optional display name for the node.
-        widget: The widget associated with this node, if any.
-        parent: Parent node in the DOM tree.
-        children: List of child nodes.
-        dirty: Whether the node needs re-rendering.
-    """
-
-    id: str
-    """Unique identifier for the node."""
-    name: Optional[str] = field(default_factory=str)
-    """Optional display name for the node."""
-    widget: Optional["Widget"] = None
-    """The widget associated with this node, if any."""
-    parent: Optional["DOMNode"] = None
-    """The parent node in the DOM tree."""
-    children: list["DOMNode"] = field(default_factory=list)
-    """The child nodes in the DOM tree."""
-    dirty: bool = True
-    """Whether the node needs re-rendering."""
-
-    def __hash__(self):
-        return hash(self.id)
-
-    def __repr__(self):
-        return f"DOMNode(id={self.id!r}, children={len(self.children)})"
-
-    def set_widget(self, widget: "Widget") -> None:
-        """Set the widget associated with this node.
-
-        Args:
-            widget: The widget to associate with this node.
-        """
-        self.widget = widget
-
-    def set_parent(self, parent: "DOMNode") -> None:
-        """Set the parent node for this node.
-
-        Args:
-            parent: The parent node to set.
-        """
-        self.parent = parent
-
-    def add_child(self, child: "DOMNode") -> None:
-        """Add a child node to this node.
-
-        Args:
-            child: The child node to add. Its parent will be set to this node.
-        """
-        child.parent = self
-        self.children.append(child)
-
-    def add_children(self, *children: "DOMNode") -> None:
-        """Add multiple child nodes to this node.
-
-        Args:
-            *children: The child nodes to add. Their parent will be set to this node.
-        """
-        for child in children:
-            child.parent = self
-            self.children.append(child)
-
-    def remove_child(self, child: "DOMNode") -> None:
-        """Remove a child node from this node.
-
-        Args:
-            child: The child node to remove. Its parent will be set to None.
-        """
-        if child in self.children:
-            child.parent = None
-            self.children.remove(child)
-
-    def mark_dirty(self) -> None:
-        """Mark this node as dirty, indicating it needs to be re-rendered."""
-        self.dirty = True
-
-    def mark_dirty_cascade_up(self) -> None:
-        """Mark this node and all its ancestors as dirty.
-
-        Propagates the dirty flag up the DOM tree to ensure parent
-        nodes are also re-rendered when a child changes.
-        """
-        self.mark_dirty()
-        if self.parent:
-            self.parent.mark_dirty_cascade_up()
-
-    def mark_dirty_cascade_down(self) -> None:
-        """Mark this node and all its descendants as dirty.
-
-        Propagates the dirty flag down the DOM tree to ensure all
-        child nodes are re-rendered when a parent changes.
-        """
-        self.mark_dirty()
-        for child in self.children:
-            child.mark_dirty_cascade_down()
+from termui.widget import Widget
 
 
 class DOMTree:
@@ -176,16 +72,16 @@ class DOMTree:
             if node.parent:
                 node.parent.remove_child(node)
 
-    def get_node_by_id(self, widget_id: str) -> Optional[DOMNode]:
-        """Get a node by its widget ID.
+    def get_node_by_id(self, node_id: str) -> Optional[DOMNode]:
+        """Get a node by its ID.
 
         Args:
-            widget_id: The ID of the widget to find.
+            node_id: The ID of the node to find.
 
         Returns:
             The DOMNode with the matching ID, or None if not found.
         """
-        return self.nodes_by_id.get(widget_id)
+        return self.nodes_by_id.get(node_id)
 
     def get_node_by_name(self, name: str) -> Optional[DOMNode]:
         """Get a node by its name.
@@ -230,12 +126,14 @@ class DOMTree:
             The DOMNode at the specified position, or None if not found.
         """
         for node in self.get_node_list():
-            if node.widget and node.widget.region.contains(x, y):
+            if isinstance(node, Widget) and node.region.contains(x, y):
                 return node
         return None
 
     def get_widget_at_coordinate(self, x: int, y: int) -> Optional["Widget"]:
         """Get a widget at the specified position.
+
+        Note: Will never return a layout object, always a standalone widget.
 
         Args:
             x: The x-coordinate to check.
@@ -246,11 +144,11 @@ class DOMTree:
         """
         for node in self.get_node_list():
             if (
-                node.widget
-                and node.widget.region.contains(x, y)
-                and not isinstance(node.widget, Layout)
+                isinstance(node, Widget)
+                and node.region.contains(x, y)
+                and not isinstance(node, Layout)
             ):
-                return node.widget
+                return node
         return None
 
     def get_tree_string(self, node: Optional[DOMNode] = None, indent: int = 0) -> str:
@@ -264,15 +162,21 @@ class DOMTree:
             A formatted string representation of the tree structure,
             showing node names, IDs, dimensions, and positions.
         """
+        if node is None and self.root is None:
+            return "<empty tree>"
+
         if node is None:
             node = self.root
-        if node is None:
-            return ""
 
-        node_width = node.widget.region.width if node.widget else "N/A"
-        node_height = node.widget.region.height if node.widget else "N/A"
-        node_x = node.widget.region.x if node.widget else "N/A"
-        node_y = node.widget.region.y if node.widget else "N/A"
+        if not isinstance(node, Widget):
+            return "<non-widget node>"
+
+        node = cast(Widget, node)
+
+        node_width = node.region.width
+        node_height = node.region.height
+        node_x = node.region.x
+        node_y = node.region.y
 
         lines = [
             " " * indent
@@ -292,8 +196,8 @@ class DOMTree:
         while queue:
             current = queue.popleft()
 
-            if current.widget and isinstance(current.widget, Layout):
-                current.widget.arrange()
+            if isinstance(current, Layout):
+                current.arrange()
 
             for child in current.children:
                 queue.append(child)

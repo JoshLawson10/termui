@@ -1,16 +1,15 @@
-import sys
-from os import get_terminal_size
 from typing import Optional
 
-from termui._context_manager import app, log
+from termui._context_manager import app
 
 from termui.char import Char
 from termui.color import Color, colorize
-from termui.cursor import Cursor as cursor
-from termui.dom import DOMTree
+from termui.dom_tree import DOMTree
+from termui.drivers._driver import Driver
+from termui.logger import log
 from termui.screen import Screen
 from termui.utils.geometry import Region
-from termui.utils.terminal_utils import clear_terminal, set_terminal_size
+from termui.widget import Widget
 
 
 class FrameBuffer:
@@ -171,17 +170,19 @@ class FrameBuffer:
 
         self.mark_region_dirty(region)
 
-    def render_to_terminal(self) -> None:
+    def get_rendered_output(self) -> list[str]:
         """Render only changed characters to the terminal.
 
         Uses differential rendering to only update characters that have
         changed since the last frame, improving performance.
         """
         if not self.dirty_regions:
-            return
+            return []
 
-        if not self.inline:
-            set_terminal_size(self.width, self.height)
+        output: list[str] = []
+
+        def move_cursor(x: int, y: int) -> None:
+            output.append(f"\033[{y};{x}H")
 
         for y in range(self.height):
             for x in range(self.width):
@@ -189,8 +190,8 @@ class FrameBuffer:
                 previous_char = self.previous_frame[y][x]
 
                 if current_char != previous_char:
-                    cursor.move_no_flush(x + 1, y + 1)
-                    sys.stdout.write(
+                    move_cursor(x + 1, y + 1)
+                    output.append(
                         colorize(
                             current_char.char,
                             fg=current_char.fg_color,
@@ -198,13 +199,12 @@ class FrameBuffer:
                         )
                     )
 
-        sys.stdout.flush()
-
         for y in range(self.height):
             for x in range(self.width):
                 self.previous_frame[y][x] = self.current_frame[y][x]
 
         self.dirty_regions.clear()
+        return output
 
 
 class Renderer:
@@ -214,17 +214,16 @@ class Renderer:
     handling frame buffering, screen changes, and terminal resizing.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, driver: Driver) -> None:
         """Initialize the renderer with an application instance."""
-        self.initial_width, self.initial_height = get_terminal_size()
+        self.initial_width, self.initial_height = driver.get_terminal_size()
         """Initial terminal dimensions."""
         self.dom_tree = DOMTree()
         """The DOM tree representing the current screen's UI."""
+        self.driver = driver
+        """The terminal driver instance for rendering output."""
         self.frame_buffer = FrameBuffer(self.initial_width, self.initial_height)
         """The frame buffer instance for rendering the screen."""
-
-        clear_terminal()
-        cursor.hide()
 
     def check_resize(self) -> bool:
         """Check if the terminal size has changed and update accordingly.
@@ -232,7 +231,7 @@ class Renderer:
         Returns:
             True if the terminal was resized, False otherwise.
         """
-        new_width, new_height = get_terminal_size()
+        new_width, new_height = self.driver.get_terminal_size()
         if (new_width, new_height) != (
             self.frame_buffer.width,
             self.frame_buffer.height,
@@ -246,7 +245,7 @@ class Renderer:
 
                 self.pipe(app.current_screen)
 
-            clear_terminal()
+            app.driver.write("\033[H\033[J")
             self.frame_buffer.mark_entire_screen_dirty()
 
             return True
@@ -282,15 +281,17 @@ class Renderer:
         self.dom_tree.arrange_all_widgets()
 
         for node in self.dom_tree.get_node_list():
-            if node.widget is None or node.dirty is False:
+            if not isinstance(node, Widget) or node.dirty is False:
                 continue
 
-            self.frame_buffer.draw_content(node.widget.region, node.widget.render())
+            self.frame_buffer.draw_content(node.region, node.render())
             node.dirty = False
 
-        self.frame_buffer.render_to_terminal()
+        output = self.frame_buffer.get_rendered_output()
+        for line in output:
+            self.driver.write(line)
 
     def clear(self) -> None:
         """Clear the renderer's current frame and terminal display."""
         self.frame_buffer.clear()
-        clear_terminal()
+        self.driver.write("\033[H\033[J")

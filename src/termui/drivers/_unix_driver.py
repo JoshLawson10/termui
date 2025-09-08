@@ -6,11 +6,11 @@ import termios
 import tty
 
 from termui._keys import Keys
-from termui.input.driver._input_driver import InputDriver
+from termui.drivers._driver import Driver
 
 
-class UnixInputDriver(InputDriver):
-    """Input manager for Unix-like systems (Linux, macOS)."""
+class UnixDriver(Driver):
+    """I/O manager for Unix-like systems (Linux, macOS)."""
 
     def __init__(self):
         super().__init__()
@@ -26,10 +26,10 @@ class UnixInputDriver(InputDriver):
         tty.setraw(sys.stdin.fileno())
 
         # Enable mouse tracking
-        sys.stdout.write("\x1b[?1000h")  # Enable mouse tracking
-        sys.stdout.write("\x1b[?1003h")  # Enable any-event mouse tracking
-        sys.stdout.write("\x1b[?1015h")  # Enable urxvt mouse mode
-        sys.stdout.flush()
+        self.write("\x1b[?1000h")  # Enable mouse tracking
+        self.write("\x1b[?1003h")  # Enable any-event mouse tracking
+        self.write("\x1b[?1015h")  # Enable urxvt mouse mode
+        self.flush()
 
         # Set stdin to non-blocking
         fd = sys.stdin.fileno()
@@ -49,10 +49,10 @@ class UnixInputDriver(InputDriver):
             fcntl.fcntl(sys.stdin.fileno(), fcntl.F_SETFL, self._original_flags)
 
         # Disable mouse tracking
-        sys.stdout.write("\x1b[?1000l")  # Disable mouse tracking
-        sys.stdout.write("\x1b[?1003l")  # Disable any-event mouse tracking
-        sys.stdout.write("\x1b[?1015l")  # Disable urxvt mouse mode
-        sys.stdout.flush()
+        self.write("\x1b[?1000l")  # Disable mouse tracking
+        self.write("\x1b[?1003l")  # Disable any-event mouse tracking
+        self.write("\x1b[?1015l")  # Disable urxvt mouse mode
+        self.flush()
 
     def read_input(self):
         """Read input on Unix-like platforms."""

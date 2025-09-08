@@ -2,7 +2,7 @@ import uuid
 from abc import ABC, abstractmethod
 
 from termui.char import Char
-from termui.dom import DOMNode
+from termui.dom_node import DOMNode
 from termui.events import MouseEvent
 from termui.utils.geometry import Region
 
@@ -31,7 +31,7 @@ class Widget(DOMNode, ABC):
         """Unique identifier for the widget."""
         self.name = kwargs.get("name", f"{self.__class__.__name__}-{self.id[:8]}")
         """Name of the widget. Acts as its class name when used in the DOM with 'get_widget_by_name'"""
-        super().__init__(id=self.id, name=self.name, widget=self)
+        super().__init__(id=self.id, name=self.name)
 
         self.region = Region(
             kwargs.get("x", 0),

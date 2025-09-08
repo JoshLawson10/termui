@@ -3,15 +3,11 @@ from typing import cast, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from termui.app import App
-    from termui.input import InputHandler
-    from termui.logger import Logger
     from termui.renderer import Renderer
 
 
 _app: ContextVar["App"] = ContextVar("app")
-_input_handler: ContextVar["InputHandler"] = ContextVar("input_handler")
 _renderer: ContextVar["Renderer"] = ContextVar("renderer")
-_logger: ContextVar["Logger"] = ContextVar("logger")
 
 
 class _ContextVarProxy:
@@ -37,6 +33,4 @@ class _ContextVarProxy:
 
 
 app = cast("App", _ContextVarProxy(_app, "app"))
-input_handler = cast("InputHandler", _ContextVarProxy(_input_handler, "input_handler"))
 renderer = cast("Renderer", _ContextVarProxy(_renderer, "renderer"))
-log = cast("Logger", _ContextVarProxy(_logger, "logger"))

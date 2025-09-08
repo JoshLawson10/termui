@@ -1,14 +1,12 @@
-import inspect
 from abc import ABC, abstractmethod
 from os import get_terminal_size
 from typing import Optional, TYPE_CHECKING
 
-from termui._context_manager import input_handler, log, renderer
-
 from termui.color import Color
-from termui.dom import DOMTree
+from termui.dom_tree import DOMTree
 from termui.events import InputEvent, MouseEvent
-from termui.input import Keybind
+from termui.keybind import Keybind
+from termui.logger import log
 
 
 if TYPE_CHECKING:
@@ -54,28 +52,6 @@ class Screen(ABC):
         """
         return self._local_keybinds
 
-    @property
-    def log(self):
-        """Get the application's logger."""
-        return log
-
-    def _setup_local_keybinds(self) -> None:
-        """Find and register all methods decorated with @keybind.
-
-        Scans all methods of the screen instance for keybind decorations
-        and creates Keybind objects for them.
-        """
-        for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
-            info = getattr(method, "_keybind_info", None)
-            if info is not None:
-                keybind_obj = Keybind(
-                    key=info["key"],
-                    action=method,
-                    description=info["description"],
-                    visible=info["visible"],
-                )
-                self._local_keybinds.append(keybind_obj)
-
     def screen_metadata(
         self,
         *,
@@ -110,7 +86,6 @@ class Screen(ABC):
                   background color.
         """
         self.background_color = color
-        renderer.clear()
 
     def get_widget_by_name(self, name: str) -> "Widget | None":
         """Get a widget by its name.
@@ -122,7 +97,9 @@ class Screen(ABC):
             The widget with the matching name, or None if not found.
         """
         node = self.dom_tree.get_node_by_name(name)
-        return node.widget if node else None
+        if isinstance(node, Widget):
+            return node
+        return None
 
     def get_widget_by_id(self, widget_id: str) -> "Widget | None":
         """Get a widget by its ID.
@@ -134,7 +111,9 @@ class Screen(ABC):
             The widget with the matching ID, or None if not found.
         """
         node = self.dom_tree.get_node_by_id(widget_id)
-        return node.widget if node else None
+        if isinstance(node, Widget):
+            return node
+        return None
 
     def handle_input_event(self, event: InputEvent) -> None:
         """Handle an input event by forwarding it to appropriate widgets.
@@ -185,10 +164,6 @@ class Screen(ABC):
 
     def mount(self) -> None:
         """Mount the screen to an application instance."""
-        self._setup_local_keybinds()
-        for keybind in self.local_keybinds:
-            input_handler.register_keybind(keybind)
-
         root = self.build()
         root.set_size(self.width, self.height)
 
@@ -196,15 +171,7 @@ class Screen(ABC):
         self.dom_tree.mark_layout_dirty()
         self.dom_tree.arrange_all_widgets()
 
-        renderer.pipe(self)
         log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")
 
     def unmount(self) -> None:
-        """Unmount the screen from its application instance.
-
-        Cleans up the renderer and removes local keybinds from the
-        input handler.
-        """
-        renderer.clear()
-        for keybind in self.local_keybinds:
-            input_handler.unregister_keybind(keybind)
+        """Unmount the screen from its application instance."""

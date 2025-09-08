@@ -1,4 +1,4 @@
-import sys
+from termui._context_manager import app
 
 
 class Cursor:
@@ -12,8 +12,8 @@ class Cursor:
             x (int): The x-coordinate (column) to move the cursor to.
             y (int): The y-coordinate (row) to move the cursor to.
         """
-        sys.stdout.write(f"\033[{y};{x}H")
-        sys.stdout.flush()
+        app.driver.write(f"\033[{y};{x}H")
+        app.driver.flush()
 
     @staticmethod
     def move_no_flush(x: int, y: int) -> None:
@@ -23,16 +23,16 @@ class Cursor:
             x (int): The x-coordinate (column) to move the cursor to.
             y (int): The y-coordinate (row) to move the cursor to.
         """
-        sys.stdout.write(f"\033[{y};{x}H")
+        app.driver.write(f"\033[{y};{x}H")
 
     @staticmethod
     def show() -> None:
         """Show the terminal cursor."""
-        sys.stdout.write("\033[?25h")
-        sys.stdout.flush()
+        app.driver.write("\033[?25h")
+        app.driver.flush()
 
     @staticmethod
     def hide() -> None:
         """Hide the terminal cursor."""
-        sys.stdout.write("\033[?25l")
-        sys.stdout.flush()
+        app.driver.write("\033[?25l")
+        app.driver.flush()

@@ -1,24 +1,29 @@
 import asyncio
+import shutil
+import sys
 import threading
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from termui import events
 from termui._ansi import ANSI_SEQUENCES_KEYS, IGNORE_SEQUENCE
-from termui._context_manager import log
 from termui._keys import key_to_character, Keys
-from termui.input import Keybind
-from termui.input._keybind_manager import KeybindManager
+from termui.drivers._keybind_manager import KeybindManager
+from termui.drivers._writer_thread import WriterThread
+from termui.keybind import Keybind
+from termui.logger import log
 
 
-class InputDriver(ABC):
-    """Abstract base class for input managers."""
+class Driver(ABC):
+    """Base class for all platform-specific I/O drivers."""
 
     def __init__(self):
         self.event_queue: asyncio.Queue[events.InputEvent] = asyncio.Queue()
         self._running: bool = False
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._thread: Optional[threading.Thread] = None
+        self._file = sys.stdout
+        self._writer_thread: Optional[WriterThread] = None
         self.keybind_manager: KeybindManager = KeybindManager()
 
         # Mouse state tracking
@@ -42,6 +47,15 @@ class InputDriver(ABC):
         """
         self.keybind_manager.register_keybinds_from_object(obj)
 
+    def get_terminal_size(self) -> tuple[int, int]:
+        """Get the current size of the terminal.
+
+        Returns:
+            A tuple containing the width and height of the terminal.
+        """
+        size = shutil.get_terminal_size(fallback=(80, 24))
+        return size.columns, size.lines
+
     @abstractmethod
     def setup(self) -> None:
         """Setup the input manager."""
@@ -59,9 +73,11 @@ class InputDriver(ABC):
         if self._running:
             return
         self._running = True
-        self.setup()
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
+        self._writer_thread = WriterThread(self._file)
+        self._writer_thread.start()
+        self.setup()
 
     def stop(self) -> None:
         """Stops the input manager."""
@@ -73,6 +89,20 @@ class InputDriver(ABC):
             self._loop.call_soon_threadsafe(self._loop.stop)
         if self._thread:
             self._thread.join()
+
+    def write(self, data: str) -> None:
+        """Writes text to the output.
+
+        Args:
+            data (str): The text to write.
+        """
+        assert self._writer_thread is not None, "Writer thread must be initialized"
+        self._writer_thread.write(data)
+
+    def flush(self) -> None:
+        """Flush the output."""
+        assert self._writer_thread is not None, "Writer thread must be initialized"
+        self._writer_thread.flush()
 
     async def get_event(self) -> events.InputEvent:
         """Asynchronously gets an event from the queue.

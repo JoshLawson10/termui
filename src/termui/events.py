@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from termui.dom import DOMNode
+    from termui.dom_tree import DOMNode
     from termui.utils.geometry import Size
     from termui.widget import Widget
 

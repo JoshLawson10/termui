@@ -6,11 +6,11 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui._context_manager import _app, _renderer, renderer
+from termui._context_manager import _app
+from termui.drivers import Driver
 
 from termui.errors import AsyncError, ScreenError
-from termui.input import Keybind
-from termui.input.driver import Driver
+from termui.keybind import Keybind
 from termui.logger import log
 from termui.renderer import Renderer
 from termui.screen import Screen
@@ -27,14 +27,15 @@ class App(ABC):
         """The currently rendered screen"""
         self._running = True
         """Whether the app is running"""
-        self.input_driver = Driver()
-        """The input driver for handling user input"""
+        self.driver = Driver()
+        """The I/O driver for the application"""
+        self.renderer = Renderer(self.driver)
+        """The renderer for the application"""
         self._default_keybinds: list[Keybind] = [
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
 
-        _renderer.set(Renderer())
         _app.set(self)
 
     @property
@@ -83,6 +84,8 @@ class App(ABC):
 
         self.current_screen = self.screens[screen_name]
         self.current_screen.mount()
+        self.driver.register_keybinds_from_object(self.current_screen)
+        self.renderer.pipe(self.current_screen)
 
     async def _input_loop(self) -> None:
         """Run the input handler in an asynchronous loop.
@@ -91,7 +94,8 @@ class App(ABC):
         screen while the application is running.
         """
         while self._running:
-            event = await self.input_driver.get_event()
+            event = await self.driver.get_event()
+            log.debug(f"Input event: {event}")
             if self.current_screen and event:
                 self.current_screen.handle_input_event(event)
 
@@ -119,7 +123,7 @@ class App(ABC):
             if not self.current_screen:
                 self.show_screen(next(iter(self.screens)))
 
-            renderer.render()
+            self.renderer.render()
             await asyncio.sleep(0.001)
 
     async def _run_async(self) -> None:
@@ -132,9 +136,9 @@ class App(ABC):
             AsyncError: If the application loop is cancelled.
         """
         self.build()
-        self.input_driver.keybind_manager.keybinds.extend(self._default_keybinds)
-        self.input_driver.register_keybinds_from_object(self)
-        self.input_driver.start()
+        self.driver.start()
+        self.driver.keybind_manager.keybinds.extend(self._default_keybinds)
+        self.driver.register_keybinds_from_object(self)
         self._running = True
 
         try:
@@ -174,5 +178,5 @@ class App(ABC):
     def quit(self) -> None:
         """Safely handle application termination."""
         self._running = False
-        self.input_driver.stop()
+        self.driver.stop()
         os._exit(0)
