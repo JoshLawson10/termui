@@ -1,8 +1,10 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
-from termui.dom import DOMNode
-from termui.utils.geometry import Size
-from termui.widget import Widget
+if TYPE_CHECKING:
+    from termui.dom import DOMNode
+    from termui.utils.geometry import Size
+    from termui.widget import Widget
 
 
 class Event:
@@ -29,7 +31,7 @@ class Resize(Event):
         size: The new size of the terminal.
     """
 
-    size: Size
+    size: "Size"
 
 
 class Mount(Event):
@@ -77,7 +79,7 @@ class MouseEvent(InputEvent):
     """Coordinates of the mouse event."""
     button: int | None = None  # 0=left, 1=middle, 2=right, else None if a scroll event
     """The mouse button involved in the event."""
-    widget: Widget | None = None
+    widget: "Widget | None" = None
     """The widget under the mouse pointer."""
 
     def __repr__(self):
@@ -127,7 +129,7 @@ class Enter(Event):
         node: The DOM node that was entered.
     """
 
-    def __init__(self, node: DOMNode) -> None:
+    def __init__(self, node: "DOMNode") -> None:
         super().__init__()
         self.node = node
 
@@ -139,6 +141,6 @@ class Leave(Event):
         node: The DOM node that was left.
     """
 
-    def __init__(self, node: DOMNode) -> None:
+    def __init__(self, node: "DOMNode") -> None:
         super().__init__()
         self.node = node

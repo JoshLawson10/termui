@@ -4,7 +4,6 @@ from typing import Optional, TYPE_CHECKING
 
 from termui.layout import Layout
 
-
 if TYPE_CHECKING:
     from termui.widget import Widget
 

@@ -1,29 +1,17 @@
 """This is the base class for all TermUI applications"""
 
 import asyncio
-import inspect
 import os
-import sys
-import termios
 import traceback
-import tty
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui._context_manager import (
-    _app,
-    _input_handler,
-    _logger,
-    _renderer,
-    input_handler,
-    log,
-    renderer,
-)
+from termui._context_manager import _app, _renderer, renderer
 
-from termui.cursor import Cursor
 from termui.errors import AsyncError, ScreenError
-from termui.input import InputHandler, Keybind
-from termui.logger import Logger
+from termui.input import Keybind
+from termui.input.driver import Driver
+from termui.logger import log
 from termui.renderer import Renderer
 from termui.screen import Screen
 
@@ -39,39 +27,15 @@ class App(ABC):
         """The currently rendered screen"""
         self._running = True
         """Whether the app is running"""
+        self.input_driver = Driver()
+        """The input driver for handling user input"""
         self._default_keybinds: list[Keybind] = [
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
 
         _renderer.set(Renderer())
-        _input_handler.set(InputHandler())
-        _logger.set(Logger("logs/log.txt"))
-
-        self.fd = sys.stdin.fileno()
-        self.old_settings = termios.tcgetattr(self.fd)
-
         _app.set(self)
-
-    def _register_decorated_keybinds(self) -> None:
-        """Find and register all methods decorated with @keybind.
-
-        Scans all methods of the app instance for keybind decorations and
-        registers them with the input handler, along with default keybinds.
-        """
-        for _, method in inspect.getmembers(self, predicate=inspect.ismethod):
-            info = getattr(method, "_keybind_info", None)
-            if info is not None:
-                keybind_obj = Keybind(
-                    key=info["key"],
-                    action=method,
-                    description=info["description"],
-                    visible=info["visible"],
-                )
-                input_handler.register_keybind(keybind_obj)
-
-        for keybind in self._default_keybinds:
-            input_handler.register_keybind(keybind)
 
     @property
     def log(self):
@@ -127,7 +91,7 @@ class App(ABC):
         screen while the application is running.
         """
         while self._running:
-            event = await input_handler.process_input()
+            event = await self.input_driver.get_event()
             if self.current_screen and event:
                 self.current_screen.handle_input_event(event)
 
@@ -168,9 +132,10 @@ class App(ABC):
             AsyncError: If the application loop is cancelled.
         """
         self.build()
-        self._register_decorated_keybinds()
+        self.input_driver.keybind_manager.keybinds.extend(self._default_keybinds)
+        self.input_driver.register_keybinds_from_object(self)
+        self.input_driver.start()
         self._running = True
-        input_handler.enable_mouse()
 
         try:
             await asyncio.gather(
@@ -179,19 +144,13 @@ class App(ABC):
                 self._render_loop(),
             )
         except KeyboardInterrupt:
-            self._running = False
             self.quit()
         except asyncio.CancelledError as e:
             raise AsyncError("Application loop was cancelled.") from e
         except Exception:
             log.error(traceback.format_exc())
-            self._running = False
             self.quit()
         finally:
-            if self.current_screen:
-                self.current_screen.unmount()
-            input_handler.stop()
-            self._running = False
             self.quit()
 
     def run(self) -> None:
@@ -203,28 +162,17 @@ class App(ABC):
         try:
             # Set the current application context
             _app.set(self)
-
-            self.old_settings = termios.tcgetattr(self.fd)
-            tty.setraw(self.fd)
             asyncio.run(self._run_async())
         except KeyboardInterrupt:
-            self._running = False
             self.quit()
         except Exception:
             log.error(traceback.format_exc())
-            self._running = False
             self.quit()
         finally:
-            termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
-            sys.stdout.write("\033[?1003l\033[?1006l")
-            sys.stdout.flush()
+            self.quit()
 
     def quit(self) -> None:
         """Safely handle application termination."""
-        input_handler.stop()
-        renderer.clear()
-        termios.tcsetattr(self.fd, termios.TCSADRAIN, self.old_settings)
-        sys.stdout.write("\033[?1003l\033[?1006l")
-        sys.stdout.flush()
-        Cursor.show()
+        self._running = False
+        self.input_driver.stop()
         os._exit(0)

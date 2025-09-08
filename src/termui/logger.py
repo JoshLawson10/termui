@@ -85,3 +85,6 @@ class Logger:
         """
         if self.stderr:
             self._write_to_file(f"[Error] {message}")
+
+
+log = Logger("logs/log.txt")
