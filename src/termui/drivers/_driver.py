@@ -2,6 +2,7 @@ import asyncio
 import shutil
 import sys
 import threading
+import time
 from abc import ABC, abstractmethod
 from typing import Any, Optional
 
@@ -84,6 +85,10 @@ class Driver(ABC):
         self._running = True
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
+
+        # Give the thread a moment to start up
+        time.sleep(0.01)
+
         self._writer_thread = WriterThread(self._file)
         self._writer_thread.start()
         self.setup()
@@ -96,10 +101,18 @@ class Driver(ABC):
             return
         self._running = False
         self.teardown()
-        if self._loop:
-            self._loop.call_soon_threadsafe(self._loop.stop)
+
+        if self._loop and not self._loop.is_closed():
+            try:
+                self._loop.call_soon_threadsafe(self._loop.stop)
+            except RuntimeError:
+                pass  # Loop may already be stopped
+
         if self._thread:
-            self._thread.join()
+            self._thread.join(timeout=1.0)
+
+        if self._writer_thread:
+            self._writer_thread.stop()
 
         log.system("I/O Driver Terminated")
 
@@ -109,13 +122,13 @@ class Driver(ABC):
         Args:
             data (str): The text to write.
         """
-        assert self._writer_thread is not None, "Writer thread must be initialized"
-        self._writer_thread.write(data)
+        if self._writer_thread is not None:
+            self._writer_thread.write(data)
 
     def flush(self) -> None:
         """Flush the output."""
-        assert self._writer_thread is not None, "Writer thread must be initialized"
-        self._writer_thread.flush()
+        if self._writer_thread is not None:
+            self._writer_thread.flush()
 
     async def get_event(self) -> events.InputEvent:
         """Asynchronously gets an event from the queue.
@@ -132,8 +145,12 @@ class Driver(ABC):
             event (events.InputEvent): The event to put into the queue.
         """
         if self._loop and self._loop.is_running():
-            asyncio.run_coroutine_threadsafe(self.event_queue.put(event), self._loop)
-            log.debug(f"INPUT EVENT: {event}")
+            try:
+                asyncio.run_coroutine_threadsafe(
+                    self.event_queue.put(event), self._loop
+                )
+            except RuntimeError as e:
+                log.error(f"Failed to put event: {e}")
 
     def _on_key_press(self, key: str, character: str | None = None) -> None:
         """Handle key press events.
@@ -348,7 +365,13 @@ class Driver(ABC):
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
 
-        # Run the input reading
-        self.read_input()
+        try:
+            # Run the input reading
+            self.read_input()
 
-        self._loop.run_forever()
+            self._loop.run_forever()
+        except Exception as e:
+            log.error(f"Driver thread error: {e}")
+        finally:
+            if not self._loop.is_closed():
+                self._loop.close()
