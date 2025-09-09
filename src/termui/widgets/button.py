@@ -3,7 +3,7 @@ from typing import Callable, Literal, Optional
 
 from termui.char import Char
 from termui.color import Color
-from termui.events import MouseEvent
+from termui.events import MouseDown
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from termui.widget import Widget
@@ -376,16 +376,17 @@ class Button(Widget):
     def _on_mouse_enter(self) -> None:
         """Handle mouse enter events by changing to hovered state."""
         self.state = "hovered"
+        self.mark_dirty()
 
     def _on_mouse_exit(self) -> None:
         """Handle mouse exit events by returning to default state."""
         self.state = "default"
+        self.mark_dirty()
 
-    def _on_click(self, event: MouseEvent) -> None:
-        """Handle mouse click events.
-
-        Args:
-            event: The mouse event that triggered the click.
-        """
+    def _on_mouse_down(self, event: MouseDown) -> None:
+        """Handle mouse down events by changing to pressed state and triggering click."""
+        if self.disabled:
+            return
         self.state = "pressed"
         self.click()
+        self.mark_dirty()

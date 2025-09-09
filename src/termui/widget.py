@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from termui import events
 from termui.char import Char
 from termui.dom_node import DOMNode
-from termui.events import MouseEvent
 from termui.logger import log
 from termui.utils.geometry import Region
 
@@ -80,7 +79,7 @@ class Widget(DOMNode, ABC):
         """
         return 0, 0
 
-    def handle_mouse_event(self, event: MouseEvent) -> None:
+    def handle_mouse_event(self, event: events.MouseEvent) -> None:
         """Handle a mouse event that occurred within this widget.
 
         Args:
@@ -89,14 +88,16 @@ class Widget(DOMNode, ABC):
         """
         if self.region.contains(int(event.x), int(event.y)):
             if isinstance(event, events.MouseDown):
-                self._on_click(event)
-                log.system(f"Mouse clicked at ({event.x}, {event.y})")
-            else:
+                self._on_mouse_down(event)
+            elif isinstance(event, events.MouseUp):
+                self._on_mouse_up(event)
+            elif isinstance(event, events.MouseScrollEvent):
+                self._on_mouse_scroll(event)
+            elif isinstance(event, events.Enter):
                 self._on_mouse_enter()
                 log.system(f"Mouse entered at ({event.x}, {event.y})")
         else:
             self._on_mouse_exit()
-            log.system(f"Mouse exited at ({event.x}, {event.y})")
 
     def _on_mouse_enter(self) -> None:
         """Handle mouse enter events.
@@ -112,13 +113,22 @@ class Widget(DOMNode, ABC):
         Override in subclasses to clean up hover effects.
         """
 
-    def _on_click(self, event: MouseEvent) -> None:
-        """Handle mouse click events.
+    def _on_mouse_down(self, event: events.MouseDown) -> None:
+        """Handle mouse down events.
 
-        Override in subclasses to implement click behavior.
+        Override in subclasses to implement press behavior.
+        """
 
-        Args:
-            event: The mouse click event with position and button information.
+    def _on_mouse_up(self, event: events.MouseUp) -> None:
+        """Handle mouse up events.
+
+        Override in subclasses to implement release behavior.
+        """
+
+    def _on_mouse_scroll(self, event: events.MouseScrollEvent) -> None:
+        """Handle mouse scroll events.
+
+        Override in subclasses to implement scroll behavior.
         """
 
     @abstractmethod
