@@ -26,7 +26,9 @@ class BorderStyleChars(Enum):
     FULL = ("█", "█", "█", "█", "█", "█", "█", "█")
 
 
-BorderStyle = Literal["ascii", "none", "round", "solid", "double", "dashed", "heavy", "full"]
+BorderStyle = Literal[
+    "ascii", "none", "round", "solid", "double", "dashed", "heavy", "full"
+]
 """The character style to use for the border"""
 
 
@@ -61,7 +63,9 @@ def draw_rectangle(
     rectangle: list[list[Char]] = []
 
     top_line = (
-        [Char(tl, border_color)] + [Char(th, border_color)] * (width - 2) + [Char(tr, border_color)]
+        [Char(tl, border_color)]
+        + [Char(th, border_color)] * (width - 2)
+        + [Char(tr, border_color)]
     )
     if title:
         title_text = f" {title} "
@@ -73,11 +77,15 @@ def draw_rectangle(
 
     for _ in range(height - 2):
         rectangle.append(
-            [Char(lv, border_color)] + [fill_char] * (width - 2) + [Char(rv, border_color)]
+            [Char(lv, border_color)]
+            + [fill_char] * (width - 2)
+            + [Char(rv, border_color)]
         )
 
     rectangle.append(
-        [Char(bl, border_color)] + [Char(bh, border_color)] * (width - 2) + [Char(br, border_color)]
+        [Char(bl, border_color)]
+        + [Char(bh, border_color)] * (width - 2)
+        + [Char(br, border_color)]
     )
 
     return rectangle

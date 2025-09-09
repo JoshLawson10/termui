@@ -6,7 +6,9 @@ HorizontalAlignment = Literal["left", "center", "right"]
 VerticalAlignment = Literal["top", "middle", "bottom"]
 
 
-def get_aligned_start_x(content: str, region_width: int, alignment: HorizontalAlignment) -> int:
+def get_aligned_start_x(
+    content: str, region_width: int, alignment: HorizontalAlignment
+) -> int:
     """
     Calculate the starting x position for content alignment within a region.
 

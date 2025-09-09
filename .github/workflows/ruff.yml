@@ -19,7 +19,7 @@ jobs:
       - name: Run Ruff
         run: ruff check .
       - name: Check formatting
-        run: ruff format . --fix
+        run: ruff format .
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
