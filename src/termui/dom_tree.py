@@ -3,7 +3,6 @@ from typing import Optional, cast
 
 from termui.dom_node import DOMNode
 from termui.layout import Layout
-from termui.logger import log
 from termui.widget import Widget
 
 
@@ -99,7 +98,6 @@ class DOMTree:
         Returns:
             The DOMNode with the matching ID, or None if not found.
         """
-        log.debug(f"nodes_by_id: {self.nodes_by_id}")
         return self.nodes_by_id.get(node_id)
 
     def get_node_by_name(self, name: str) -> Optional[DOMNode]:
@@ -111,7 +109,6 @@ class DOMTree:
         Returns:
             The DOMNode with the matching name, or None if not found.
         """
-        log.debug(f"nodes_by_name: {self.nodes_by_name}")
         return self.nodes_by_name.get(name)
 
     def get_node_list(self) -> list[DOMNode]:
