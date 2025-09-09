@@ -192,5 +192,4 @@ class Driver(ABC):
         except Exception as e:
             log.error(f"Driver thread error: {e}")
         finally:
-            if not self._loop.is_closed():
-                self._loop.close()
+            self.stop()

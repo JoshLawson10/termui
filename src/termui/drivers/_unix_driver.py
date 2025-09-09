@@ -31,6 +31,9 @@ class UnixDriver(Driver):
         self.write("\x1b[?1003h")  # Enable any-event mouse tracking
         self.write("\x1b[?1015h")  # Enable urxvt mouse mode
         self.write("\x1b[?1006h")  # Enable SGR mouse mode
+
+        self.write("\x1b[?25l")  # Hide cursor
+        self.write("\x1b[>1u")  # https://sw.kovidgoyal.net/kitty/keyboard-protocol/
         self.flush()
 
         # Set stdin to non-blocking
@@ -59,6 +62,11 @@ class UnixDriver(Driver):
         self.write("\x1b[?1003l")  # Disable any-event mouse tracking
         self.write("\x1b[?1015l")  # Disable urxvt mouse mode
         self.write("\x1b[?1006l")  # Disable SGR mouse mode
+
+        # Disable the Kitty keyboard protocol. This must be done before leaving
+        # the alt screen. https://sw.kovidgoyal.net/kitty/keyboard-protocol/
+        self.write("\x1b[<u")
+        self.write("\x1b[?25h")  # Show cursor
         self.flush()
 
     def read_input(self):
@@ -100,21 +108,3 @@ class UnixDriver(Driver):
                 print(f"Input error: {e}", file=sys.stderr)
 
             await asyncio.sleep(0.001)
-
-    def _run(self):
-        """Main loop running in a separate thread."""
-        self._loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._loop)
-
-        # Start input reading
-        self.read_input()
-
-        # Run the event loop
-        try:
-            self._loop.run_forever()
-        except Exception as e:
-            print(f"Driver loop error: {e}", file=sys.stderr)
-        finally:
-            # Clean up
-            if not self._loop.is_closed():
-                self._loop.close()
