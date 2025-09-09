@@ -95,6 +95,7 @@ class Driver(ABC):
             return
         self._running = False
         self.teardown()
+        self.write("\033[H\033[J")  # Clear the screen
 
         if self._loop and not self._loop.is_closed():
             try:
