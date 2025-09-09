@@ -3,6 +3,7 @@ from typing import Optional, cast
 
 from termui.dom_node import DOMNode
 from termui.layout import Layout
+from termui.logger import log
 from termui.widget import Widget
 
 
@@ -33,9 +34,7 @@ class DOMTree:
             root: The node to set as the root of the tree.
         """
         self.root = root
-        self.nodes.add(root)
-        self.nodes_by_id[root.id] = root
-        self.nodes_by_name[root.name if root.name else root.id] = root
+        self._add_node_to_lookups(root)
 
     def add_node(self, parent: DOMNode, child: DOMNode) -> None:
         """Add a node to the DOM tree.
@@ -52,11 +51,26 @@ class DOMTree:
 
         if self.root is None:
             self.root = parent
+            self._add_node_to_lookups(parent)
 
         parent.add_child(child)
-        self.nodes.add(parent)
-        self.nodes_by_id[parent.id] = parent
-        self.nodes_by_name[parent.name if parent.name else parent.id] = parent
+        self._add_node_to_lookups(child)
+
+    def _add_node_to_lookups(self, node: DOMNode) -> None:
+        """Add a node to all tracking structures.
+
+        Args:
+            node: The node to add to the tracking structures.
+        """
+        self.nodes.add(node)
+        self.nodes_by_id[node.id] = node
+
+        # Use name if available, otherwise fall back to ID
+        name_key = node.name if node.name else node.id
+        self.nodes_by_name[name_key] = node
+
+        for child in node.children:
+            self._add_node_to_lookups(child)
 
     def remove_node(self, node: DOMNode) -> None:
         """Remove a node from the DOM tree.
@@ -68,7 +82,11 @@ class DOMTree:
         if node in self.nodes:
             self.nodes.remove(node)
             self.nodes_by_id.pop(node.id, None)
-            self.nodes_by_name.pop(node.name if node.name else node.id, None)
+
+            # Remove from nodes_by_name using the same key logic
+            name_key = node.name if node.name else node.id
+            self.nodes_by_name.pop(name_key, None)
+
             if node.parent:
                 node.parent.remove_child(node)
 
@@ -81,6 +99,7 @@ class DOMTree:
         Returns:
             The DOMNode with the matching ID, or None if not found.
         """
+        log.debug(f"nodes_by_id: {self.nodes_by_id}")
         return self.nodes_by_id.get(node_id)
 
     def get_node_by_name(self, name: str) -> Optional[DOMNode]:
@@ -92,6 +111,7 @@ class DOMTree:
         Returns:
             The DOMNode with the matching name, or None if not found.
         """
+        log.debug(f"nodes_by_name: {self.nodes_by_name}")
         return self.nodes_by_name.get(name)
 
     def get_node_list(self) -> list[DOMNode]:

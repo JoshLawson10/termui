@@ -103,6 +103,8 @@ class Screen(ABC):
         node = self.dom_tree.get_node_by_name(name)
         if isinstance(node, Widget):
             return node
+        self.log.warning(f"Widget with name '{name}' not found.")
+        self.log.debug(f"Current DOM Tree: \n {self.dom_tree.get_tree_string()}")
         return None
 
     def get_widget_by_id(self, widget_id: str) -> "Widget | None":
@@ -117,6 +119,8 @@ class Screen(ABC):
         node = self.dom_tree.get_node_by_id(widget_id)
         if isinstance(node, Widget):
             return node
+        self.log.warning(f"Widget with ID '{widget_id}' not found.")
+        self.log.debug(f"Current DOM Tree: \n {self.dom_tree.get_tree_string()}")
         return None
 
     def handle_input_event(self, event: InputEvent) -> None:
@@ -172,7 +176,8 @@ class Screen(ABC):
         self.dom_tree.mark_layout_dirty()
         self.dom_tree.arrange_all_widgets()
 
-        log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")
+        self.log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")
+        self.log.system(f"Screen DOM Tree: \n {self.dom_tree.get_tree_string()}")
 
     def unmount(self) -> None:
         """Unmount the screen from its application instance."""

@@ -266,8 +266,6 @@ class Renderer:
 
         self.clear()
 
-        log.system(f"DOM Tree: \n {self.dom_tree.get_tree_string()}")
-
     def render(self) -> None:
         """Render all widgets to the terminal.
 

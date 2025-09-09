@@ -11,7 +11,7 @@ from termui._context_manager import _app
 from termui.drivers import Driver
 from termui.errors import AsyncError, ScreenError
 from termui.keybind import Keybind
-from termui.logger import log
+from termui.logger import log as _log
 from termui.renderer import Renderer
 from termui.screen import Screen
 
@@ -41,7 +41,7 @@ class App(ABC):
     @property
     def log(self):
         """Expose the TermUI logger to the App."""
-        return log
+        return _log
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen with the application.
@@ -98,7 +98,7 @@ class App(ABC):
                 if self.current_screen and isinstance(event, events.InputEvent):
                     self.current_screen.handle_input_event(event)
             except Exception:
-                log.error(f"Error in input loop: {traceback.format_exc()}")
+                self.log.error(f"Error in input loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.001)
 
@@ -113,7 +113,7 @@ class App(ABC):
                 if self.current_screen:
                     self.current_screen.update()
             except Exception:
-                log.error(f"Error in update loop: {traceback.format_exc()}")
+                self.log.error(f"Error in update loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.016)  # ~60 FPS
 
@@ -134,7 +134,7 @@ class App(ABC):
 
                 self.renderer.render()
             except Exception:
-                log.error(f"Error in render loop: {traceback.format_exc()}")
+                self.log.error(f"Error in render loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.016)  # ~60 FPS
 
@@ -179,7 +179,7 @@ class App(ABC):
         except asyncio.CancelledError as e:
             raise AsyncError("Application loop was cancelled.") from e
         except Exception:
-            log.error(traceback.format_exc())
+            self.log.error(traceback.format_exc())
             self.quit()
         finally:
             self.quit()
@@ -197,7 +197,7 @@ class App(ABC):
         except KeyboardInterrupt:
             self.quit()
         except Exception:
-            log.error(traceback.format_exc())
+            self.log.error(traceback.format_exc())
             self.quit()
         finally:
             self.quit()
