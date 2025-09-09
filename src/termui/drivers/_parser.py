@@ -22,10 +22,6 @@ from termui.utils.geometry import Size
 _MAX_SEQUENCE_SEARCH_THRESHOLD = 32
 
 _re_mouse_event = re.compile("^" + re.escape("\x1b[") + r"(<?[-\d;]+[mM]|M...)\Z")
-_re_terminal_mode_response = re.compile(
-    "^" + re.escape("\x1b[") + r"\?(?P<mode_id>\d+);(?P<setting_parameter>\d)\$y"
-)
-
 _re_cursor_position = re.compile(r"\x1b\[(?P<row>\d+);(?P<col>\d+)R")
 
 BRACKETED_PASTE_START: Final[str] = "\x1b[200~"
@@ -134,8 +130,6 @@ class Parser(Generic[T]):
         Yields:
             T: A generic data type.
         """
-        log.system(f"FEED {data!r}")
-
         if self._eof:
             raise ParseError("end of file reached") from None
 
@@ -240,7 +234,6 @@ class Parser(Generic[T]):
 
         def on_token(token: events.Event) -> None:
             """Hook to log events."""
-            log.system(str(token))
             if isinstance(token, events.Resize):
                 self.terminal_size = token.size
                 self.terminal_pixel_size = token.pixel_size
@@ -267,7 +260,6 @@ class Parser(Generic[T]):
                 reissue_sequence: Key sequence to report to the app.
             """
             if reissue_sequence:
-                log.system(f"REISSUE {repr(reissue_sequence)}")
                 for character in reissue_sequence:
                     key_events = self._sequence_to_key_events(character)
                     for event in key_events:
@@ -281,7 +273,6 @@ class Parser(Generic[T]):
             except ParseEOF:
                 return
 
-            log.system(f"character={character!r}")
             if character != ESC:
                 for event in self._sequence_to_key_events(character):
                     on_key_token(event)
@@ -316,7 +307,6 @@ class Parser(Generic[T]):
                     reissue_sequence_as_keys(sequence)
                     break
 
-                log.system(f"sequence={sequence!r}")
                 if match := _re_in_band_window_resize.fullmatch(sequence):
                     height, width, pixel_height, pixel_width = [
                         group.partition(":")[0] for group in match.groups()

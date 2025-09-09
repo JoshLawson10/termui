@@ -148,13 +148,11 @@ class Driver(ABC):
                         asyncio.run_coroutine_threadsafe(
                             self.event_queue.put(event), self._loop
                         )
-                        log.debug(f"INPUT EVENT: {event}")
                 else:
                     # Non-key events go straight to the queue
                     asyncio.run_coroutine_threadsafe(
                         self.event_queue.put(event), self._loop
                     )
-                    log.debug(f"INPUT EVENT: {event}")
             except RuntimeError as e:
                 log.error(f"Failed to put event: {e}")
 

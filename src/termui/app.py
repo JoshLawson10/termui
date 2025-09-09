@@ -100,8 +100,8 @@ class App(ABC):
                 log.debug(f"Input event: {event}")
                 if self.current_screen and isinstance(event, events.InputEvent):
                     self.current_screen.handle_input_event(event)
-            except Exception as e:
-                log.error(f"Error in input loop: {e}")
+            except Exception:
+                log.error(f"Error in input loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.001)
 
@@ -115,8 +115,8 @@ class App(ABC):
             try:
                 if self.current_screen:
                     self.current_screen.update()
-            except Exception as e:
-                log.error(f"Error in update loop: {e}")
+            except Exception:
+                log.error(f"Error in update loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.016)  # ~60 FPS
 
@@ -136,8 +136,8 @@ class App(ABC):
                         continue
 
                 self.renderer.render()
-            except Exception as e:
-                log.error(f"Error in render loop: {e}")
+            except Exception:
+                log.error(f"Error in render loop: {traceback.format_exc()}")
 
             await asyncio.sleep(0.016)  # ~60 FPS
 
