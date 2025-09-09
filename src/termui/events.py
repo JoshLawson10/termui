@@ -1,9 +1,11 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from termui.utils.geometry import Size
+
+
 if TYPE_CHECKING:
     from termui.dom_tree import DOMNode
-    from termui.utils.geometry import Size
     from termui.widget import Widget
 
 
@@ -24,6 +26,7 @@ class CursorPosition(Event):
     y: int
 
 
+@dataclass
 class Resize(Event):
     """Represents a resize event in the terminal.
 
@@ -31,7 +34,23 @@ class Resize(Event):
         size: The new size of the terminal.
     """
 
-    size: "Size"
+    size: Size
+    pixel_size: Size | None = None
+
+    @classmethod
+    def from_dimensions(
+        cls, cells: tuple[int, int], pixels: tuple[int, int] | None = None
+    ) -> "Resize":
+        """Construct from basic dimensions.
+
+        Args:
+            cells: tuple of (width, height) in cells.
+            pixels: tuple of (width, height) in pixels if known, or `None` if not known.
+
+        """
+        size = Size(*cells)
+        pixel_size = Size(*pixels) if pixels is not None else None
+        return Resize(size, pixel_size)
 
 
 class Mount(Event):
@@ -74,8 +93,8 @@ class MouseEvent(InputEvent):
         widget: The widget under the mouse pointer.
     """
 
-    x: int
-    y: int
+    x: float
+    y: float
     """Coordinates of the mouse event."""
     button: int | None = None  # 0=left, 1=middle, 2=right, else None if a scroll event
     """The mouse button involved in the event."""
@@ -122,6 +141,7 @@ class Click(MouseEvent):
     """Sent when the mouse is clicked."""
 
 
+@dataclass
 class Enter(Event):
     """Sent when the mouse enters a widget.
 
@@ -129,11 +149,10 @@ class Enter(Event):
         node: The DOM node that was entered.
     """
 
-    def __init__(self, node: "DOMNode") -> None:
-        super().__init__()
-        self.node = node
+    node: "DOMNode"
 
 
+@dataclass
 class Leave(Event):
     """Sent when the mouse leaves a widget.
 
@@ -141,6 +160,4 @@ class Leave(Event):
         node: The DOM node that was left.
     """
 
-    def __init__(self, node: "DOMNode") -> None:
-        super().__init__()
-        self.node = node
+    node: "DOMNode"

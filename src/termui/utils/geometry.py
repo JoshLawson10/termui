@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Iterator
 
 from termui.errors import DimensionError
 
@@ -23,6 +24,10 @@ class Size:
 
     def __str__(self):
         return f"Size(width={self.width}, height={self.height})"
+
+    def __iter__(self) -> Iterator:
+        yield self.width
+        yield self.height
 
 
 @dataclass

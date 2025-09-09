@@ -6,6 +6,7 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import Optional
 
+from termui import events
 from termui._context_manager import _app
 
 from termui.drivers import Driver
@@ -93,12 +94,16 @@ class App(ABC):
         Continuously processes input events and forwards them to the current
         screen while the application is running.
         """
-        event = await self.driver.get_event()
-        log.debug(f"Input event: {event}")
-        if self.current_screen and event:
-            self.current_screen.handle_input_event(event)
+        while self._running:
+            try:
+                event = await self.driver.get_event()
+                log.debug(f"Input event: {event}")
+                if self.current_screen and isinstance(event, events.InputEvent):
+                    self.current_screen.handle_input_event(event)
+            except Exception as e:
+                log.error(f"Error in input loop: {e}")
 
-        await asyncio.sleep(0.001)
+            await asyncio.sleep(0.001)
 
     async def _update_loop(self) -> None:
         """Run the update loop for the current screen.
@@ -106,10 +111,14 @@ class App(ABC):
         Continuously calls the update method on the current screen while
         the application is running.
         """
-        if self.current_screen:
-            self.current_screen.update()
+        while self._running:
+            try:
+                if self.current_screen:
+                    self.current_screen.update()
+            except Exception as e:
+                log.error(f"Error in update loop: {e}")
 
-        await asyncio.sleep(0.001)
+            await asyncio.sleep(0.016)  # ~60 FPS
 
     async def _render_loop(self) -> None:
         """Run the renderer in an asynchronous loop.
@@ -117,11 +126,20 @@ class App(ABC):
         Continuously renders the current screen while the application is
         running. If no current screen is set, defaults to the first screen.
         """
-        if not self.current_screen:
-            self.show_screen(next(iter(self.screens)))
+        while self._running:
+            try:
+                if not self.current_screen:
+                    if self.screens:
+                        self.show_screen(next(iter(self.screens)))
+                    else:
+                        await asyncio.sleep(0.1)
+                        continue
 
-        self.renderer.render()
-        await asyncio.sleep(0.001)
+                self.renderer.render()
+            except Exception as e:
+                log.error(f"Error in render loop: {e}")
+
+            await asyncio.sleep(0.016)  # ~60 FPS
 
     async def _run_async(self) -> None:
         """Run the application asynchronously.
@@ -132,19 +150,33 @@ class App(ABC):
         Raises:
             AsyncError: If the application loop is cancelled.
         """
-        self.build()
-        self.driver.start()
-        for kb in self._default_keybinds:
-            self.driver.register_keybind(kb)
-        self.driver.register_keybinds_from_object(self)
-        self._running = True
-
         try:
-            await asyncio.gather(
-                self._update_loop(),
-                self._render_loop(),
+            self.build()
+            self.driver.start()
+            for kb in self._default_keybinds:
+                self.driver.register_keybind(kb)
+            self.driver.register_keybinds_from_object(self)
+            self._running = True
+
+            # Create tasks that run concurrently
+            input_task = asyncio.create_task(self._input_loop())
+            update_task = asyncio.create_task(self._update_loop())
+            render_task = asyncio.create_task(self._render_loop())
+
+            # Wait for any task to complete (which shouldn't happen in normal operation)
+            _, pending = await asyncio.wait(
+                {input_task, update_task, render_task},
+                return_when=asyncio.FIRST_COMPLETED,
             )
-            log.system("=========== App Started ===========")
+
+            # Cancel remaining tasks
+            for task in pending:
+                task.cancel()
+                try:
+                    await task
+                except asyncio.CancelledError:
+                    pass
+
         except KeyboardInterrupt:
             self.quit()
         except asyncio.CancelledError as e:

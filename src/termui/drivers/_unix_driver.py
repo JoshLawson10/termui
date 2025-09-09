@@ -6,7 +6,6 @@ import sys
 import termios
 import tty
 
-from termui._keys import Keys
 from termui.drivers._driver import Driver
 
 
@@ -31,6 +30,7 @@ class UnixDriver(Driver):
         self.write("\x1b[?1000h")  # Enable mouse tracking
         self.write("\x1b[?1003h")  # Enable any-event mouse tracking
         self.write("\x1b[?1015h")  # Enable urxvt mouse mode
+        self.write("\x1b[?1006h")  # Enable SGR mouse mode
         self.flush()
 
         # Set stdin to non-blocking
@@ -58,6 +58,7 @@ class UnixDriver(Driver):
         self.write("\x1b[?1000l")  # Disable mouse tracking
         self.write("\x1b[?1003l")  # Disable any-event mouse tracking
         self.write("\x1b[?1015l")  # Disable urxvt mouse mode
+        self.write("\x1b[?1006l")  # Disable SGR mouse mode
         self.flush()
 
     def read_input(self):
@@ -70,71 +71,33 @@ class UnixDriver(Driver):
 
     async def _async_input_reader(self):
         """Async input reader that runs in the event loop."""
-        buffer = ""
-
         while self._running:
             try:
+                # Tick the parser to handle any timeouts
+                self._tick_parser()
+
                 # Use select to check if there's input available
                 r, _, _ = select.select([sys.stdin], [], [], 0.01)
                 if not r:
                     await asyncio.sleep(0.001)
                     continue
 
-                # Read available input
                 try:
-                    char = sys.stdin.read(1)
-                    if not char:
+                    # Read available input data in chunks
+                    data = sys.stdin.read(1024)
+                    if not data:
                         await asyncio.sleep(0.001)
                         continue
 
-                    # Handle escape sequences
-                    if char == "\x1b":
-                        buffer = char
-                        # Read more characters with a short timeout
-                        for _ in range(10):  # Max sequence length
-                            r, _, _ = select.select([sys.stdin], [], [], 0.005)
-                            if not r:
-                                break
-                            next_char = sys.stdin.read(1)
-                            if not next_char:
-                                break
-                            buffer += next_char
-                            # Stop if we have a complete sequence
-                            if (
-                                buffer.endswith(("~", "M", "m"))
-                                or len(buffer) > 1
-                                and buffer[-1].isalpha()
-                            ):
-                                break
-
-                        # Parse the ANSI sequence
-                        self._parse_ansi_sequence(buffer)
-                        buffer = ""
-                    else:
-                        # Regular character
-                        if ord(char) == 127:  # Backspace
-                            self._on_key_press(Keys.Backspace.value, char)
-                        elif ord(char) == 10:  # Enter
-                            self._on_key_press(Keys.Enter.value, char)
-                        elif ord(char) == 9:  # Tab
-                            self._on_key_press(Keys.Tab.value, char)
-                        elif ord(char) < 32:  # Other control characters
-                            # Map control characters to their key names
-                            if ord(char) == 3:  # Ctrl+C
-                                self._on_key_press("ctrl+c", None)
-                            else:
-                                control_key = f"ctrl+{chr(ord(char) + 64).lower()}"
-                                self._on_key_press(control_key, None)
-                        else:
-                            self._on_key_press(char, char)
+                    # Feed the data directly to the parser
+                    self._process_parser_events(data)
 
                 except (IOError, OSError):
                     pass
 
             except Exception as e:
                 # Log error but don't crash the input loop
-                if self._loop:
-                    print(f"Input error: {e}", file=sys.stderr)
+                print(f"Input error: {e}", file=sys.stderr)
 
             await asyncio.sleep(0.001)
 
