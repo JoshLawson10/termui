@@ -1,6 +1,7 @@
 import uuid
 from abc import ABC, abstractmethod
 
+from termui import events
 from termui.char import Char
 from termui.dom_node import DOMNode
 from termui.events import MouseEvent
@@ -85,8 +86,8 @@ class Widget(DOMNode, ABC):
             event: The mouse event to handle. Routes to specific handler
                   methods based on the event type.
         """
-        if self.region.contains(event.x, event.y):
-            if event.event_type == "press":
+        if self.region.contains(int(event.x), int(event.y)):
+            if isinstance(event, events.Click):
                 self._on_click(event)
             else:
                 self._on_mouse_enter()

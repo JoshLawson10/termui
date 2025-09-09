@@ -108,37 +108,74 @@ class MouseEvent(InputEvent):
 class MouseMove(MouseEvent):
     """Sent when the mouse is moved."""
 
+    def __repr__(self):
+        return f"MouseMove(x={self.x}, y={self.y}, widget={self.widget})"
+
 
 class MouseDrag(MouseEvent):
     """Sent when the mouse is dragged."""
+
+    def __repr__(self):
+        return f"MouseDrag(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
 
 
 class MouseDown(MouseEvent):
     """Sent when a mouse button is pressed down."""
 
+    def __repr__(self):
+        return f"MouseDown(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+
 
 class MouseUp(MouseEvent):
     """Sent when a mouse button is released."""
 
+    def __repr__(self):
+        return f"MouseUp(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
 
-class MouseScrollDown(MouseEvent):
+
+@dataclass
+class MouseScroll(MouseEvent):
+    """Base class for events when the mouse is scrolled."""
+
+    dx: float = 0.0
+    dy: float = 0.0
+
+
+class MouseScrollDown(MouseScroll):
     """Sent when the mouse is scrolled down."""
 
+    def __repr__(self):
+        return f"MouseScrollDown(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
 
-class MouseScrollUp(MouseEvent):
+
+class MouseScrollUp(MouseScroll):
     """Sent when the mouse is scrolled up."""
 
+    def __repr__(self):
+        return f"MouseScrollUp(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
 
-class MouseScrollLeft(MouseEvent):
+
+class MouseScrollLeft(MouseScroll):
     """Sent when the mouse is scrolled left."""
 
+    def __repr__(self):
+        return f"MouseScrollLeft(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
 
-class MouseScrollRight(MouseEvent):
+
+class MouseScrollRight(MouseScroll):
     """Sent when the mouse is scrolled right."""
+
+    def __repr__(self):
+        return f"MouseScrollRight(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
 
 
 class Click(MouseEvent):
     """Sent when the mouse is clicked."""
+
+    def __repr__(self):
+        return (
+            f"Click(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+        )
 
 
 @dataclass

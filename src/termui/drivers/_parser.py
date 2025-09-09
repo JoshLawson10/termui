@@ -133,26 +133,21 @@ class Parser(Generic[T]):
         if self._eof:
             raise ParseError("end of file reached") from None
 
-        tokens = self._tokens
-        popleft = tokens.popleft
-
         if not data:
             self._eof = True
             try:
                 self._gen.throw(ParseEOF())
             except StopIteration:
                 pass
-            while tokens:
-                yield popleft()
+            while self._tokens:
+                yield self._tokens.popleft()
             return
 
         pos = 0
-        data_size = len(data)
+        while self._tokens:
+            yield self._tokens.popleft()
 
-        while tokens:
-            yield popleft()
-
-        while pos < data_size:
+        while pos < len(data):
             _awaiting = self._awaiting
             if isinstance(_awaiting, Read1):
                 self._timeout_time = None
@@ -165,8 +160,8 @@ class Parser(Generic[T]):
             if self._awaiting.timeout is not None:
                 self._timeout_time = self.get_time() + self._awaiting.timeout
 
-            while tokens:
-                yield popleft()
+            while self._tokens:
+                yield self._tokens.popleft()
 
     def parse_mouse_code(self, code: str) -> events.Event | None:
         """Parse a mouse event from a string.
