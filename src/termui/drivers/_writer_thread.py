@@ -4,7 +4,7 @@ import threading
 from queue import Queue
 from typing import Final, IO
 
-MAX_QUEUED_WRITES: Final[int] = 30
+MAX_QUEUED_WRITES: Final[int] = 64
 
 
 class WriterThread(threading.Thread):
