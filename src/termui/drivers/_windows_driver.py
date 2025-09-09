@@ -283,15 +283,14 @@ class WindowsDriver(Driver):
             button = 1
 
         # Handle different event types
-        if event_flags == 0:  # Button press/release
-            if button_state & 0xFF:  # Any button pressed
-                return f"\x1b[<{button};{x + 1};{y + 1}M"
-            else:  # Button released
-                return f"\x1b[<{button};{x + 1};{y + 1}m"
-        elif event_flags == 1:  # Mouse moved
-            return f"\x1b[<{button + 32};{x + 1};{y + 1}M"  # Movement flag
-        elif event_flags == 4:  # Mouse wheel
-            wheel_button = 64 + (0 if button_state > 0 else 1)  # Scroll up/down
-            return f"\x1b[<{wheel_button};{x + 1};{y + 1}M"
-
+        match event_flags:
+            case 0:
+                if button_state & 0xFF:  # Any button pressed
+                    return f"\x1b[<{button};{x + 1};{y + 1}M"
+                return f"\x1b[<{button};{x + 1};{y + 1}m"  # Button released
+            case 1:  # Mouse moved
+                return f"\x1b[<{button + 32};{x + 1};{y + 1}M"  # Movement flag
+            case 4:  # Mouse wheel
+                wheel_button = 64 + (0 if button_state > 0 else 1)  # Scroll up/down
+                return f"\x1b[<{wheel_button};{x + 1};{y + 1}M"
         return ""
