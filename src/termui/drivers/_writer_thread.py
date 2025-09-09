@@ -4,7 +4,7 @@ import fcntl
 import os
 import threading
 from queue import Queue
-from typing import Final, IO
+from typing import IO, Final
 
 MAX_QUEUED_WRITES: Final[int] = 64
 

@@ -301,11 +301,7 @@ class Button(Widget):
             required for the button including padding and borders.
         """
         min_width = (
-            len(self.label)
-            + self.size.padding_x * 2
-            + self.padding[1]
-            + self.padding[3]
-            + 2
+            len(self.label) + self.size.padding_x * 2 + self.padding[1] + self.padding[3] + 2
         )
         min_height = 3 + self.size.padding_y * 2 + self.padding[0] + self.padding[2]
         return max(min_width, 1), max(min_height, 1)

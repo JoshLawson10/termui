@@ -75,8 +75,7 @@ class App(ABC):
         """
         if screen_name not in self.screens:
             raise ScreenError(
-                f"Screen '{screen_name}' not found. "
-                f"Available screens: {list(self.screens.keys())}"
+                f"Screen '{screen_name}' not found. Available screens: {list(self.screens.keys())}"
             )
 
         if self.current_screen is not None:
