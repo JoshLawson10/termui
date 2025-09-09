@@ -1,5 +1,5 @@
 from collections import deque
-from typing import cast, Optional
+from typing import Optional, cast
 
 from termui.dom_node import DOMNode
 from termui.layout import Layout

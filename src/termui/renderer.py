@@ -1,7 +1,6 @@
 from typing import Optional
 
 from termui._context_manager import app
-
 from termui.char import Char
 from termui.color import Color, colorize
 from termui.dom_tree import DOMTree

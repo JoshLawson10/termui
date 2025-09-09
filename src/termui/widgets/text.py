@@ -2,7 +2,7 @@ from typing import Optional
 
 from termui.char import Char
 from termui.color import Color
-from termui.utils.align import get_aligned_start_x, HorizontalAlignment
+from termui.utils.align import HorizontalAlignment, get_aligned_start_x
 from termui.widget import Widget
 
 

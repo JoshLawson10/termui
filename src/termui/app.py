@@ -8,7 +8,6 @@ from typing import Optional
 
 from termui import events
 from termui._context_manager import _app
-
 from termui.drivers import Driver
 from termui.errors import AsyncError, ScreenError
 from termui.keybind import Keybind

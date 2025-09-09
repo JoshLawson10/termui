@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from os import get_terminal_size
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from termui.color import Color
 from termui.dom_tree import DOMTree
@@ -8,7 +8,6 @@ from termui.events import InputEvent, MouseEvent
 from termui.keybind import Keybind
 from termui.logger import log
 from termui.widget import Widget
-
 
 if TYPE_CHECKING:
     from termui.layout import Layout

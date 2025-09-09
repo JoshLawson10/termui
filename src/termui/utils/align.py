@@ -2,8 +2,8 @@ from typing import Literal
 
 from termui.errors import AlignmentError
 
-type HorizontalAlignment = Literal["left", "center", "right"]
-type VerticalAlignment = Literal["top", "middle", "bottom"]
+HorizontalAlignment = Literal["left", "center", "right"]
+VerticalAlignment = Literal["top", "middle", "bottom"]
 
 
 def get_aligned_start_x(

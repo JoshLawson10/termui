@@ -8,16 +8,15 @@ from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from termui.widget import Widget
 
-
-type ButtonStyle = Literal["solid", "soft", "outline", "rounded", "dashed"]
+ButtonStyle = Literal["solid", "soft", "outline", "rounded", "dashed"]
 """Defines the visual style of a button."""
-type ButtonColor = Literal[
+ButtonColor = Literal[
     "default", "primary", "secondary", "accent", "info", "success", "warning", "error"
 ]
 """Defines the color scheme of a button."""
-type ButtonSize = Literal["icon", "small", "medium", "large"]
+ButtonSize = Literal["icon", "small", "medium", "large"]
 """Defines the size of a button."""
-type ButtonState = Literal["default", "hovered", "pressed", "disabled"]
+ButtonState = Literal["default", "hovered", "pressed", "disabled"]
 """Defines the state of a button."""
 
 

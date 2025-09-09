@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Literal, Optional
 
 from termui.char import Char
-
 from termui.color import Color
 from termui.errors import DimensionError
 from termui.utils.align import get_aligned_start_x, HorizontalAlignment
@@ -27,7 +26,7 @@ class BorderStyleChars(Enum):
     FULL = ("█", "█", "█", "█", "█", "█", "█", "█")
 
 
-type BorderStyle = Literal[
+BorderStyle = Literal[
     "ascii", "none", "round", "solid", "double", "dashed", "heavy", "full"
 ]
 """The character style to use for the border"""

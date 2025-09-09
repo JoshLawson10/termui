@@ -15,7 +15,7 @@ from typing import (
 
 from termui import events
 from termui._ansi import ANSI_SEQUENCES_KEYS, IGNORE_SEQUENCE
-from termui._keys import _character_to_key, FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys
+from termui._keys import FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys, _character_to_key
 from termui.logger import log
 from termui.utils.geometry import Size
 

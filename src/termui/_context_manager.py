@@ -1,5 +1,5 @@
 from contextvars import ContextVar
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 if TYPE_CHECKING:
     from termui.app import App

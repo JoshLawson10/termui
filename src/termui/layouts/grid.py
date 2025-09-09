@@ -19,9 +19,9 @@ class GridLayout(Layout):
         """
         self.grid_map: dict[tuple[int, int], Widget] = {}
         """A mapping of grid positions to their corresponding widgets."""
-        self.span_map: dict[Widget, tuple[int, int, int, int]] = (
-            {}
-        )  # widget -> (row, col, row_span, col_span)
+        self.span_map: dict[
+            Widget, tuple[int, int, int, int]
+        ] = {}  # widget -> (row, col, row_span, col_span)
         """A mapping of widgets to their grid positions and spans."""
 
         super().__init__(name="GridLayout", **kwargs)

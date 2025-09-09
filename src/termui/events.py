@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from termui.utils.geometry import Size
 
-
 if TYPE_CHECKING:
     from termui.dom_tree import DOMNode
     from termui.widget import Widget
