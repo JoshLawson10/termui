@@ -40,7 +40,7 @@ class App(ABC):
 
     @property
     def log(self):
-        """Get the application's logger."""
+        """Expose the TermUI logger to the App."""
         return log
 
     def register_screen(self, screen: Screen) -> None:

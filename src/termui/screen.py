@@ -51,6 +51,11 @@ class Screen(ABC):
         """
         return self._local_keybinds
 
+    @property
+    def log(self):
+        """Expose the TermUI logger to the screen."""
+        return log
+
     def screen_metadata(
         self,
         *,
