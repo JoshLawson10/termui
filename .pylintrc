@@ -6,3 +6,4 @@ min-public-methods=0
 max-attributes=10
 max-locals=32
 max-args=10
+max-nested-blocks=6
