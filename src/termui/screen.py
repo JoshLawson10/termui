@@ -7,11 +7,11 @@ from termui.dom_tree import DOMTree
 from termui.events import InputEvent, MouseEvent
 from termui.keybind import Keybind
 from termui.logger import log
+from termui.widget import Widget
 
 
 if TYPE_CHECKING:
     from termui.layout import Layout
-    from termui.widget import Widget
 
 
 class Screen(ABC):
@@ -123,10 +123,7 @@ class Screen(ABC):
                   to widgets that contain the mouse position.
         """
         if isinstance(event, MouseEvent):
-            widget = self.dom_tree.get_widget_at_coordinate(event.x, event.y)
-            log.debug(
-                f"Mouse event at ({event.x}, {event.y}) in widget: {widget if widget else None}"
-            )
+            widget = self.dom_tree.get_widget_at_coordinate(int(event.x), int(event.y))
             if widget:
                 widget.handle_mouse_event(event)
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import fcntl
+import os
 import threading
 from queue import Queue
 from typing import Final, IO
@@ -14,6 +16,10 @@ class WriterThread(threading.Thread):
         super().__init__(daemon=True, name="TERMUI_OUTPUT")
         self._queue: Queue[str | None] = Queue(MAX_QUEUED_WRITES)
         self._file = file
+
+        fd = file.fileno()
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
 
     def write(self, text: str) -> None:
         """Write text. Text will be enqueued for writing.
@@ -44,14 +50,17 @@ class WriterThread(threading.Thread):
         return
 
     def run(self) -> None:
-        """Run the thread."""
-        # Read from the queue, write to the file.
-        # Flush when there is a break.
         while True:
             text: str | None = self._queue.get()
             if text is None:
                 break
-            self._file.write(text)
+            data = text.encode()
+            while data:
+                try:
+                    written = os.write(self._file.fileno(), data)
+                    data = data[written:]
+                except BlockingIOError:
+                    threading.Event().wait(0.01)
             if self._queue.qsize() == 0:
                 self._file.flush()
         self._file.flush()

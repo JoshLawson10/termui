@@ -97,7 +97,6 @@ class App(ABC):
         while self._running:
             try:
                 event = await self.driver.get_event()
-                log.debug(f"Input event: {event}")
                 if self.current_screen and isinstance(event, events.InputEvent):
                     self.current_screen.handle_input_event(event)
             except Exception:

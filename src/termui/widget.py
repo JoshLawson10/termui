@@ -5,6 +5,7 @@ from termui import events
 from termui.char import Char
 from termui.dom_node import DOMNode
 from termui.events import MouseEvent
+from termui.logger import log
 from termui.utils.geometry import Region
 
 
@@ -87,12 +88,15 @@ class Widget(DOMNode, ABC):
                   methods based on the event type.
         """
         if self.region.contains(int(event.x), int(event.y)):
-            if isinstance(event, events.Click):
+            if isinstance(event, events.MouseDown):
                 self._on_click(event)
+                log.system(f"Mouse clicked at ({event.x}, {event.y})")
             else:
                 self._on_mouse_enter()
+                log.system(f"Mouse entered at ({event.x}, {event.y})")
         else:
             self._on_mouse_exit()
+            log.system(f"Mouse exited at ({event.x}, {event.y})")
 
     def _on_mouse_enter(self) -> None:
         """Handle mouse enter events.
