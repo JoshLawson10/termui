@@ -3,7 +3,7 @@ from typing import Callable, Literal, Optional
 
 from termui.char import Char
 from termui.color import Color
-from termui.events import MouseDown
+from termui.events import MouseDown, MouseUp
 from termui.utils.align import get_aligned_start_x, get_aligned_start_y
 from termui.utils.draw_rectangle import BorderStyle, draw_rectangle
 from termui.widget import Widget
@@ -219,8 +219,9 @@ class Button(Widget):
         self.state = state if state else self.state
         return self
 
+    @staticmethod
     def _get_styles(
-        self, style: str
+        style: str,
     ) -> tuple[ButtonStyleVariant, ButtonColorVariant, ButtonSizeVariant]:
         """Parse and return the button style variants from a style string.
 
@@ -389,4 +390,16 @@ class Button(Widget):
             return
         self.state = "pressed"
         self.click()
+        self.mark_dirty()
+
+    def _on_mouse_up(self, event: MouseUp) -> None:
+        """Handle mouse up events by changing to hovered state.
+
+        Args:
+            event (MouseUp): The mouse event.
+        """
+
+        if self.disabled:
+            return
+        self.state = "default"
         self.mark_dirty()
