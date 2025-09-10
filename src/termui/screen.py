@@ -2,9 +2,9 @@ from abc import ABC, abstractmethod
 from os import get_terminal_size
 from typing import Optional, TYPE_CHECKING
 
+from termui import events
 from termui.color import Color
 from termui.dom_tree import DOMTree
-from termui.events import InputEvent, MouseEvent
 from termui.keybind import Keybind
 from termui.logger import log
 from termui.widget import Widget
@@ -123,14 +123,14 @@ class Screen(ABC):
         self.log.debug(f"Current DOM Tree: \n {self.dom_tree.get_tree_string()}")
         return None
 
-    def handle_input_event(self, event: InputEvent) -> None:
+    def handle_input_event(self, event: events.InputEvent) -> None:
         """Handle an input event by forwarding it to appropriate widgets.
 
         Args:
             event: The input event to handle. Mouse events are forwarded
                   to widgets that contain the mouse position.
         """
-        if isinstance(event, MouseEvent):
+        if isinstance(event, events.MouseEvent):
             widget = self.dom_tree.get_widget_at_coordinate(int(event.x), int(event.y))
             if widget:
                 widget.handle_mouse_event(event)

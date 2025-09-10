@@ -173,5 +173,5 @@ class Enter(MouseEvent):
 
 
 @dataclass
-class Leave(MouseEvent):
-    """Sent when the mouse leaves a widget."""
+class Exit(MouseEvent):
+    """Sent when the mouse exits a widget."""
