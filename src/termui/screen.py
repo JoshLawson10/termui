@@ -137,7 +137,7 @@ class Screen(ABC):
 
     @abstractmethod
     def setup(self) -> None:
-        """Setup the screen with initial configuration.
+        """Set up the screen with initial configuration.
 
         This method is called once when the screen is registered with
         the application. Use this for one-time initialization.

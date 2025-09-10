@@ -38,7 +38,7 @@ class Color:
         Returns:
             A tuple containing (r, g, b) values.
         """
-        return (self.r, self.g, self.b)
+        return self.r, self.g, self.b
 
     @property
     def rgba(self) -> tuple[int, int, int, int]:
@@ -47,7 +47,7 @@ class Color:
         Returns:
             A tuple containing (r, g, b, a) values.
         """
-        return (self.r, self.g, self.b, self.a)
+        return self.r, self.g, self.b, self.a
 
     @property
     def monochrome(self) -> "Color":

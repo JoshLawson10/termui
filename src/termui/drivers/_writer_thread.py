@@ -4,7 +4,7 @@ import fcntl
 import os
 import threading
 from queue import Queue
-from typing import IO, Final
+from typing import Final, IO
 
 MAX_QUEUED_WRITES: Final[int] = 64
 
@@ -29,7 +29,8 @@ class WriterThread(threading.Thread):
         """
         self._queue.put(text)
 
-    def isatty(self) -> bool:
+    @staticmethod
+    def isatty() -> bool:
         """Pretend to be a terminal.
 
         Returns:
@@ -37,6 +38,7 @@ class WriterThread(threading.Thread):
         """
         return True
 
+    @staticmethod
     def fileno(self) -> int:
         """Get file handle number.
 

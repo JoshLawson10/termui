@@ -9,7 +9,6 @@ class DOMNode:
     Args:
         id: Unique identifier for the node.
         name: Optional display name for the node.
-        widget: The widget associated with this node, if any.
         parent: Parent node in the DOM tree.
         children: List of child nodes.
         dirty: Whether the node needs re-rendering.

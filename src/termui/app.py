@@ -59,7 +59,7 @@ class App(ABC):
 
     @abstractmethod
     def build(self) -> None:
-        """Setup the application with initial screens.
+        """Set up the application with initial screens.
 
         This method is intended to be overridden by the inheriting class."""
         raise NotImplementedError("Subclasses must implement the build method.")

@@ -117,18 +117,27 @@ class Widget(DOMNode, ABC):
         """Handle mouse down events.
 
         Override in subclasses to implement press behavior.
+
+        Args:
+            event: The mouse event to handle. Routes to specific handler
         """
 
     def _on_mouse_up(self, event: events.MouseUp) -> None:
         """Handle mouse up events.
 
         Override in subclasses to implement release behavior.
+
+        Args:
+            event: The mouse event to handle. Routes to specific handler
         """
 
     def _on_mouse_scroll(self, event: events.MouseScrollEvent) -> None:
         """Handle mouse scroll events.
 
         Override in subclasses to implement scroll behavior.
+
+        Args:
+            event: The mouse event to handle. Routes to specific handler
         """
 
     @abstractmethod

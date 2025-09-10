@@ -16,6 +16,7 @@ from typing import (
 from termui import events
 from termui._ansi import ANSI_SEQUENCES_KEYS, IGNORE_SEQUENCE
 from termui._keys import FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys, _character_to_key
+from termui.events import Key
 from termui.logger import log
 from termui.utils.geometry import Size
 
@@ -38,7 +39,7 @@ SPECIAL_SEQUENCES = {BRACKETED_PASTE_START, BRACKETED_PASTE_END, FOCUSIN, FOCUSO
 
 _re_extended_key: Final = re.compile(r"\x1b\[(?:(\d+)(?:;(\d+))?)?([u~ABCDEFHPQRS])")
 _re_in_band_window_resize: Final = re.compile(
-    r"\x1b\[48;(\d+(?:\:.*?)?);(\d+(?:\:.*?)?);(\d+(?:\:.*?)?);(\d+(?:\:.*?)?)t"
+    r"\x1b\[48;(\d+(?::.*?)?);(\d+(?::.*?)?);(\d+(?::.*?)?);(\d+(?::.*?)?)t"
 )
 _re_sgr_mouse = re.compile(r"\x1b\[<(\d+);(-?\d+);(-?\d+)([Mm])")
 
@@ -106,7 +107,8 @@ class Parser(Generic[T]):
         """Whether the parser has reached the end of the stream."""
         return self._eof
 
-    def get_time(self) -> float:
+    @staticmethod
+    def get_time() -> float:
         """Get the current time in seconds since the epoch."""
         return perf_counter()
 
@@ -225,7 +227,7 @@ class Parser(Generic[T]):
         Args:
             token_callback: A callback function to call with each parsed token.
         """
-        ESC = "\x1b"
+        esc = "\x1b"
 
         def on_token(token: events.Event) -> None:
             """Hook to log events."""
@@ -234,19 +236,19 @@ class Parser(Generic[T]):
                 self.terminal_pixel_size = token.pixel_size
             token_callback(token)
 
-        def on_key_token(event: events.Key) -> None:
+        def on_key_token(key_token: events.Key) -> None:
             """Token callback wrapper for handling keys.
 
             Args:
-                event: The key event to send to the callback.
+                key_token: The key event to send to the callback.
 
             This wrapper looks for keys that should be ignored, and filters
             them out, logging the ignored sequence when it does.
             """
-            if event.key == Keys.Ignore:
-                log.system(f"ignored={event.character!r}")
+            if key_token.key == Keys.Ignore:
+                log.system(f"ignored={key_token.character!r}")
             else:
-                on_token(event)
+                on_token(key_token)
 
         def reissue_sequence_as_keys(reissue_sequence: str) -> None:
             """Called when an escape sequence hasn't been understood.
@@ -256,7 +258,7 @@ class Parser(Generic[T]):
             """
             if reissue_sequence:
                 for character in reissue_sequence:
-                    key_events = self._sequence_to_key_events(character)
+                    key_events: Iterable[Key] = self._sequence_to_key_events(character)
                     for event in key_events:
                         if event.key == "escape":
                             event = events.Key("circumflex_accent", "^")
@@ -268,14 +270,14 @@ class Parser(Generic[T]):
             except ParseEOF:
                 return
 
-            if character != ESC:
+            if character != esc:
                 for event in self._sequence_to_key_events(character):
                     on_key_token(event)
                 if not character:
                     return
                 continue
 
-            sequence: str = ESC
+            sequence: str = esc
 
             def send_escape() -> None:
                 """Send escape key and reissue sequence."""
@@ -292,7 +294,7 @@ class Parser(Generic[T]):
                     send_escape()
                     return
 
-                if new_character == ESC:
+                if new_character == esc:
                     send_escape()
                     sequence = character
                     continue
@@ -341,7 +343,8 @@ class Parser(Generic[T]):
                         on_token(mouse_event)
                     break
 
-    def _sequence_to_key_events(self, sequence: str) -> Iterable[events.Key]:
+    @staticmethod
+    def _sequence_to_key_events(sequence: str) -> Iterable[events.Key]:
         """Map a sequence of code points on to a sequence of keys.
 
         Args:
@@ -362,8 +365,8 @@ class Parser(Generic[T]):
             key_tokens: list[str] = []
             if modifiers:
                 modifier_bits = int(modifiers) - 1
-                MODIFIERS = ("shift", "alt", "ctrl", "super", "hyper", "meta")
-                for bit, modifier in enumerate(MODIFIERS):
+                modifiers = ("shift", "alt", "ctrl", "super", "hyper", "meta")
+                for bit, modifier in enumerate(modifiers):
                     if modifier_bits & (1 << bit):
                         key_tokens.append(modifier)
 

@@ -95,7 +95,7 @@ class WindowsDriver(Driver):
         self.stdin_handle: Optional[wintypes.HANDLE] = None
         self.original_console_mode: Optional[wintypes.DWORD] = None
 
-    def setup(self):
+    def setup(self) -> None:
         """Setup for Windows platform."""
         # Get standard input handle
         self.stdin_handle = self.kernel32.GetStdHandle(-10)  # STD_INPUT_HANDLE
@@ -115,7 +115,7 @@ class WindowsDriver(Driver):
         self.write("\x1b[?1006h")  # Enable SGR mouse mode
         self.flush()
 
-    def teardown(self):
+    def teardown(self) -> None:
         """Restore terminal to original state on Windows."""
         if self.original_console_mode:
             self.kernel32.SetConsoleMode(self.stdin_handle, self.original_console_mode)
@@ -125,7 +125,7 @@ class WindowsDriver(Driver):
         self.write("\x1b[?1006l")
         self.flush()
 
-    def read_input(self):
+    def read_input(self) -> None:
         """Read input on Windows platform."""
         while self._running:
             try:
@@ -196,10 +196,18 @@ class WindowsDriver(Driver):
                 log.error(f"Windows input error: {e}")
                 threading.Event().wait(0.01)
 
-    def _windows_key_to_sequence(
-        self, vk_code: int, control_state: int, char: str
-    ) -> str:
-        """Convert Windows virtual key code to ANSI sequence or character."""
+    @staticmethod
+    def _windows_key_to_sequence(vk_code: int, control_state: int, char: str) -> str:
+        """Convert Windows virtual key code to ANSI sequence or character.
+
+        Args:
+            vk_code: The virtual key code.
+            control_state: The control key state.
+            char: The character representation of the key.
+
+        Returns:
+            str: The key sequence
+        """
         # Check for modifier keys
         ctrl_pressed = control_state & 0x0008  # RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED
         alt_pressed = control_state & 0x0003  # RIGHT_ALT_PRESSED | LEFT_ALT_PRESSED
@@ -269,10 +277,19 @@ class WindowsDriver(Driver):
 
         return ""
 
-    def _windows_mouse_to_sequence(
-        self, x: int, y: int, button_state: int, event_flags: int
-    ) -> str:
-        """Convert Windows mouse event to SGR mouse sequence."""
+    @staticmethod
+    def _windows_mouse_to_sequence(x: int, y: int, button_state: int, event_flags: int) -> str:
+        """Convert Windows mouse event to SGR mouse sequence.
+
+        Args:
+            x: The x-coordinate of the mouse event.
+            y: The y-coordinate of the mouse event.
+            button_state: The state of the mouse buttons.
+            event_flags: The flags for the mouse event.
+
+        Returns:
+            str: The SGR mouse sequence.
+        """
         # Determine button
         button = 0
         if button_state & 0x1:  # Left button

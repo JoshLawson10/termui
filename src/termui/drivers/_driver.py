@@ -53,7 +53,8 @@ class Driver(ABC):
         """
         self.keybind_manager.register_keybinds_from_object(obj)
 
-    def get_terminal_size(self) -> tuple[int, int]:
+    @staticmethod
+    def get_terminal_size() -> tuple[int, int]:
         """Get the current size of the terminal.
 
         Returns:

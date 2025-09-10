@@ -5,6 +5,7 @@ from __future__ import annotations
 import unicodedata
 from enum import Enum
 from functools import lru_cache
+from typing import cast
 
 
 class Keys(str, Enum):  # type: ignore[no-redef]
@@ -12,7 +13,7 @@ class Keys(str, Enum):  # type: ignore[no-redef]
 
     @property
     def value(self) -> str:
-        return super().value
+        return cast(str, super().value)
 
     Escape = "escape"  # Also Control-[
     ShiftEscape = "shift+escape"
