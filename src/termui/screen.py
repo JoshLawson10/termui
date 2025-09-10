@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from os import get_terminal_size
-from typing import TYPE_CHECKING, Optional
+from typing import Optional, TYPE_CHECKING
 
 from termui.color import Color
 from termui.dom_tree import DOMTree
@@ -91,7 +91,7 @@ class Screen(ABC):
         """
         self.background_color = color
 
-    def get_widget_by_name(self, name: str) -> "Widget | None":
+    def get_widget_by_name(self, name: str) -> Widget | None:
         """Get a widget by its name.
 
         Args:
@@ -107,7 +107,7 @@ class Screen(ABC):
         self.log.debug(f"Current DOM Tree: \n {self.dom_tree.get_tree_string()}")
         return None
 
-    def get_widget_by_id(self, widget_id: str) -> "Widget | None":
+    def get_widget_by_id(self, widget_id: str) -> Widget | None:
         """Get a widget by its ID.
 
         Args:

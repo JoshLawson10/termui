@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING
 from termui.utils.geometry import Size
 
 if TYPE_CHECKING:
-    from termui.dom_tree import DOMNode
-    from termui.widget import Widget
+    pass
 
 
 class Event:
@@ -169,22 +168,10 @@ class MouseScrollRight(MouseScrollEvent):
 
 
 @dataclass
-class Enter(Event):
-    """Sent when the mouse enters a widget.
-
-    Args:
-        node: The DOM node that was entered.
-    """
-
-    node: "DOMNode"
+class Enter(MouseEvent):
+    """Sent when the mouse enters a widget."""
 
 
 @dataclass
-class Leave(Event):
-    """Sent when the mouse leaves a widget.
-
-    Args:
-        node: The DOM node that was left.
-    """
-
-    node: "DOMNode"
+class Leave(MouseEvent):
+    """Sent when the mouse leaves a widget."""
