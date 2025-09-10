@@ -35,12 +35,19 @@ class Screen(ABC):
         """Whether the screen is inline (True) or should resize the terminal to fit (False)."""
         self.background_color: Optional[Color] = None
         """Optional background color for the screen."""
+        self.active: bool = False
+        """Whether the screen is currently mounted."""
 
     def __str__(self) -> str:
         return f"Screen(name={self.name}, width={self.width}, height={self.height})"
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @property
+    def is_active(self) -> bool:
+        """Whether the screen is currently mounted."""
+        return self.active
 
     @property
     def local_keybinds(self) -> list[Keybind]:
@@ -123,6 +130,15 @@ class Screen(ABC):
         self.log.debug(f"Current DOM Tree: \n {self.dom_tree.get_tree_string()}")
         return None
 
+    def get_widget_at(self, x: int, y: int) -> Widget | None:
+        """Get a widget at a certain coordinate.
+
+        Args:
+            x: The X coordinate of the widget to find.
+            y: The Y coordinate of the widget to find.
+        """
+        return self.dom_tree.get_widget_at_coordinate(x, y)
+
     def handle_input_event(self, event: events.InputEvent) -> None:
         """Handle an input event by forwarding it to appropriate widgets.
 
@@ -130,10 +146,11 @@ class Screen(ABC):
             event: The input event to handle. Mouse events are forwarded
                   to widgets that contain the mouse position.
         """
+        self.log.debug(f"Input event: {event}")
         if isinstance(event, events.MouseEvent):
             widget = self.dom_tree.get_widget_at_coordinate(int(event.x), int(event.y))
             if widget:
-                widget.handle_mouse_event(event)
+                widget.handle_event(event)
 
     @abstractmethod
     def setup(self) -> None:
@@ -176,8 +193,11 @@ class Screen(ABC):
         self.dom_tree.mark_layout_dirty()
         self.dom_tree.arrange_all_widgets()
 
+        self.active = True
+
         self.log.system(f"Mounted screen: {self.name}. Is inline: {self.inline}")
         self.log.system(f"Screen DOM Tree: \n {self.dom_tree.get_tree_string()}")
 
     def unmount(self) -> None:
         """Unmount the screen from its application instance."""
+        self.active = False

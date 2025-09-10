@@ -1,7 +1,6 @@
 import os
 import re
 from collections import deque
-from time import perf_counter
 from typing import (
     Callable,
     Deque,
@@ -18,6 +17,7 @@ from termui._ansi import ANSI_SEQUENCES_KEYS, IGNORE_SEQUENCE
 from termui._keys import FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys, _character_to_key
 from termui.events import Key
 from termui.logger import log
+from termui.time import get_time
 from termui.utils.geometry import Size
 
 _MAX_SEQUENCE_SEARCH_THRESHOLD = 32
@@ -107,14 +107,9 @@ class Parser(Generic[T]):
         """Whether the parser has reached the end of the stream."""
         return self._eof
 
-    @staticmethod
-    def get_time() -> float:
-        """Get the current time in seconds since the epoch."""
-        return perf_counter()
-
     def tick(self) -> Iterable[T]:
         """Call at regular intervals to check for timeouts."""
-        if self._timeout_time is not None and self.get_time() >= self._timeout_time:
+        if self._timeout_time is not None and get_time() >= self._timeout_time:
             self._timeout_time = None
             self._awaiting = self._gen.throw(ParseTimeout())
             while self._tokens:
@@ -160,7 +155,7 @@ class Parser(Generic[T]):
                 self._awaiting = self._gen.send(data[pos])
 
             if self._awaiting.timeout is not None:
-                self._timeout_time = self.get_time() + self._awaiting.timeout
+                self._timeout_time = get_time() + self._awaiting.timeout
 
             while self._tokens:
                 yield self._tokens.popleft()

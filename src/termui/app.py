@@ -14,6 +14,7 @@ from termui.keybind import Keybind
 from termui.logger import log as _log
 from termui.renderer import Renderer
 from termui.screen import Screen
+from termui.widget import Widget
 
 
 class App(ABC):
@@ -21,12 +22,14 @@ class App(ABC):
 
     def __init__(self) -> None:
         """Initialize the application with default settings."""
-        self.screens: dict[str, Screen] = {}
+        self.screen_stack: dict[str, Screen] = {}
         """A stack of screens registered to the current app"""
         self.current_screen: Optional[Screen] = None
         """The currently rendered screen"""
+
         self._running = True
         """Whether the app is running"""
+
         self.driver = Driver()
         """The I/O driver for the application"""
         self.renderer = Renderer(self.driver)
@@ -35,6 +38,16 @@ class App(ABC):
             Keybind(key="q", action=self.quit, description="Quit the application"),
         ]
         """The default key bindings for all applications."""
+
+        self._previous_mouse_position: tuple[int, int] | None = None
+        self.mouse_position: tuple[int, int] | None = None
+        """The current mouse position."""
+
+        self._previous_mouse_over: Widget | None = None
+        self.mouse_over: Widget | None = None
+        """The widget the mouse is currently over."""
+        self._mouse_down_widget: Widget | None = None
+        """The widget the mouse is currently down."""
 
         _app.set(self)
 
@@ -55,7 +68,7 @@ class App(ABC):
         if not isinstance(screen, Screen):
             raise ScreenError("Expected a Screen instance.")
         screen.setup()
-        self.screens[screen.name] = screen
+        self.screen_stack[screen.name] = screen
 
     @abstractmethod
     def build(self) -> None:
@@ -73,18 +86,53 @@ class App(ABC):
         Raises:
             ScreenError: If the screen name is not found in registered screens.
         """
-        if screen_name not in self.screens:
+        if screen_name not in self.screen_stack:
             raise ScreenError(
-                f"Screen '{screen_name}' not found. Available screens: {list(self.screens.keys())}"
+                f"Screen '{screen_name}' not found. Available screens: {list(self.screen_stack.keys())}"
             )
 
         if self.current_screen is not None:
             self.current_screen.unmount()
 
-        self.current_screen = self.screens[screen_name]
+        self.current_screen = self.screen_stack[screen_name]
         self.current_screen.mount()
         self.driver.register_keybinds_from_object(self.current_screen)
         self.renderer.pipe(self.current_screen)
+
+    def _set_mouse_over(self, widget: Widget | None) -> None:
+        """Called when the mouse is over another widget.
+
+        Args:
+            widget: The widget the mouse is currently over, or None for no widgets.
+        """
+        self.log.debug(f"Setting mouse over for widget {widget}")
+        if widget is None:
+            if self.mouse_over is not None:
+                try:
+                    self.mouse_over.handle_event(events.MouseExit())
+                finally:
+                    self.mouse_over = None
+        else:
+            if self.mouse_over is not widget:
+                try:
+                    if self.mouse_over is not None:
+                        self.mouse_over.handle_event(events.MouseExit())
+                    if widget is not None:
+                        widget.handle_event(events.MouseEnter())
+                finally:
+                    self.mouse_over = widget
+
+    def _update_mouse_over(self, screen: Screen) -> None:
+        """Updates the mouse over after the next refresh.
+
+        This method is called whenever a widget is added or removed, which may change
+        the widget under the mouse.
+
+        Args:
+            screen: The screen to update the mouse over.
+        """
+        widget = screen.get_widget_at(*self.mouse_position)
+        self._set_mouse_over(widget)
 
     async def _input_loop(self) -> None:
         """Run the input handler in an asynchronous loop.
@@ -96,6 +144,10 @@ class App(ABC):
             try:
                 event = await self.driver.get_event()
                 if self.current_screen and isinstance(event, events.InputEvent):
+                    if isinstance(event, events.MouseMove):
+                        self._previous_mouse_position = self.mouse_position
+                        self.mouse_position = (event.x, event.y)
+                        self._update_mouse_over(self.current_screen)
                     self.current_screen.handle_input_event(event)
             except Exception:
                 self.log.error(f"Error in input loop: {traceback.format_exc()}")
@@ -126,8 +178,8 @@ class App(ABC):
         while self._running:
             try:
                 if not self.current_screen:
-                    if self.screens:
-                        self.show_screen(next(iter(self.screens)))
+                    if self.screen_stack:
+                        self.show_screen(next(iter(self.screen_stack)))
                     else:
                         await asyncio.sleep(0.1)
                         continue
@@ -155,18 +207,15 @@ class App(ABC):
             self.driver.register_keybinds_from_object(self)
             self._running = True
 
-            # Create tasks that run concurrently
             input_task = asyncio.create_task(self._input_loop())
             update_task = asyncio.create_task(self._update_loop())
             render_task = asyncio.create_task(self._render_loop())
 
-            # Wait for any task to complete (which shouldn't happen in normal operation)
             _, pending = await asyncio.wait(
                 {input_task, update_task, render_task},
                 return_when=asyncio.FIRST_COMPLETED,
             )
 
-            # Cancel remaining tasks
             for task in pending:
                 task.cancel()
                 try:

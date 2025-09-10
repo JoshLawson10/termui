@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from termui import events
 from termui.char import Char
 from termui.dom_node import DOMNode
+from termui.logger import log
 from termui.utils.geometry import Region
 
 
@@ -78,7 +79,18 @@ class Widget(DOMNode, ABC):
         """
         return 0, 0
 
-    def handle_mouse_event(self, event: events.MouseEvent) -> None:
+    def handle_event(self, event: events.Event) -> None:
+        """Handle an event.
+
+        Args:
+            event: The event to handle.
+        """
+
+        log.debug(f"Event received: {event}")
+        if isinstance(event, events.Mouse):
+            self.handle_mouse_event(event)
+
+    def handle_mouse_event(self, event: events.Mouse) -> None:
         """Handle a mouse event that occurred within this widget.
 
         Args:
@@ -91,9 +103,9 @@ class Widget(DOMNode, ABC):
             self._on_mouse_up(event)
         elif isinstance(event, events.MouseScrollEvent):
             self._on_mouse_scroll(event)
-        elif isinstance(event, events.Enter):
+        elif isinstance(event, events.MouseEnter):
             self._on_mouse_enter()
-        elif isinstance(event, events.Exit):
+        elif isinstance(event, events.MouseExit):
             self._on_mouse_exit()
 
     def _on_mouse_enter(self) -> None:

@@ -80,8 +80,12 @@ class Key(InputEvent):
         return f"KeyEvent(key={self.key}, char={self.character})"
 
 
+class Mouse(InputEvent):
+    """Any events related to the mouse."""
+
+
 @dataclass
-class MouseEvent(InputEvent):
+class MouseEvent(Mouse):
     """Represents a mouse event with position and button information.
 
     Args:
@@ -168,10 +172,10 @@ class MouseScrollRight(MouseScrollEvent):
 
 
 @dataclass
-class Enter(MouseEvent):
+class MouseEnter(Mouse):
     """Sent when the mouse enters a widget."""
 
 
 @dataclass
-class Exit(MouseEvent):
+class MouseExit(Mouse):
     """Sent when the mouse exits a widget."""
