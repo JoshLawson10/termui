@@ -4,6 +4,7 @@ from typing import Optional, cast
 from termui.dom_node import DOMNode
 from termui.layout import Layout
 from termui.widget import Widget
+from termui.widgets import Container
 
 
 class DOMTree:
@@ -150,7 +151,7 @@ class DOMTree:
     def get_widget_at_coordinate(self, x: int, y: int) -> Optional["Widget"]:
         """Get a widget at the specified position.
 
-        Note: Will never return a layout object, always a standalone widget.
+        Note: Will never return a layout or container object, always a standalone widget.
 
         Args:
             x: The x-coordinate to check.
@@ -164,6 +165,7 @@ class DOMTree:
                 isinstance(node, Widget)
                 and node.region.contains(x, y)
                 and not isinstance(node, Layout)
+                and not isinstance(node, Container)
             ):
                 return node
         return None
