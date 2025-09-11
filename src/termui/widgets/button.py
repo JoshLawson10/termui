@@ -329,6 +329,9 @@ class Button(Widget):
             fill=Char(self.style.fill_char, bg, None),
         )
 
+        depth_char_top = ""
+        depth_char_bottom = ""
+
         if self.style.name in ["solid", "soft"]:
             match self.size.name:
                 case "icon":
