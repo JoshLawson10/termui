@@ -29,6 +29,10 @@ theme:
     - search.highlight
     - search.suggest
 
+watch:
+  - mkdocs.yml
+  - src/
+
 plugins:
   - mkdocstrings:
       default_handler: python
@@ -50,11 +54,8 @@ plugins:
             filters:
               - "!^_"
               - "^__init__$"
-  - git-revision-date-localized:
-
-watch:
-  - mkdocs.yml
-  - src/textual
+          paths: [ src ]
+  - git-revision-date-localized
 
 nav:
   - Home: "index.md"
