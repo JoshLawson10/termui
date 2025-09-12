@@ -24,11 +24,9 @@ jobs:
           cache: "poetry"
 
       - name: Install Poetry
-        uses: snok/install-poetry@v1
+        uses: python-poetry/poetry-action@v1
         with:
-          version: "1.6.1"
-          virtualenvs-create: true
-          virtualenvs-in-project: true
+          poetry-version: 1.6.1
 
       - name: Cache Poetry dependencies
         id: cache-poetry
