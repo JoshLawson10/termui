@@ -1,1 +1,1 @@
-::: src.termui.layouts.vertical
+::: termui.layouts.vertical

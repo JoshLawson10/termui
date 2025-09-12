@@ -1,1 +1,1 @@
-::: src.termui.dom
+::: termui.dom

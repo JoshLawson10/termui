@@ -1,1 +1,1 @@
-::: src.termui.cursor
+::: termui.cursor

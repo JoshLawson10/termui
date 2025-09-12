@@ -1,1 +1,1 @@
-::: src.termui.errors
+::: termui.errors

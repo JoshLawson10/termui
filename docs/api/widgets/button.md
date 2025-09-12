@@ -1,1 +1,1 @@
-::: src.termui.widgets.button
+::: termui.widgets.button

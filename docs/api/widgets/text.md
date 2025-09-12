@@ -1,1 +1,1 @@
-::: src.termui.widgets.text
+::: termui.widgets.text

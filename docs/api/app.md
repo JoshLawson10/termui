@@ -1,1 +1,1 @@
-::: src.termui.app
+::: termui.app

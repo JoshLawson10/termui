@@ -1,1 +1,1 @@
-::: src.termui.color
+::: termui.color

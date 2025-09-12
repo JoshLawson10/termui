@@ -1,1 +1,1 @@
-::: src.termui.screen
+::: termui.screen

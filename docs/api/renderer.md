@@ -1,1 +1,1 @@
-::: src.termui.renderer
+::: termui.renderer

@@ -1,1 +1,1 @@
-::: src.termui.events
+::: termui.events

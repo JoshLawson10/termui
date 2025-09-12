@@ -1,1 +1,1 @@
-::: src.termui.logger
+::: termui.logger

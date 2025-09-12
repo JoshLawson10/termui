@@ -1,1 +1,1 @@
-::: src.termui.layouts.grid
+::: termui.layouts.grid

@@ -1,1 +1,1 @@
-::: src.termui.char
+::: termui.char
