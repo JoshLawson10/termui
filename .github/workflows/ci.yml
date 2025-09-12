@@ -33,11 +33,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-poetry-
 
-      - name: Configure poetry
-        run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
-
       - name: Install dependencies
         run: poetry install --with dev
 
@@ -64,11 +59,6 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
-
-      - name: Configure poetry
-        run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
 
       - name: Install dependencies
         run: poetry install --with dev
@@ -105,11 +95,6 @@ jobs:
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-poetry-
-
-      - name: Configure poetry
-        run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
 
       - name: Install dependencies
         run: poetry install --with dev
