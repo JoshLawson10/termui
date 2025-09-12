@@ -39,8 +39,8 @@ class App(ABC):
         ]
         """The default key bindings for all applications."""
 
-        self._previous_mouse_position: tuple[int, int] | None = None
-        self.mouse_position: tuple[int, int] | None = None
+        self._previous_mouse_position: tuple[int, int] = (-1, -1)
+        self.mouse_position: tuple[int, int] = (0, 0)
         """The current mouse position."""
 
         self._previous_mouse_over: Widget | None = None
@@ -146,7 +146,7 @@ class App(ABC):
                 if self.current_screen and isinstance(event, events.InputEvent):
                     if isinstance(event, events.MouseMove):
                         self._previous_mouse_position = self.mouse_position
-                        self.mouse_position = (event.x, event.y)
+                        self.mouse_position = (int(event.x), int(event.y))
                         self._update_mouse_over(self.current_screen)
                     self.current_screen.handle_input_event(event)
             except Exception:

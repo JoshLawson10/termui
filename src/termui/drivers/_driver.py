@@ -17,7 +17,7 @@ from termui.logger import log
 class Driver(ABC):
     """Base class for all platform-specific I/O drivers."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.event_queue: asyncio.Queue[events.Event] = asyncio.Queue()
         """Queue for input events."""
         self._running: bool = False

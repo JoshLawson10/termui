@@ -89,7 +89,7 @@ class INPUT_RECORD(Structure):
 class WindowsDriver(Driver):
     """I/O manager for Windows systems."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.kernel32: ctypes.WinDLL = ctypes.windll.kernel32  # type: ignore
         self.stdin_handle: Optional[wintypes.HANDLE] = None
@@ -278,7 +278,9 @@ class WindowsDriver(Driver):
         return ""
 
     @staticmethod
-    def _windows_mouse_to_sequence(x: int, y: int, button_state: int, event_flags: int) -> str:
+    def _windows_mouse_to_sequence(
+        x: int, y: int, button_state: int, event_flags: int
+    ) -> str:
         """Convert Windows mouse event to SGR mouse sequence.
 
         Args:

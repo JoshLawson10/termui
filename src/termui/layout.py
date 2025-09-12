@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Optional
 
+from termui.char import Char
 from termui.widget import Widget
 
 
@@ -63,7 +64,7 @@ class Layout(Widget):
             required for the layout including padding and borders.
         """
 
-    def render(self) -> list[list[str]]:
+    def render(self) -> list[list[Char]]:
         """Render the layout.
 
         Returns:

@@ -14,7 +14,7 @@ class DOMTree:
     methods for traversal, manipulation, and debugging.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize an empty DOM tree."""
         self.root: Optional[DOMNode] = None
         """The root node of the DOM tree."""

@@ -1,10 +1,6 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
 
 from termui.utils.geometry import Size
-
-if TYPE_CHECKING:
-    pass
 
 
 class Event:
@@ -92,7 +88,6 @@ class MouseEvent(Mouse):
         x: The x-coordinate of the mouse event.
         y: The y-coordinate of the mouse event.
         button: The mouse button involved (0=left, 1=middle, 2=right).
-        widget: The widget under the mouse pointer.
     """
 
     x: float
@@ -100,39 +95,37 @@ class MouseEvent(Mouse):
     """Coordinates of the mouse event."""
     button: int | None = None  # 0=left, 1=middle, 2=right, else None if a scroll event
     """The mouse button involved in the event."""
-    widget: "Widget | None" = None
-    """The widget under the mouse pointer."""
 
     def __repr__(self):
-        return f"MouseEvent(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+        return f"MouseEvent(x={self.x}, y={self.y}, button={self.button})"
 
 
 class MouseMove(MouseEvent):
     """Sent when the mouse is moved."""
 
     def __repr__(self):
-        return f"MouseMove(x={self.x}, y={self.y}, widget={self.widget})"
+        return f"MouseMove(x={self.x}, y={self.y})"
 
 
 class MouseDrag(MouseEvent):
     """Sent when the mouse is dragged."""
 
     def __repr__(self):
-        return f"MouseDrag(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+        return f"MouseDrag(x={self.x}, y={self.y}, button={self.button})"
 
 
 class MouseDown(MouseEvent):
     """Sent when a mouse button is pressed down."""
 
     def __repr__(self):
-        return f"MouseDown(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+        return f"MouseDown(x={self.x}, y={self.y}, button={self.button})"
 
 
 class MouseUp(MouseEvent):
     """Sent when a mouse button is released."""
 
     def __repr__(self):
-        return f"MouseUp(x={self.x}, y={self.y}, button={self.button}, widget={self.widget})"
+        return f"MouseUp(x={self.x}, y={self.y}, button={self.button})"
 
 
 @dataclass
@@ -147,28 +140,28 @@ class MouseScrollDown(MouseScrollEvent):
     """Sent when the mouse is scrolled down."""
 
     def __repr__(self):
-        return f"MouseScrollDown(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
+        return f"MouseScrollDown(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button})"
 
 
 class MouseScrollUp(MouseScrollEvent):
     """Sent when the mouse is scrolled up."""
 
     def __repr__(self):
-        return f"MouseScrollUp(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
+        return f"MouseScrollUp(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button})"
 
 
 class MouseScrollLeft(MouseScrollEvent):
     """Sent when the mouse is scrolled left."""
 
     def __repr__(self):
-        return f"MouseScrollLeft(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
+        return f"MouseScrollLeft(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button})"
 
 
 class MouseScrollRight(MouseScrollEvent):
     """Sent when the mouse is scrolled right."""
 
     def __repr__(self):
-        return f"MouseScrollRight(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button}, widget={self.widget})"
+        return f"MouseScrollRight(x={self.x}, y={self.y}, dx={self.dx}, dy={self.dy}, button={self.button})"
 
 
 @dataclass

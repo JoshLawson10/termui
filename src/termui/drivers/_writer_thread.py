@@ -4,7 +4,7 @@ import fcntl
 import os
 import threading
 from queue import Queue
-from typing import Final, IO
+from typing import IO, Final
 
 MAX_QUEUED_WRITES: Final[int] = 64
 
@@ -38,7 +38,6 @@ class WriterThread(threading.Thread):
         """
         return True
 
-    @staticmethod
     def fileno(self) -> int:
         """Get file handle number.
 
@@ -59,7 +58,7 @@ class WriterThread(threading.Thread):
             data = text.encode()
             while data:
                 try:
-                    written = os.write(self._file.fileno(), data)
+                    written = os.write(self.fileno(), data)
                     data = data[written:]
                 except BlockingIOError:
                     threading.Event().wait(0.01)

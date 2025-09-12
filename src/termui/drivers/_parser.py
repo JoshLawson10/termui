@@ -1,20 +1,13 @@
 import os
 import re
 from collections import deque
-from typing import (
-    Callable,
-    Deque,
-    Final,
-    Generator,
-    Generic,
-    Iterable,
-    NamedTuple,
-    TypeVar,
-)
+from typing import (Callable, Deque, Final, Generator, Generic, Iterable,
+                    NamedTuple, TypeVar)
 
 from termui import events
 from termui._ansi import ANSI_SEQUENCES_KEYS, IGNORE_SEQUENCE
-from termui._keys import FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys, _character_to_key
+from termui._keys import (FUNCTIONAL_KEYS, KEY_NAME_REPLACEMENTS, Keys,
+                          _character_to_key)
 from termui.events import Key
 from termui.logger import log
 from termui.time import get_time
@@ -210,7 +203,7 @@ class Parser(Generic[T]):
                 else:
                     event_class = events.MouseDown if state == "M" else events.MouseUp
 
-            event = event_class(x, y, button, None)
+            event = event_class(x, y, button)
             return event
         return None
 

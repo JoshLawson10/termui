@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from os import get_terminal_size
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from termui import events
 from termui.color import Color
