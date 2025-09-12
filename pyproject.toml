@@ -13,9 +13,8 @@ dependencies = [
     "mkdocstrings[python] (>=0.30.0,<0.31.0)",
     "mkdocs-material (>=9.6.17,<10.0.0)",
     "mkdocs-git-revision-date-localized-plugin (>=1.4.7,<2.0.0)",
-    "commitizen (>=4.8.3,<5.0.0)",
-    "ruff (>=0.12.12,<0.13.0)",
-    "black (>=25.1.0,<26.0.0)"
+    "black (>=25.1.0,<26.0.0)",
+    "poetry-core (>=2.0.0)",
 ]
 
 [build-system]
@@ -24,31 +23,4 @@ build-backend = "poetry.core.masonry.api"
 
 [project.urls]
 homepage = "https://python-poetry.org/"
-repository = "https://github.com/python-poetry/poetry"
-
-[tool.commitizen]
-name = "cz_conventional_commits"
-version = "0.2.2"
-tag_format = "v$version"
-update_changelog_on_bump = true
-version_files = [
-    "pyproject.toml:^version"
-]
-
-[tool.commitizen.bump_map]
-docs = "PATCH"
-ci = "PATCH"
-cd = "PATCH"
-
-[tool.poetry.group.dev.dependencies]
-commitizen = "^4.8.3"
-ruff = "^0.12.12"
-
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-
-[tool.ruff.lint]
-select = ["E", "F", "I"]
-ignore = ["E501"]
-typing-extensions = false
+repository = "https://github.com/JoshLawson10/termui"

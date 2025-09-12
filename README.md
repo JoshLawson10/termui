@@ -2,14 +2,16 @@
 
 > A modern, declarative, and efficient Terminal UI library for Python.
 
-TermUI makes it fast and simple to build good-looking terminal applications.  
-It combines a **declarative widget API**, **centralized theming with variants**, and an **async diff-based renderer** — so your apps look consistent and run efficiently.
+TermUI makes it fast and simple to build good-looking terminal applications.
+It combines a **declarative widget API**, **centralized theming with variants**, and an
+**async diff-based renderer** — so your apps look consistent and run efficiently.
 
 ---
 
 ## ✨ Features
 
-- 🎨 **Centralized theming** — consistent look via theme tokens (`primary`, `secondary`, `accent`, etc.)
+- 🎨 **Centralized theming** — consistent look via theme tokens (`primary`, `secondary`,
+  `accent`, etc.)
 - 🧩 **Composable widgets** — Button, Container, Checkbox, RadioBox, Input, ProgressBar
 - ⚡ **Diff-based rendering** — minimal redraws for performance
 - ⌨️🖱️ **Keyboard & mouse input** — interactive UIs with hover + click support
@@ -31,8 +33,10 @@ pip install termui
 ```python
 from termui import App, Button, Container, VerticalLayout
 
+
 def on_click():
     print("Button clicked!")
+
 
 app = App(
     VerticalLayout(
@@ -91,7 +95,6 @@ Button("Delete", variant="error")
 ## 📚 Documentation
 
 See the full docs at **[https://your-docs-site.com](https://your-docs-site.com)**
-(built with MkDocs + Material)
 
 ---
 

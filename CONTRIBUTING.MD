@@ -1,6 +1,6 @@
 # Contributing to TermUI
 
-🎉 Thanks for your interest in contributing to TermUI!  
+🎉 Thanks for your interest in contributing to TermUI!
 Contributions of all kinds are welcome — from bug reports and documentation improvements to new widgets and features.
 
 ---
