@@ -5,7 +5,7 @@ description = "A modern, declarative, and efficient Terminal UI library for Pyth
 authors = ["Josh Lawson <joshlawson100@outlook.com>"]
 readme = "README.md"
 license = "MIT"
-homepage = "https://github.com/JoshLawson10/termui"
+homepage = "https://joshlawson10.github.io/termui"
 repository = "https://github.com/JoshLawson10/termui"
 packages = [{ include = "termui", from = "src" }]
 

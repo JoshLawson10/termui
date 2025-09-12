@@ -1,6 +1,6 @@
 # TermUI
 
-> A modern, declarative, and efficient Terminal UI library for Python.
+> A modern, opinionated Terminal UI library for Python.
 
 TermUI makes it fast and simple to build good-looking terminal applications.
 It combines a **declarative widget API**, **centralized theming with variants**, and an
@@ -94,7 +94,7 @@ Button("Delete", variant="error")
 
 ## 📚 Documentation
 
-See the full docs at **[https://your-docs-site.com](https://your-docs-site.com)**
+See the full docs **[here](https://joshlawson10.github.io/termui)**.
 
 ---
 
