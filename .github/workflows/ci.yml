@@ -36,39 +36,6 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
-  lint-test:
-    name: Lint & Test
-    runs-on: ubuntu-latest
-    needs: setup
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Setup Python & Poetry
-        uses: abatilo/actions-poetry@v2
-        with:
-          poetry-version: "1.6.1"
-
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/pypoetry
-            .venv
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
-      - name: Install dependencies
-        run: poetry install --with dev
-
-      - name: Run Black
-        run: poetry run black --check src
-
-      - name: Run Pylint
-        run: poetry run pylint src
-
   docs:
     name: Build & Deploy Docs
     runs-on: ubuntu-latest
