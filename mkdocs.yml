@@ -50,10 +50,11 @@ plugins:
             filters:
               - "!^_"
               - "^__init__$"
-      watch:
-        - mkdocs.yml
-        - src/textual
   - git-revision-date-localized:
+
+watch:
+  - mkdocs.yml
+  - src/textual
 
 nav:
   - Home: "index.md"
