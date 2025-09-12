@@ -1,14 +1,16 @@
-[project]
+[tool.poetry]
 name = "termui"
 version = "0.2.2"
 description = "A modern, declarative, and efficient Terminal UI library for Python."
-authors = [
-    { name = "Josh Lawson", email = "joshlawson100@outlook.com" }
-]
+authors = ["Josh Lawson <joshlawson100@outlook.com>"]
 readme = "README.md"
-requires-python = ">=3.10,<4.0"
-license = { text = "MIT" }
-dependencies = []
+license = "MIT"
+homepage = "https://github.com/JoshLawson10/termui"
+repository = "https://github.com/JoshLawson10/termui"
+packages = [{ include = "termui", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 mkdocs = ">=1.6.1,<2.0.0"
@@ -22,7 +24,3 @@ pylint = ">=3.0.0,<4.0.0"
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[project.urls]
-homepage = "https://python-poetry.org/"
-repository = "https://github.com/JoshLawson10/termui"
