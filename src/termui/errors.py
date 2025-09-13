@@ -28,3 +28,7 @@ class AsyncError(Exception):
 
 class LayoutError(Exception):
     """Base class for all layout-related errors."""
+
+
+class InvalidThemeError(Exception):
+    """Base class for all invalid theme errors."""

@@ -61,6 +61,60 @@ class Color:
         gray = round(self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722)
         return Color(gray, gray, gray, self.a)
 
+    @property
+    def luminance(self) -> float:
+        """Calculate the relative luminance of the color using WCAG formula.
+
+        Returns:
+            The relative luminance value (0.0 to 1.0).
+        """
+
+        def _linearize(c: int) -> float:
+            c_norm = c / 255.0
+            return (
+                c_norm / 12.92
+                if c_norm <= 0.03928
+                else ((c_norm + 0.055) / 1.055) ** 2.4
+            )
+
+        r_lin = _linearize(self.r)
+        g_lin = _linearize(self.g)
+        b_lin = _linearize(self.b)
+
+        return 0.2126 * r_lin + 0.7152 * g_lin + 0.0722 * b_lin
+
+    def contrast_ratio(self, other: "Color") -> float:
+        """Calculate the contrast ratio between this color and another.
+
+        Args:
+            other: The other color to compare against.
+
+        Returns:
+            The contrast ratio (1.0 to 21.0).
+        """
+        lum1 = self.luminance
+        lum2 = other.luminance
+        lighter = max(lum1, lum2)
+        darker = min(lum1, lum2)
+        return (lighter + 0.05) / (darker + 0.05)
+
+    @property
+    def content_color(self) -> "Color":
+        """Get the optimal content (text) color for this background color.
+
+        Chooses between white and black based on which provides better contrast.
+
+        Returns:
+            A Color instance (either white or black) with the same alpha as this color.
+        """
+        white = Color(255, 255, 255, self.a)
+        black = Color(0, 0, 0, self.a)
+
+        white_contrast = self.contrast_ratio(white)
+        black_contrast = self.contrast_ratio(black)
+
+        return white if white_contrast > black_contrast else black
+
     def lighten(self, percent: float) -> "Color":
         """Lighten the color by a percentage.
 

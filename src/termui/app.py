@@ -6,29 +6,39 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from termui import events
+from termui import constants, events
 from termui._context_manager import _app
 from termui.drivers import Driver
-from termui.errors import AsyncError, ScreenError
+from termui.errors import AsyncError, InvalidThemeError, ScreenError
 from termui.keybind import Keybind
 from termui.logger import log as _log
 from termui.renderer import Renderer
 from termui.screen import Screen
+from termui.theme import DEFAULT_THEMES, Theme
 from termui.widget import Widget
 
 
 class App(ABC):
     """The base class for all TermUI applications."""
 
+    theme: str = constants.DEFAULT_THEME
+    """The name of the currently active theme."""
+
     def __init__(self) -> None:
         """Initialize the application with default settings."""
+
+        self._registered_themes: dict[str, Theme] = {}
+        """Themes that have been registered with the App using `App.register_theme`.
+
+        This excludes the built-in themes."""
+
+        for theme in DEFAULT_THEMES.values():
+            self.register_theme(theme)
+
         self.screen_stack: dict[str, Screen] = {}
         """A stack of screens registered to the current app"""
         self.current_screen: Optional[Screen] = None
         """The currently rendered screen"""
-
-        self._running = True
-        """Whether the app is running"""
 
         self.driver = Driver()
         """The I/O driver for the application"""
@@ -49,12 +59,84 @@ class App(ABC):
         self._mouse_down_widget: Widget | None = None
         """The widget the mouse is currently down."""
 
+        self._running = True
+        """Whether the app is running"""
+
         _app.set(self)
 
     @property
     def log(self):
         """Expose the TermUI logger to the App."""
         return _log
+
+    def get_theme(self, theme_name: str) -> Theme | None:
+        """Get a theme by name.
+
+        Args:
+            theme_name: The name of the theme to get. May also be a comma
+                separated list of names, to pick the first available theme.
+
+        Returns:
+            A Theme instance and None if the theme doesn't exist.
+        """
+        theme_names = [token.strip() for token in theme_name.split(",")]
+        for theme in theme_names:
+            if theme in self.available_themes:
+                return self.available_themes[theme]
+        return None
+
+    def register_theme(self, theme: Theme) -> None:
+        """Register a theme with the app.
+
+        If the theme already exists, it will be overridden.
+
+        After registering a theme, you can activate it by setting the
+        `App.theme` attribute. To retrieve a registered theme, use the
+        `App.get_theme` method.
+
+        Args:
+            theme: The theme to register.
+        """
+        self._registered_themes[theme.name] = theme
+
+    def unregister_theme(self, theme_name: str) -> None:
+        """Unregister a theme with the app.
+
+        Args:
+            theme_name: The name of the theme to unregister.
+        """
+        if theme_name in self._registered_themes:
+            del self._registered_themes[theme_name]
+
+    @property
+    def available_themes(self) -> dict[str, Theme]:
+        """All available themes (all built-in themes plus any that have been registered).
+
+        A dictionary mapping theme names to Theme instances.
+        """
+        return {**self._registered_themes}
+
+    @property
+    def current_theme(self) -> Theme:
+        """Get the currently active theme.
+
+        Returns:
+            The currently active theme.
+        """
+        theme = self.get_theme(self.theme)
+        if theme is None:
+            theme = self.get_theme("textual-dark")
+        assert theme is not None
+        return theme
+
+    def _validate_theme(self, theme_name: str) -> str:
+        if theme_name not in self.available_themes:
+            message = (
+                f"Theme {theme_name!r} has not been registered. "
+                "Call 'App.register_theme' before setting the 'App.theme' attribute."
+            )
+            raise InvalidThemeError(message)
+        return theme_name
 
     def register_screen(self, screen: Screen) -> None:
         """Register a new screen with the application.
