@@ -131,6 +131,12 @@ class Theme:
             color_name: The name of the theme color.
         """
 
+        # Default button color is a base_200 and base_content, so return these if
+        # colour_name is 'default' or 'default_content'
+        if color_name == "default":
+            color_name = "base_200"
+        elif color_name == "default_content":
+            color_name = "base_content"
         return self.create.get(color_name)
 
     def __getitem__(self, color_name: str) -> Color:
@@ -155,52 +161,52 @@ class Theme:
 dark_theme = Theme(
     name="dark",
     dark=True,
-    primary=Color(94, 100, 224),
-    primary_content=Color(238, 240, 255),
-    secondary=Color(217, 95, 187),
-    secondary_content=Color(237, 228, 240),
-    accent=Color(100, 213, 198),
-    accent_content=Color(67, 105, 103),
-    neutral=Color(28, 31, 48),
-    neutral_content=Color(227, 230, 240),
-    base_100=Color(55, 58, 79),
-    base_200=Color(50, 53, 72),
-    base_300=Color(46, 48, 66),
-    base_content=Color(247, 248, 253),
-    info=Color(118, 176, 245),
-    info_content=Color(50, 73, 108),
-    success=Color(106, 218, 155),
-    success_content=Color(61, 107, 81),
-    warning=Color(239, 210, 99),
-    warning_content=Color(128, 97, 56),
-    error=Color(235, 119, 101),
-    error_content=Color(87, 52, 49),
+    primary=Color(96, 93, 249),
+    primary_content=Color(238, 241, 253),
+    secondary=Color(255, 69, 150),
+    secondary_content=Color(246, 229, 240),
+    accent=Color(80, 208, 188),
+    accent_content=Color(33, 76, 73),
+    neutral=Color(8, 8, 11),
+    neutral_content=Color(228, 228, 231),
+    base_100=Color(29, 35, 42),
+    base_200=Color(26, 29, 36),
+    base_300=Color(21, 24, 29),
+    base_content=Color(238, 249, 255),
+    info=Color(76, 183, 248),
+    info_content=Color(18, 45, 71),
+    success=Color(84, 208, 150),
+    success_content=Color(27, 75, 58),
+    warning=Color(242, 186, 24),
+    warning_content=Color(113, 53, 20),
+    error=Color(240, 109, 128),
+    error_content=Color(70, 10, 24),
 )
 
 # Light Theme: https://github.com/saadeghi/daisyui/blob/master/packages/daisyui/src/themes/light.css
 light_theme = Theme(
     name="light",
     dark=False,
-    primary=Color(61, 56, 184),
-    primary_content=Color(227, 230, 252),
-    secondary=Color(217, 95, 187),
-    secondary_content=Color(237, 228, 240),
-    accent=Color(100, 213, 198),
-    accent_content=Color(67, 105, 103),
-    neutral=Color(28, 31, 48),
-    neutral_content=Color(227, 230, 240),
+    primary=Color(62, 43, 205),
+    primary_content=Color(225, 231, 253),
+    secondary=Color(225, 69, 150),
+    secondary_content=Color(246, 229, 240),
+    accent=Color(80, 208, 188),
+    accent_content=Color(33, 76, 73),
+    neutral=Color(8, 8, 11),
+    neutral_content=Color(228, 228, 231),
     base_100=Color(255, 255, 255),
-    base_200=Color(250, 250, 250),
-    base_300=Color(242, 242, 242),
-    base_content=Color(46, 48, 58),
-    info=Color(118, 176, 245),
-    info_content=Color(50, 73, 108),
-    success=Color(106, 218, 155),
-    success_content=Color(61, 107, 81),
-    warning=Color(239, 210, 99),
-    warning_content=Color(128, 97, 56),
-    error=Color(235, 119, 101),
-    error_content=Color(87, 52, 49),
+    base_200=Color(249, 249, 249),
+    base_300=Color(239, 239, 239),
+    base_content=Color(24, 24, 26),
+    info=Color(76, 183, 248),
+    info_content=Color(18, 45, 71),
+    success=Color(84, 208, 150),
+    success_content=Color(27, 75, 58),
+    warning=Color(242, 186, 24),
+    warning_content=Color(113, 53, 20),
+    error=Color(240, 109, 128),
+    error_content=Color(70, 10, 24),
 )
 
 # One Dark Theme: https://github.com/Binaryify/OneDark-Pro
@@ -364,9 +370,9 @@ DEFAULT_THEMES: dict[str, Theme] = {
     "dark": dark_theme,
     "light": light_theme,
     "one-dark": one_dark_theme,
-    "catppuccin-latte": catppuccin_latte_theme,
-    "catppuccin-mocha": catppuccin_mocha_theme,
+    "catppuccin_latte": catppuccin_latte_theme,
+    "catppuccin_mocha": catppuccin_mocha_theme,
     "dracula": dracula_theme,
-    "tokyo-night": tokyo_night_theme,
+    "tokyo_night": tokyo_night_theme,
     "monokai": monokai_theme,
 }
