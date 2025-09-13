@@ -125,7 +125,7 @@ class App(ABC):
         """
         theme = self.get_theme(self.theme)
         if theme is None:
-            theme = self.get_theme("textual-dark")
+            theme = self.get_theme("dark")
         assert theme is not None
         return theme
 
