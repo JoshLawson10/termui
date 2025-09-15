@@ -132,6 +132,7 @@ class Button(Widget):
             Self, to allow method chaining and use in layouts.
         """
         self.content = content
+        self.region.width, self.region.height = self.get_minimum_size()
         return self
 
     def _get_colors(self) -> tuple[Color, Color | None]:
@@ -194,6 +195,8 @@ class Button(Widget):
         """
 
         fg, bg = self._get_colors()
+
+        self.region.width, self.region.height = self.get_minimum_size()
 
         box_model: list[list[Char]] = draw_rectangle(
             self.region.width,
