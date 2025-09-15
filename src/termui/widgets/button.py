@@ -78,18 +78,18 @@ class Button(Widget):
         disabled: bool = False,
         padding: tuple[int, int, int, int] = (0, 0, 0, 0),
         on_click: Optional[Callable[[], None]] = None,
-        state: ButtonState = "default",
         **kwargs,
     ) -> None:
         """Initialize a button with specified label and styling.
 
         Args:
             label: The text displayed on the button.
-            style: Space-separated style string combining ButtonStyle, ButtonColor, and ButtonSize
+            variant: Visual style of the button. One of `solid`, `outline`, `rounded`, `dashed`.
+            color: Colour of the button. See ___ for universal colours.
+            size: Size of the button. One of `icon`, `small`, `medium`, `large`.
             disabled: Whether the button is disabled and non-interactive.
             padding: Additional padding around the button as (top, right, bottom, left).
             on_click: Callback function executed when the button is clicked.
-            state: Current visual state of the button.
             **kwargs: Additional widget arguments passed to the parent constructor.
         """
         super().__init__(**kwargs)
@@ -114,7 +114,7 @@ class Button(Widget):
         This is initialised in __call__.
         """
 
-        self.state: ButtonState = state
+        self.state: ButtonState = "default"
         """Current state of the button."""
 
         self.set_size(*self.get_minimum_size())
