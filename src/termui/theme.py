@@ -7,6 +7,17 @@ from termui.color import Color
 PrimitiveColors = Literal[
     "primary", "secondary", "accent", "info", "success", "warning", "error"
 ]
+"""Base color names used universally within the TermUI Framework. \n
+
+    One of: \n
+    - `primary`
+    - `secondary`
+    - `accent`
+    - `info`
+    - `success`
+    - `warning`
+    - `error`
+"""
 
 
 @dataclass
