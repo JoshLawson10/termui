@@ -935,9 +935,27 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#termui.color.Color.content_color" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;content_color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#termui.color.Color.inverse" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inverse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.luminance" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;luminance
     </span>
   </a>
   
@@ -967,6 +985,30 @@
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;rgba
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.contrast_ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;contrast_ratio
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" contrast_ratio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.contrast_ratio(other)" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;other
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1704,9 +1746,27 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#termui.color.Color.content_color" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;content_color
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#termui.color.Color.inverse" class="md-nav__link">
     <span class="md-ellipsis">
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;inverse
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.luminance" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;luminance
     </span>
   </a>
   
@@ -1736,6 +1796,30 @@
       <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;rgba
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.contrast_ratio" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;contrast_ratio
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" contrast_ratio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#termui.color.Color.contrast_ratio(other)" class="md-nav__link">
+    <span class="md-ellipsis">
+      <code class="doc-symbol doc-symbol-toc doc-symbol-parameter"></code>&nbsp;other
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -2000,6 +2084,59 @@
 
 
 
+<h3 id="termui.color.Color.content_color" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">content_color</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">content_color</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Get the optimal content (text) color for this background color.</p>
+<p>Chooses between white and black based on which provides better contrast.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            Color
+
+
+  
+      dataclass
+   (termui.color.Color)" href="#termui.color.Color">Color</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A Color instance (either white or black) with the same alpha as this color.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
 <h3 id="termui.color.Color.inverse" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">inverse</span>
 
@@ -2053,6 +2190,53 @@
             <td>
               <div class="doc-md-description">
                 <p>Alpha value remains unchanged.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="termui.color.Color.luminance" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">luminance</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">luminance</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate the relative luminance of the color using WCAG formula.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The relative luminance value (0.0 to 1.0).</p>
               </div>
             </td>
           </tr>
@@ -2212,6 +2396,85 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="termui.color.Color.contrast_ratio" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">contrast_ratio</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">contrast_ratio</span><span class="p">(</span><span class="n"><a class="autorefs autorefs-internal" title="other (termui.color.Color.contrast_ratio(other))" href="#termui.color.Color.contrast_ratio(other)">other</a></span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Calculate the contrast ratio between this color and another.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+<h4 id="termui.color.Color.contrast_ratio(other)" class="doc doc-heading doc-heading-parameter">                  <code>other</code>
+</h4>            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            Color
+
+
+  
+      dataclass
+   (termui.color.Color)" href="#termui.color.Color">Color</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The other color to compare against.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The contrast ratio (1.0 to 21.0).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-function">
 
