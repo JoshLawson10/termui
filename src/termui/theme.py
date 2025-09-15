@@ -5,7 +5,7 @@ from typing import Literal, Optional
 from termui.color import Color
 
 PrimitiveColors = Literal[
-    "primary", "secondary", "accent", "info", "success", "warning", "error"
+    "primary", "secondary", "accent", "neutral", "info", "success", "warning", "error"
 ]
 """Base color names used universally within the TermUI Framework. \n
 
