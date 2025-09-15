@@ -1,7 +1,7 @@
-from typing import Optional
-
+from termui._context_manager import app
 from termui.char import Char
 from termui.color import Color
+from termui.theme import PrimitiveColors
 from termui.utils.align import HorizontalAlignment, get_aligned_start_x
 from termui.widget import Widget
 
@@ -12,8 +12,9 @@ class Text(Widget):
     def __init__(
         self,
         content: str | list[str],
-        fg_color: Color = Color(255, 255, 255),
-        bg_color: Optional[Color] = None,
+        text_color: PrimitiveColors = "neutral",
+        background_color: PrimitiveColors | None = None,
+        is_content: bool = False,
         align: HorizontalAlignment = "left",
         **kwargs,
     ) -> None:
@@ -31,10 +32,16 @@ class Text(Widget):
 
         self.content: list[str] = content if isinstance(content, list) else [content]
         """The text content to display."""
-        self.fg_color: Color = fg_color
-        """The foreground color of the text."""
-        self.bg_color: Optional[Color] = bg_color
-        """The background color of the text."""
+        self.text_color: PrimitiveColors = text_color
+        """The text color."""
+        self.background_color: PrimitiveColors | None = background_color
+        """The background color."""
+
+        self.is_content: bool = is_content
+        """Whether to use content color variants for the text color.
+
+        i.e `neutral_content` instead of `neutral` if is_content is True.
+        """
 
         self.align: HorizontalAlignment = align
         """How the content should be aligned horizontally."""
@@ -77,6 +84,19 @@ class Text(Widget):
         self.content = content if isinstance(content, list) else [content]
         self.mark_dirty()
 
+    def _get_colors(self) -> tuple[Color, Color | None]:
+        theme = app.current_theme
+
+        text_color = theme[
+            f"{self.text_color}_content" if self.is_content else self.text_color
+        ]
+        if self.background_color:
+            background_color = theme[self.background_color]
+        else:
+            background_color = None
+
+        return text_color, background_color
+
     def render(self) -> list[list[Char]]:
         """Render the text with its border and children.
 
@@ -84,6 +104,8 @@ class Text(Widget):
             list[list[Char]]: The rendered content of the text widget.
         """
         rendered_content: list[list[Char]] = [[] for _ in range(self.region.height)]
+
+        text_color, background_color = self._get_colors()
 
         for i in range(self.region.height):
             rendered_line: list[Char] = [Char("") for _ in range(self.region.width)]
@@ -94,7 +116,7 @@ class Text(Widget):
 
             for j in range(self.region.width - start_x):
                 char = line[j] if j < len(line) else " "
-                rendered_char = Char(char, self.fg_color, self.bg_color)
+                rendered_char = Char(char, text_color, background_color)
                 rendered_line[start_x + j] = rendered_char
 
             rendered_content[i] = rendered_line
