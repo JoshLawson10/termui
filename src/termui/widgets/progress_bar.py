@@ -1,7 +1,9 @@
 from typing import Literal, Optional
 
+from termui._context_manager import app
 from termui.char import Char
 from termui.color import Color
+from termui.theme import PrimitiveColors
 from termui.widget import Widget
 
 LabelPosition = Literal["left", "right"]
@@ -18,21 +20,17 @@ class ProgressBar(Widget):
         max_value: int = 100,
         label: Optional[str] = None,
         label_pos: LabelPosition = "left",
-        label_color: Color = Color(255, 255, 255),
-        fg_color: Color = Color(255, 255, 255),
-        bg_color: Optional[Color] = None,
+        bar_color: PrimitiveColors = "primary",
         **kwargs,
     ):
         """Initialize the progress bar.
 
         Args:
-            value (int): The initial value of the progress bar.
-            max_value (int): The maximum value of the progress bar.
-            label (str, optional): The label displayed on the progress bar.
-            label_pos (LabelPosition, optional): The position of the label on the progress bar.
-            label_color (Color, optional): The color of the label text.
-            fg_color (Color, optional): The foreground color of the progress bar.
-            bg_color (Color, optional): The background color of the progress bar.
+            value: The initial value of the progress bar.
+            max_value: The maximum value of the progress bar.
+            label: The label displayed on the progress bar.
+            label_pos: The position of the label on the progress bar.
+            bar_color: The color of the progress bar.
         """
         super().__init__(**kwargs)
 
@@ -40,18 +38,13 @@ class ProgressBar(Widget):
         """The label displayed on the progress bar."""
         self.label_pos = label_pos
         """The position of the label on the progress bar."""
-        self.label_color = label_color
-        """The color of the label text."""
+        self.bar_color = bar_color
+        """The color of the progress bar."""
 
         self.max_value = max_value
         """The maximum value of the progress bar."""
         self.current_value = min(max(value, 0), max_value)
         """The current value of the progress bar."""
-
-        self.fg_color = fg_color
-        """The foreground color of the progress bar."""
-        self.bg_color = bg_color
-        """The background color of the progress bar."""
 
         self.set_size(*self.get_minimum_size())
 
@@ -92,6 +85,17 @@ class ProgressBar(Widget):
         """
         self.set_value(self.current_value - amount)
 
+    def _get_colors(self) -> tuple[Color, Color]:
+        """Get the colors of the progress bar.
+
+        Returns:
+            A tuple of the colors of the progress bar.
+        """
+        bar_color: Color = app.current_theme[self.bar_color]
+        label_color: Color = app.current_theme["neutral_content"]
+
+        return bar_color, label_color
+
     def render(self) -> list[list[Char]]:
         """Render the button to a 2D character array.
 
@@ -99,32 +103,29 @@ class ProgressBar(Widget):
             A 2D list of Char objects representing the button's appearance
             with proper colors, borders, text, and visual effects.
         """
+        bar_color, label_color = self._get_colors()
+
         bar_length = 40
         filled_length = int(bar_length * self.current_value // self.max_value)
         bar_string = (
-            [Char("█", self.fg_color, self.bg_color)] * filled_length
-            + [Char("─", Color(255, 255, 255), self.bg_color)]
-            * (bar_length - filled_length - 1)
-            + [Char("┤", Color(255, 255, 255), self.bg_color)]
+            [Char("█", bar_color, None)] * filled_length
+            + [Char("─", label_color, None)] * (bar_length - filled_length - 1)
+            + [Char("┤", label_color, None)]
         )
 
         bar_label = (
-            [Char(char, self.label_color, self.bg_color) for char in self.label]
-            if self.label
-            else []
+            [Char(char, label_color, None) for char in self.label] if self.label else []
         )
 
         bar_amount = [
-            Char(char, self.label_color, self.bg_color)
+            Char(char, label_color, None)
             for char in f"{self.current_value}/{self.max_value}"
         ]
 
-        space = [Char(" ", self.label_color, self.bg_color)]
+        space = [Char(" ", label_color, None)]
 
         match self.label_pos:
             case "left":
                 return [bar_label + bar_string + space + bar_amount]
             case "right":
                 return [bar_string + space + bar_amount + bar_label]
-            case _:
-                return [bar_label + bar_string + space + bar_amount]
